@@ -36,6 +36,7 @@ from config import (
 # APPLIED_IN 表示知识应用于工程场景；IMPLEMENTED_IN 表示工具实现关系；
 # SUPPORTS 表示模块对后续模块的课程支撑；HAS_MEDIA 表示教学资源关联。
 GRAPH_RELATIONSHIP_DEFINITIONS = {
+    "PREREQUISITE_MODULE": "模块前置依赖",
     "BELONGS_TO": "知识点属于教学模块",
     "PREREQUISITE_OF": "前置知识点指向后续知识点",
     "RELATED_TO": "相关教学知识点",
