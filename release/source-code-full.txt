@@ -1,0 +1,6981 @@
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 1 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+====================================================================================================
+FILE: backend/config.py
+====================================================================================================
+# Copyright (c) 2026 ?????
+# GIS???????????? - ????
+# ?????????????????????
+
+# Copyright (c) 2026 版权所有人
+# GIS交通路网教学知识图谱平台 - 后端服务
+# 本文件为平台核心业务代码，受软件著作权保护
+
+import os
+from pathlib import Path
+from typing import List
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None
+
+
+if load_dotenv:
+    load_dotenv(Path(__file__).with_name(".env"))
+
+
+def _string_list(name: str, default: str) -> List[str]:
+    raw_value = os.getenv(name, default)
+    return [item.strip() for item in raw_value.split(",") if item.strip()]
+
+
+def _get_origins() -> List[str]:
+    return _string_list(
+        "CORS_ALLOW_ORIGINS",
+        (
+            "http://localhost:9080,http://127.0.0.1:9080,"
+            "http://localhost:5173,http://127.0.0.1:5173"
+        ),
+    )
+
+
+# GIS交通路网教学知识图谱平台专属数据库配置。
+NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
+NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
+NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "")
+NEO4J_DATABASE = os.getenv("NEO4J_DATABASE", "traffic_kg")
+
+# 教学知识图谱业务配置。
+KG_CONFIG = {
+    "max_learning_path_length": int(
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 2 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        os.getenv("KG_MAX_LEARNING_PATH_LENGTH", "8")
+    ),
+    "enable_topology_check": os.getenv(
+        "ENABLE_TOPOLOGY_CHECK",
+        "true",
+    ).strip().lower()
+    in {"1", "true", "yes", "on"},
+    "coordinate_tolerance": float(
+        os.getenv("TOPOLOGY_COORDINATE_TOLERANCE", "1.0")
+    ),
+}
+
+# GIS交通路网教学问答引擎专属配置。
+QA_CONFIG = {
+    "max_references": int(os.getenv("ANSWER_MAX_REFERENCES", "6")),
+    "rate_limit_per_minute": int(
+        os.getenv("CHAT_RATE_LIMIT_PER_MINUTE", "5")
+    ),
+    "whitelist": _string_list("CHAT_RATE_LIMIT_WHITELIST", ""),
+}
+
+# 外部模型接口配置，只用于平台内部教学问答引擎。
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
+DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+DEEPSEEK_TIMEOUT_SECONDS = float(
+    os.getenv("DEEPSEEK_TIMEOUT_SECONDS", "30")
+)
+DEEPSEEK_MAX_TOKENS = int(os.getenv("DEEPSEEK_MAX_TOKENS", "800"))
+DEEPSEEK_TEMPERATURE = float(os.getenv("DEEPSEEK_TEMPERATURE", "0.2"))
+
+CORS_ALLOW_ORIGINS = _get_origins()
+
+
+====================================================================================================
+FILE: backend/deepseek_service.py
+====================================================================================================
+# Copyright (c) 2026 ?????
+# GIS???????????? - ????
+# ?????????????????????
+
+# Copyright (c) 2026 版权所有人
+# GIS交通路网教学知识图谱平台 - 后端服务
+# 本文件为平台核心业务代码，受软件著作权保护
+
+import logging
+from typing import Any, Dict
+
+from openai import APIConnectionError, APIStatusError, APITimeoutError, OpenAI
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 3 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+import prompt_engine
+from config import (
+    DEEPSEEK_API_KEY,
+    DEEPSEEK_BASE_URL,
+    DEEPSEEK_MAX_TOKENS,
+    DEEPSEEK_MODEL,
+    DEEPSEEK_TEMPERATURE,
+    DEEPSEEK_TIMEOUT_SECONDS,
+    QA_CONFIG,
+)
+
+
+logger = logging.getLogger(__name__)
+
+
+class QaEngineConfigError(RuntimeError):
+    pass
+
+
+class QaEngineRequestError(RuntimeError):
+    pass
+
+
+# 兼容旧接口，避免已有调用方失效。
+DeepSeekConfigurationError = QaEngineConfigError
+DeepSeekRequestError = QaEngineRequestError
+
+
+def is_configured() -> bool:
+    return bool(DEEPSEEK_API_KEY.strip())
+
+
+def get_status() -> Dict[str, Any]:
+    return {
+        "configured": is_configured(),
+        "model": DEEPSEEK_MODEL,
+        "engine": "GIS交通路网教学问答引擎",
+        "message": (
+            "GIS交通路网教学知识图谱问答引擎已配置"
+            if is_configured()
+            else "GIS交通路网教学知识图谱问答引擎尚未配置API Key"
+        ),
+    }
+
+
+def _create_client() -> OpenAI:
+    return OpenAI(
+        api_key=DEEPSEEK_API_KEY.strip(),
+        base_url=DEEPSEEK_BASE_URL,
+        timeout=DEEPSEEK_TIMEOUT_SECONDS,
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 4 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+    )
+
+
+def teaching_qa(
+    question: str,
+    graph_context: Dict[str, Any],
+) -> Dict[str, Any]:
+    if not is_configured():
+        raise QaEngineConfigError(
+            "GIS交通路网教学知识图谱问答引擎尚未配置API Key。"
+        )
+
+    prompt_package = prompt_engine.build_prompt(
+        question,
+        graph_context,
+        max_references=QA_CONFIG["max_references"],
+    )
+    client = _create_client()
+
+    try:
+        response = client.chat.completions.create(
+            model=DEEPSEEK_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": prompt_package.system_prompt,
+                },
+                {
+                    "role": "user",
+                    "content": prompt_package.user_prompt,
+                },
+            ],
+            temperature=DEEPSEEK_TEMPERATURE,
+            max_tokens=DEEPSEEK_MAX_TOKENS,
+        )
+    except APITimeoutError as exc:
+        raise QaEngineRequestError(
+            "GIS交通路网教学知识图谱问答引擎请求超时。"
+        ) from exc
+    except APIConnectionError as exc:
+        raise QaEngineRequestError(
+            "GIS交通路网教学知识图谱问答引擎无法连接外部模型服务。"
+        ) from exc
+    except APIStatusError as exc:
+        logger.warning("External teaching QA status error: %s", exc)
+        raise QaEngineRequestError(
+            "GIS交通路网教学知识图谱问答引擎服务状态异常。"
+        ) from exc
+    except Exception as exc:
+        logger.exception("Unexpected teaching QA request error")
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 5 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        raise QaEngineRequestError(
+            "GIS交通路网教学知识图谱问答引擎调用失败。"
+        ) from exc
+
+    if not response.choices:
+        raise QaEngineRequestError("教学问答引擎未返回有效回答。")
+
+    content = response.choices[0].message.content
+    try:
+        validated_answer = prompt_engine.validate_answer(
+            content or "",
+            prompt_package,
+        )
+    except ValueError as exc:
+        raise QaEngineRequestError(str(exc)) from exc
+
+    references = prompt_engine.matched_references(
+        validated_answer,
+        prompt_package.context_nodes,
+    )
+    return {
+        "answer": validated_answer,
+        "scene": prompt_package.scene,
+        "references": references,
+    }
+
+
+def answer_question(question: str, graph_context: Dict[str, Any]) -> str:
+    """兼容旧调用方式，仅返回答案文本。"""
+    return str(teaching_qa(question, graph_context)["answer"])
+
+
+====================================================================================================
+FILE: backend/import_snapshot.py
+====================================================================================================
+# Copyright (c) 2026 ?????
+# GIS???????????? - ????
+# ?????????????????????
+
+# Copyright (c) 2026 版权所有人
+# GIS交通路网教学知识图谱平台 - 后端服务
+# 本文件为平台核心业务代码，受软件著作权保护
+
+import argparse
+import json
+import re
+import sys
+from collections import Counter
+from pathlib import Path
+from typing import Any, Dict, List, Set, Tuple
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 6 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+from neo4j import GraphDatabase
+
+from config import (
+    NEO4J_DATABASE,
+    NEO4J_PASSWORD,
+    NEO4J_URI,
+    NEO4J_USER,
+)
+
+
+PRIMARY_ID_KEYS = {
+    "Module": "module_id",
+    "KnowledgePoint": "kp_id",
+    "Tool": "tool_id",
+    "Media": "media_id",
+}
+
+
+def load_snapshot(path: Path) -> Dict[str, Any]:
+    snapshot = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(snapshot.get("nodes"), list):
+        raise ValueError("快照缺少 nodes 数组")
+    if not isinstance(snapshot.get("relationships"), list):
+        raise ValueError("快照缺少 relationships 数组")
+    return snapshot
+
+
+def node_business_id(node: Dict[str, Any]) -> str:
+    label = str(node.get("primaryLabel", ""))
+    key = PRIMARY_ID_KEYS.get(label)
+    properties = node.get("properties", {})
+    if key and properties.get(key) is not None:
+        return str(properties[key])
+    if node.get("businessId") is not None:
+        return str(node["businessId"])
+    return str(node.get("elementId", ""))
+
+
+def validate_snapshot(snapshot: Dict[str, Any]) -> None:
+    nodes = snapshot["nodes"]
+    relationships = snapshot["relationships"]
+    node_ids: Set[str] = set()
+    business_ids: Set[Tuple[str, str]] = set()
+
+    for node in nodes:
+        element_id = str(node.get("elementId", ""))
+        if not element_id or element_id in node_ids:
+            raise ValueError("节点 elementId 缺失或重复")
+        node_ids.add(element_id)
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 7 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+        label = str(node.get("primaryLabel", ""))
+        if label not in PRIMARY_ID_KEYS:
+            raise ValueError("不支持的节点标签: {0}".format(label))
+        business_id = node_business_id(node)
+        business_key = (label, business_id)
+        if not business_id or business_key in business_ids:
+            raise ValueError("节点业务主键缺失或重复")
+        business_ids.add(business_key)
+
+    relationship_signatures: Set[Tuple[str, str, str]] = set()
+    for relationship in relationships:
+        relationship_type = str(relationship.get("type", ""))
+        if not re.match(r"^[A-Z][A-Z0-9_]*$", relationship_type):
+            raise ValueError("非法关系类型: {0}".format(relationship_type))
+        source = str(relationship.get("sourceElementId", ""))
+        target = str(relationship.get("targetElementId", ""))
+        if source not in node_ids or target not in node_ids:
+            raise ValueError("关系端点无法匹配节点")
+        signature = (
+            str(relationship.get("sourceBusinessId", "")),
+            relationship_type,
+            str(relationship.get("targetBusinessId", "")),
+        )
+        if signature in relationship_signatures:
+            raise ValueError("关系签名重复: {0}".format(signature))
+        relationship_signatures.add(signature)
+
+
+def upsert_node(tx, node: Dict[str, Any]) -> None:
+    label = str(node["primaryLabel"])
+    properties = node.get("properties", {})
+    id_key = PRIMARY_ID_KEYS[label]
+    business_id = node_business_id(node)
+    tx.run(
+        (
+            "MERGE (node:{0} {{{1}: $business_id}}) "
+            "SET node = $properties"
+        ).format(label, id_key),
+        business_id=business_id,
+        properties=properties,
+        timeout=10.0,
+    )
+
+
+def upsert_relationship(tx, relationship: Dict[str, Any]) -> None:
+    source_label = str(relationship["sourceLabel"])
+    target_label = str(relationship["targetLabel"])
+    source_key = PRIMARY_ID_KEYS[source_label]
+    target_key = PRIMARY_ID_KEYS[target_label]
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 8 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+    relationship_type = str(relationship["type"])
+    tx.run(
+        (
+            "MATCH (source:{0} {{{1}: $source_id}}), "
+            "(target:{2} {{{3}: $target_id}}) "
+            "MERGE (source)-[relationship:{4}]->(target) "
+            "SET relationship = $properties"
+        ).format(
+            source_label,
+            source_key,
+            target_label,
+            target_key,
+            relationship_type,
+        ),
+        source_id=str(relationship["sourceBusinessId"]),
+        target_id=str(relationship["targetBusinessId"]),
+        properties=relationship.get("properties", {}),
+        timeout=10.0,
+    )
+
+
+def import_snapshot(snapshot: Dict[str, Any], apply_changes: bool) -> Dict[str, Any]:
+    validate_snapshot(snapshot)
+    summary = {
+        "nodeCount": len(snapshot["nodes"]),
+        "relationshipCount": len(snapshot["relationships"]),
+        "labels": dict(
+            Counter(
+                str(node["primaryLabel"])
+                for node in snapshot["nodes"]
+            )
+        ),
+        "relationshipTypes": dict(
+            Counter(
+                str(relationship["type"])
+                for relationship in snapshot["relationships"]
+            )
+        ),
+    }
+    if not apply_changes:
+        return summary
+
+    if not NEO4J_PASSWORD:
+        raise RuntimeError("NEO4J_PASSWORD 未配置")
+
+    driver = GraphDatabase.driver(
+        NEO4J_URI,
+        auth=(NEO4J_USER, NEO4J_PASSWORD),
+    )
+    try:
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 9 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        with driver.session(database=NEO4J_DATABASE) as session:
+            for node in snapshot["nodes"]:
+                session.execute_write(upsert_node, node)
+            for relationship in snapshot["relationships"]:
+                session.execute_write(upsert_relationship, relationship)
+    finally:
+        driver.close()
+    return summary
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="校验并导入GIS交通路网教学知识图谱快照"
+    )
+    parser.add_argument(
+        "--path",
+        default=str(
+            Path(__file__).resolve().parents[1]
+            / "data"
+            / "graph-snapshot.json"
+        ),
+    )
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="确认后将快照写入Neo4j",
+    )
+    args = parser.parse_args()
+
+    snapshot = load_snapshot(Path(args.path))
+    summary = import_snapshot(snapshot, apply_changes=args.apply)
+    mode = "已导入" if args.apply else "校验通过"
+    print("{0}: {1}".format(mode, json.dumps(summary, ensure_ascii=False)))
+
+
+if __name__ == "__main__":
+    main()
+
+
+====================================================================================================
+FILE: backend/learning_path_engine.py
+====================================================================================================
+# Copyright (c) 2026 ?????
+# GIS???????????? - ????
+# ?????????????????????
+
+# Copyright (c) 2026 版权所有人
+# GIS交通路网教学知识图谱平台 - 后端服务
+# 本文件为平台核心业务代码，受软件著作权保护
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 10 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+from collections import defaultdict, deque
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
+
+from neo4j import READ_ACCESS
+
+
+DIFFICULTY_ORDER = {
+    "入门": 1,
+    "基础": 1,
+    "简单": 2,
+    "中等": 3,
+    "进阶": 4,
+    "困难": 5,
+    "高级": 5,
+    "专家": 6,
+}
+
+DIFFICULTY_ALIASES = {
+    "beginner": "入门",
+    "easy": "基础",
+    "medium": "中等",
+    "intermediate": "进阶",
+    "hard": "困难",
+    "advanced": "高级",
+}
+
+
+def difficulty_rank(value: Any) -> int:
+    normalized = DIFFICULTY_ALIASES.get(
+        str(value or "").strip().lower(),
+        str(value or "").strip(),
+    )
+    return DIFFICULTY_ORDER.get(normalized, 3)
+
+
+class LearningPathEngine:
+    def __init__(
+        self,
+        nodes: Iterable[Dict[str, Any]],
+        relationships: Iterable[Dict[str, Any]],
+        max_depth: int = 8,
+    ) -> None:
+        self.max_depth = max(1, int(max_depth))
+        self.nodes: Dict[str, Dict[str, Any]] = {}
+        self.prerequisites: Dict[str, List[str]] = defaultdict(list)
+        self.successors: Dict[str, List[str]] = defaultdict(list)
+
+        for node in nodes:
+            node_id = self._node_id(node)
+            if node_id:
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 11 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+                self.nodes[node_id] = node
+
+        for relationship in relationships:
+            if relationship.get("type") != "PREREQUISITE_OF":
+                continue
+            source = str(relationship.get("source", ""))
+            target = str(relationship.get("target", ""))
+            if not source or not target:
+                continue
+            self.prerequisites[target].append(source)
+            self.successors[source].append(target)
+
+    @staticmethod
+    def _node_id(node: Dict[str, Any]) -> str:
+        if node.get("id") is not None:
+            return str(node["id"])
+        properties = node.get("properties", {})
+        return str(properties.get("kp_id", ""))
+
+    @staticmethod
+    def _properties(node: Dict[str, Any]) -> Dict[str, Any]:
+        properties = node.get("properties", node)
+        return properties if isinstance(properties, dict) else {}
+
+    def node(self, knowledge_point_id: str) -> Optional[Dict[str, Any]]:
+        return self.nodes.get(str(knowledge_point_id))
+
+    def prerequisite_chain(
+        self,
+        knowledge_point_id: str,
+        max_depth: Optional[int] = None,
+    ) -> List[Dict[str, Any]]:
+        root = str(knowledge_point_id)
+        depth_limit = min(
+            self.max_depth,
+            int(max_depth) if max_depth is not None else self.max_depth,
+        )
+        visited: Set[str] = set()
+        queue = deque((predecessor, 1) for predecessor in self.prerequisites[root])
+        collected: List[Tuple[int, str]] = []
+
+        while queue:
+            node_id, depth = queue.popleft()
+            if node_id in visited or depth > depth_limit:
+                continue
+            visited.add(node_id)
+            collected.append((depth, node_id))
+            for predecessor in self.prerequisites[node_id]:
+                queue.append((predecessor, depth + 1))
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 12 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        collected.sort(
+            key=lambda item: (
+                -item[0],
+                difficulty_rank(self._properties(self.nodes[item[1]]).get("difficulty"))
+                if item[1] in self.nodes
+                else 3,
+            )
+        )
+        return [
+            self._path_item(node_id, "prerequisite", depth)
+            for depth, node_id in collected
+        ]
+
+    def build_learning_path(
+        self,
+        target_knowledge_point_id: str,
+        include_successors: int = 2,
+    ) -> List[Dict[str, Any]]:
+        target_id = str(target_knowledge_point_id)
+        path = self.prerequisite_chain(target_id, self.max_depth)
+        if target_id in self.nodes:
+            path.append(self._path_item(target_id, "target", 0))
+
+        successors = sorted(
+            self.successors[target_id],
+            key=lambda node_id: (
+                difficulty_rank(
+                    self._properties(self.nodes[node_id]).get("difficulty")
+                )
+                if node_id in self.nodes
+                else 3,
+                self._properties(self.nodes[node_id]).get("sort_order", 9999)
+                if node_id in self.nodes
+                else 9999,
+            ),
+        )
+        for node_id in successors[: max(0, int(include_successors))]:
+            path.append(self._path_item(node_id, "successor", 1))
+        return path
+
+    def recommend(
+        self,
+        knowledge_point_id: str,
+    ) -> Dict[str, Any]:
+        target_id = str(knowledge_point_id)
+        prerequisite_items = self.prerequisite_chain(target_id)
+        successor_items = [
+            self._path_item(node_id, "successor", 1)
+            for node_id in self.successors[target_id]
+        ]
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 13 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        successor_items.sort(
+            key=lambda item: (
+                item["difficultyRank"],
+                item["sortOrder"],
+            )
+        )
+        return {
+            "knowledgePoint": self._path_item(target_id, "current", 0),
+            "prerequisites": prerequisite_items,
+            "successors": successor_items,
+            "recommendedPath": self.build_learning_path(target_id),
+        }
+
+    def filter_by_difficulty(
+        self,
+        difficulty: str,
+        module_id: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        expected_rank = difficulty_rank(difficulty)
+        result = []
+        for node_id, node in self.nodes.items():
+            properties = self._properties(node)
+            if module_id and str(properties.get("module_id", "")) != str(module_id):
+                continue
+            if difficulty_rank(properties.get("difficulty")) != expected_rank:
+                continue
+            result.append(self._path_item(node_id, "knowledge", 0))
+        result.sort(key=lambda item: (item["sortOrder"], item["name"]))
+        return result
+
+    def _path_item(
+        self,
+        node_id: str,
+        role: str,
+        depth: int,
+    ) -> Dict[str, Any]:
+        node = self.nodes.get(str(node_id), {})
+        properties = self._properties(node)
+        return {
+            "id": str(node_id),
+            "name": properties.get("name", "未命名知识点"),
+            "description": properties.get("description"),
+            "difficulty": properties.get("difficulty", "未标注"),
+            "difficultyRank": difficulty_rank(properties.get("difficulty")),
+            "importance": properties.get("importance"),
+            "moduleId": properties.get("module_id"),
+            "sortOrder": properties.get("sort_order", 9999),
+            "role": role,
+            "depth": int(depth),
+        }
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 14 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+
+def load_learning_graph(
+    driver,
+    database: str,
+    max_depth: int = 8,
+) -> LearningPathEngine:
+    with driver.session(
+        database=database,
+        default_access_mode=READ_ACCESS,
+    ) as session:
+        node_records = list(
+            session.run(
+                """
+                MATCH (knowledge:KnowledgePoint)
+                OPTIONAL MATCH (knowledge)-[:BELONGS_TO]->(module:Module)
+                RETURN knowledge, module.module_id AS module_id
+                """,
+                timeout=10.0,
+            )
+        )
+        relationship_records = list(
+            session.run(
+                """
+                MATCH (source:KnowledgePoint)-[relationship:PREREQUISITE_OF]->
+                      (target:KnowledgePoint)
+                RETURN source.kp_id AS source, target.kp_id AS target
+                """,
+                timeout=10.0,
+            )
+        )
+
+    nodes = []
+    for record in node_records:
+        knowledge = record["knowledge"]
+        properties = dict(knowledge)
+        if record["module_id"]:
+            properties["module_id"] = record["module_id"]
+        nodes.append(
+            {
+                "id": str(properties.get("kp_id", knowledge.element_id)),
+                "labels": list(knowledge.labels),
+                "properties": properties,
+            }
+        )
+
+    relationships = [
+        {
+            "type": "PREREQUISITE_OF",
+            "source": record["source"],
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 15 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+            "target": record["target"],
+        }
+        for record in relationship_records
+    ]
+    return LearningPathEngine(nodes, relationships, max_depth=max_depth)
+
+
+====================================================================================================
+FILE: backend/main.py
+====================================================================================================
+# Copyright (c) 2026 ?????
+# GIS???????????? - ????
+# ?????????????????????
+
+from contextlib import asynccontextmanager
+import re
+import threading
+import time
+from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
+
+from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from neo4j import GraphDatabase, READ_ACCESS
+from neo4j.graph import Node, Relationship
+from pydantic import BaseModel, Field
+from pathlib import Path
+
+import deepseek_service
+import learning_path_engine
+import topology_checker
+from config import (
+    CORS_ALLOW_ORIGINS,
+    KG_CONFIG,
+    NEO4J_DATABASE,
+    NEO4J_PASSWORD,
+    NEO4J_URI,
+    NEO4J_USER,
+    QA_CONFIG,
+)
+
+
+# GIS交通路网教学知识图谱自主关系体系：
+# BELONGS_TO 表示知识点归属模块；PREREQUISITE_OF 表示教学前置依赖；
+# RELATED_TO 表示同一教学主题下的关联知识；PART_OF 表示组成关系；
+# APPLIED_IN 表示知识应用于工程场景；IMPLEMENTED_IN 表示工具实现关系；
+# SUPPORTS 表示模块对后续模块的课程支撑；HAS_MEDIA 表示教学资源关联。
+GRAPH_RELATIONSHIP_DEFINITIONS = {
+    "BELONGS_TO": "知识点属于教学模块",
+    "PREREQUISITE_OF": "前置知识点指向后续知识点",
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 16 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+    "RELATED_TO": "相关教学知识点",
+    "PART_OF": "知识点组成关系",
+    "APPLIED_IN": "知识应用于交通工程场景",
+    "IMPLEMENTED_IN": "知识点通过工具或平台实现",
+    "SUPPORTS": "模块对后续学习内容形成支撑",
+    "HAS_MEDIA": "知识点关联视频或课件资源",
+}
+GRAPH_RELATIONSHIP_TYPES = list(GRAPH_RELATIONSHIP_DEFINITIONS)
+MESSAGE_PREFIX = "GIS交通路网教学知识图谱"
+
+MEDIA_DIR = Path(__file__).resolve().parent / "media"
+MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+
+CHAT_RATE_LOCK = threading.Lock()
+CHAT_REQUEST_TIMES: Dict[str, List[float]] = {}
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> Iterator[None]:
+    app.state.driver = GraphDatabase.driver(
+        NEO4J_URI,
+        auth=(NEO4J_USER, NEO4J_PASSWORD),
+    )
+    try:
+        yield
+    finally:
+        app.state.driver.close()
+
+
+app = FastAPI(
+    title="GIS交通路网教学知识图谱平台",
+    version="1.0",
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ALLOW_ORIGINS,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
+
+app.mount("/media", StaticFiles(directory=str(MEDIA_DIR)), name="media")
+
+
+class TeachingQaRequest(BaseModel):
+    question: str = Field(min_length=1, max_length=500)
+    module_id: Optional[str] = Field(default=None, max_length=50)
+    knowledge_point_id: Optional[str] = Field(default=None, max_length=50)
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 17 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+
+class TopologyCheckRequest(BaseModel):
+    coordinate_tolerance: float = Field(
+        default=KG_CONFIG["coordinate_tolerance"],
+        ge=0,
+        le=1000,
+    )
+
+
+# 保持旧名称兼容，避免已有测试和调用方中断。
+ChatRequest = TeachingQaRequest
+
+
+def _get_driver(request: Request):
+    return request.app.state.driver
+
+
+def _business_id(node: Node) -> str:
+    for key in ("module_id", "kp_id", "tool_id", "media_id"):
+        value = node.get(key)
+        if value is not None:
+            return str(value)
+    return node.element_id
+
+
+def _property_value(value: Any) -> Any:
+    if value is None or isinstance(value, (bool, int, float, str)):
+        return value
+    if isinstance(value, (list, tuple)):
+        return [_property_value(item) for item in value]
+    return str(value)
+
+
+def _normalize_difficulty(value: Any) -> Optional[int]:
+    return learning_path_engine.difficulty_rank(value) if value is not None else None
+
+
+def _normalize_road_level(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    level_map = {
+        "0": "未分级",
+        "1": "高速公路",
+        "2": "城市快速路",
+        "3": "城市主干路",
+        "4": "城市次干路",
+        "5": "城市支路",
+        "motorway": "高速公路",
+        "trunk": "城市快速路",
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 18 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        "primary": "城市主干路",
+        "secondary": "城市次干路",
+        "local": "城市支路",
+    }
+    normalized = str(value).strip()
+    return level_map.get(normalized.lower(), normalized)
+
+
+def _validate_coordinate(properties: Dict[str, Any]) -> Optional[bool]:
+    has_x = properties.get("x") is not None or properties.get("lon") is not None
+    has_y = properties.get("y") is not None or properties.get("lat") is not None
+    if not has_x and not has_y:
+        return None
+    try:
+        x_value = properties.get("x", properties.get("lon"))
+        y_value = properties.get("y", properties.get("lat"))
+        x = float(x_value)
+        y = float(y_value)
+        return -180 <= x <= 180 and -90 <= y <= 90
+    except (TypeError, ValueError):
+        return False
+
+
+def _serialize_node(node: Node) -> Dict[str, Any]:
+    labels = sorted(node.labels)
+    properties = {
+        key: _property_value(value)
+        for key, value in dict(node).items()
+    }
+    if "KnowledgePoint" in labels:
+        properties["difficultyLevel"] = _normalize_difficulty(
+            properties.get("difficulty")
+        )
+        coordinate_valid = _validate_coordinate(properties)
+        if coordinate_valid is not None:
+            properties["coordinateValid"] = coordinate_valid
+    road_level = properties.get("road_level", properties.get("road_class"))
+    if road_level is not None:
+        properties["roadLevelLabel"] = _normalize_road_level(road_level)
+    return {
+        "id": _business_id(node),
+        "elementId": node.element_id,
+        "labels": labels,
+        "properties": properties,
+    }
+
+
+def _serialize_relationship(relationship: Relationship) -> Dict[str, Any]:
+    return {
+        "id": relationship.element_id,
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 19 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        "type": relationship.type,
+        "source": _business_id(relationship.start_node),
+        "target": _business_id(relationship.end_node),
+        "properties": {
+            key: _property_value(value)
+            for key, value in dict(relationship).items()
+        },
+    }
+
+
+class TrafficGraphBuilder:
+    def __init__(self) -> None:
+        self.nodes: List[Dict[str, Any]] = []
+        self.links: List[Dict[str, Any]] = []
+        self._node_ids: Set[str] = set()
+        self._link_ids: Set[str] = set()
+
+    def add_node(self, node: Optional[Node]) -> None:
+        if node is None:
+            return
+        serialized = _serialize_node(node)
+        if serialized["id"] in self._node_ids:
+            return
+        self._node_ids.add(serialized["id"])
+        self.nodes.append(serialized)
+
+    def add_relationship(self, relationship: Optional[Relationship]) -> None:
+        if relationship is None:
+            return
+        serialized = _serialize_relationship(relationship)
+        if serialized["id"] in self._link_ids:
+            return
+        self._link_ids.add(serialized["id"])
+        self.links.append(serialized)
+
+    def as_dict(self) -> Dict[str, Any]:
+        return {
+            "nodes": self.nodes,
+            "links": self.links,
+        }
+
+
+# 兼容旧名称，便于已有调用方逐步迁移。
+GraphAccumulator = TrafficGraphBuilder
+
+
+def _read_query(
+    driver,
+    query: str,
+    parameters: Optional[Dict[str, Any]] = None,
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 20 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+):
+    resolved_parameters = parameters or {}
+    with driver.session(
+        database=NEO4J_DATABASE,
+        default_access_mode=READ_ACCESS,
+    ) as session:
+        return list(session.run(query, resolved_parameters, timeout=8.0))
+
+
+@app.get("/api/health")
+def health(request: Request) -> Dict[str, Any]:
+    try:
+        _get_driver(request).verify_connectivity()
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="{0}Neo4j连接失败: {1}".format(
+                MESSAGE_PREFIX,
+                str(exc),
+            ),
+        ) from exc
+
+    return {
+        "status": "ok",
+        "message": "{0}后端服务正常".format(MESSAGE_PREFIX),
+        "database": "connected",
+    }
+
+
+@app.get("/api/graph/modules")
+def get_module_overview(request: Request) -> Dict[str, Any]:
+    records = _read_query(
+        _get_driver(request),
+        """
+        MATCH (module:Module)
+        OPTIONAL MATCH (module)-[relationship]->(related:Module)
+        RETURN module, relationship, related
+        ORDER BY
+          coalesce(module.sort_order, module.order, 9999),
+          module.module_id
+        """,
+    )
+
+    graph = TrafficGraphBuilder()
+    for record in records:
+        graph.add_node(record["module"])
+        graph.add_node(record["related"])
+        graph.add_relationship(record["relationship"])
+
+    data = graph.as_dict()
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 21 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+    data["summary"] = {
+        "moduleCount": len(
+            [
+                node
+                for node in data["nodes"]
+                if "Module" in node["labels"]
+            ]
+        ),
+        "knowledgePointCount": None,
+        "relationCount": len(data["links"]),
+    }
+    return {
+        "code": 200,
+        "message": "{0}模块图谱加载成功".format(MESSAGE_PREFIX),
+        "data": data,
+    }
+
+
+@app.get("/api/directory")
+def get_directory(request: Request) -> Dict[str, Any]:
+    records = _read_query(
+        _get_driver(request),
+        """
+        MATCH (module:Module)
+        OPTIONAL MATCH (knowledge:KnowledgePoint)-[:BELONGS_TO]->(module)
+        RETURN module, knowledge
+        ORDER BY
+          coalesce(module.sort_order, module.order, 9999),
+          coalesce(knowledge.sort_order, 9999),
+          knowledge.kp_id
+        """,
+    )
+
+    modules_by_id: Dict[str, Dict[str, Any]] = {}
+    module_order: List[str] = []
+    for record in records:
+        module = record["module"]
+        module_id = _business_id(module)
+        if module_id not in modules_by_id:
+            module_data = _serialize_node(module)
+            modules_by_id[module_id] = {
+                "id": module_id,
+                "name": module_data["properties"].get("name", "未命名模块"),
+                "properties": module_data["properties"],
+                "knowledgePoints": [],
+            }
+            module_order.append(module_id)
+
+        knowledge = record["knowledge"]
+        if knowledge is not None:
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 22 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+            knowledge_data = _serialize_node(knowledge)
+            modules_by_id[module_id]["knowledgePoints"].append(
+                {
+                    "id": knowledge_data["id"],
+                    "name": knowledge_data["properties"].get(
+                        "name",
+                        "未命名知识点",
+                    ),
+                    "properties": knowledge_data["properties"],
+                }
+            )
+
+    modules = [modules_by_id[module_id] for module_id in module_order]
+    return {
+        "code": 200,
+        "message": "{0}目录加载成功".format(MESSAGE_PREFIX),
+        "data": {"modules": modules},
+    }
+
+
+@app.get("/api/modules/{module_id}/graph")
+def get_module_graph(
+    module_id: str,
+    request: Request,
+    internal_relation_limit: int = Query(default=800, ge=1, le=2000),
+) -> Dict[str, Any]:
+    driver = _get_driver(request)
+    module_records = _read_query(
+        driver,
+        """
+        MATCH (module:Module {module_id: $module_id})
+        OPTIONAL MATCH (knowledge:KnowledgePoint)-[belongs:BELONGS_TO]->(module)
+        RETURN module, knowledge, belongs
+        ORDER BY coalesce(knowledge.sort_order, 9999), knowledge.kp_id
+        """,
+        {"module_id": module_id},
+    )
+
+    if not module_records:
+        raise HTTPException(
+            status_code=404,
+            detail="{0}未找到指定模块".format(MESSAGE_PREFIX),
+        )
+
+    graph = TrafficGraphBuilder()
+    knowledge_ids: List[str] = []
+    for record in module_records:
+        graph.add_node(record["module"])
+        if record["knowledge"] is not None:
+            graph.add_node(record["knowledge"])
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 23 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+            knowledge_ids.append(_business_id(record["knowledge"]))
+        graph.add_relationship(record["belongs"])
+
+    if knowledge_ids:
+        relation_records = _read_query(
+            driver,
+            """
+            MATCH (source:KnowledgePoint)-[relationship]->(target:KnowledgePoint)
+            WHERE source.kp_id IN $knowledge_ids
+              AND target.kp_id IN $knowledge_ids
+              AND type(relationship) IN $relationship_types
+            RETURN source, relationship, target
+            LIMIT $limit
+            """,
+            {
+                "knowledge_ids": knowledge_ids,
+                "relationship_types": GRAPH_RELATIONSHIP_TYPES,
+                "limit": internal_relation_limit,
+            },
+        )
+        for record in relation_records:
+            graph.add_node(record["source"])
+            graph.add_node(record["target"])
+            graph.add_relationship(record["relationship"])
+
+    data = graph.as_dict()
+    data["moduleId"] = module_id
+    data["summary"] = {
+        "nodeCount": len(data["nodes"]),
+        "knowledgePointCount": len(knowledge_ids),
+        "relationCount": len(data["links"]),
+    }
+    return {
+        "code": 200,
+        "message": "{0}模块知识点图谱加载成功".format(MESSAGE_PREFIX),
+        "data": data,
+    }
+
+
+@app.get("/api/knowledge-points/{knowledge_point_id}")
+def get_knowledge_point(
+    knowledge_point_id: str,
+    request: Request,
+) -> Dict[str, Any]:
+    driver = _get_driver(request)
+    detail_records = _read_query(
+        driver,
+        """
+        MATCH (knowledge:KnowledgePoint {kp_id: $knowledge_point_id})
+        OPTIONAL MATCH (knowledge)-[:BELONGS_TO]->(module:Module)
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 24 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        RETURN knowledge, module
+        """,
+        {"knowledge_point_id": knowledge_point_id},
+    )
+
+    if not detail_records:
+        raise HTTPException(
+            status_code=404,
+            detail="{0}未找到指定知识点".format(MESSAGE_PREFIX),
+        )
+
+    knowledge = detail_records[0]["knowledge"]
+    module = detail_records[0]["module"]
+
+    relation_records = _read_query(
+        driver,
+        """
+        MATCH (knowledge:KnowledgePoint {kp_id: $knowledge_point_id})
+        MATCH (knowledge)-[relationship]-(related)
+        WHERE related:KnowledgePoint
+           OR related:Module
+           OR related:Tool
+        RETURN relationship, related
+        LIMIT 200
+        """,
+        {"knowledge_point_id": knowledge_point_id},
+    )
+
+    media_records = _read_query(
+        driver,
+        """
+        MATCH (knowledge:KnowledgePoint {kp_id: $knowledge_point_id})
+        OPTIONAL MATCH (knowledge)-[media_relationship]->(media)
+        WHERE type(media_relationship) = 'HAS_MEDIA'
+        RETURN media
+        """,
+        {"knowledge_point_id": knowledge_point_id},
+    )
+
+    related_items = []
+    seen_relations: Set[Tuple[str, str]] = set()
+    for record in relation_records:
+        relationship = record["relationship"]
+        related = record["related"]
+        key = (relationship.element_id, _business_id(related))
+        if key in seen_relations:
+            continue
+        seen_relations.add(key)
+        related_items.append(
+            {
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 25 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+                "type": relationship.type,
+                "direction": (
+                    "outgoing"
+                    if _business_id(relationship.start_node)
+                    == knowledge_point_id
+                    else "incoming"
+                ),
+                "node": _serialize_node(related),
+            }
+        )
+
+    materials = {
+        "videos": [],
+        "slides": [],
+    }
+    media_records = sorted(
+        media_records,
+        key=lambda record: (
+            record["media"].get("order", 9999)
+            if record["media"] is not None
+            else 9999,
+            record["media"].get("media_id", "")
+            if record["media"] is not None
+            else "",
+        ),
+    )
+    for record in media_records:
+        media = record["media"]
+        if media is None:
+            continue
+        serialized = _serialize_node(media)
+        properties = serialized["properties"]
+        item = {
+            "id": serialized["id"],
+            "title": properties.get("title", "未命名资源"),
+            "type": properties.get("type", "slides"),
+            "format": properties.get("format", ""),
+            "url": properties.get("url", ""),
+            "coverUrl": properties.get("cover_url"),
+            "order": properties.get("order", 9999),
+        }
+        if item["type"] == "video":
+            materials["videos"].append(item)
+        else:
+            materials["slides"].append(item)
+
+    return {
+        "code": 200,
+        "message": "{0}知识点详情加载成功".format(MESSAGE_PREFIX),
+        "data": {
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 26 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+            "node": _serialize_node(knowledge),
+            "module": _serialize_node(module) if module else None,
+            "relations": related_items,
+            "materials": materials,
+        },
+    }
+
+
+@app.get("/api/search")
+def search_nodes(
+    request: Request,
+    keyword: str = Query(min_length=1, max_length=100),
+    limit: int = Query(default=20, ge=1, le=50),
+) -> Dict[str, Any]:
+    records = _read_query(
+        _get_driver(request),
+        """
+        MATCH (node)
+        WHERE (node:Module OR node:KnowledgePoint)
+          AND (
+            toLower(coalesce(node.name, '')) CONTAINS toLower($keyword)
+            OR toLower(coalesce(node.description, '')) CONTAINS toLower($keyword)
+          )
+        RETURN node
+        ORDER BY
+          CASE WHEN node:Module THEN 0 ELSE 1 END,
+          coalesce(node.sort_order, node.order, 9999),
+          node.name
+        LIMIT $limit
+        """,
+        {"keyword": keyword, "limit": limit},
+    )
+
+    results = []
+    for record in records:
+        node = record["node"]
+        serialized = _serialize_node(node)
+        results.append(
+            {
+                "id": serialized["id"],
+                "name": serialized["properties"].get("name", "未命名"),
+                "type": "Module" if "Module" in node.labels else "KnowledgePoint",
+                "moduleId": serialized["properties"].get("module_id"),
+                "description": serialized["properties"].get("description"),
+            }
+        )
+
+    return {
+        "code": 200,
+        "message": "{0}搜索完成".format(MESSAGE_PREFIX),
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 27 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        "data": {"results": results},
+    }
+
+
+def _context_node(node: Node, module_id: Optional[str] = None) -> Dict[str, Any]:
+    serialized = _serialize_node(node)
+    properties = serialized["properties"]
+    if "Module" in node.labels:
+        node_type = "Module"
+    elif "KnowledgePoint" in node.labels:
+        node_type = "KnowledgePoint"
+    else:
+        node_type = "Tool"
+    return {
+        "id": serialized["id"],
+        "name": properties.get("name", "未命名"),
+        "type": node_type,
+        "description": properties.get("description"),
+        "moduleId": module_id or properties.get("module_id"),
+        "difficultyRank": properties.get("difficultyLevel", 3),
+    }
+
+
+GIS_TRAFFIC_DOMAIN_TERMS = [
+    "交通路网",
+    "路网",
+    "高速公路",
+    "城市快速路",
+    "主干路",
+    "次干路",
+    "支路",
+    "拓扑",
+    "伪节点",
+    "断头路",
+    "高架",
+    "地下",
+    "轨迹",
+    "浮动车",
+    "GPS",
+    "线性参考",
+    "动态分段",
+    "空间分析",
+    "最短路径",
+    "可达性",
+    "道路匹配",
+    "地理信息系统",
+]
+
+DOMAIN_SYNONYMS = {
+    "高速": "高速公路",
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 28 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+    "快速路": "城市快速路",
+    "GIS": "地理信息系统",
+    "导航": "道路匹配",
+    "路径规划": "最短路径",
+    "轨迹数据": "轨迹",
+}
+
+
+def _extract_search_terms(question: str) -> List[str]:
+    normalized = str(question or "").lower()
+    stop_phrases = [
+        "请介绍",
+        "什么是",
+        "有哪些",
+        "是什么",
+        "怎么",
+        "如何",
+        "推荐",
+        "一条",
+        "哪些",
+        "以及",
+        "关于",
+        "学习路径",
+        "请",
+        "？",
+        "?",
+        "。",
+        "！",
+        "!",
+    ]
+    for phrase in stop_phrases:
+        normalized = normalized.replace(phrase.lower(), " ")
+
+    weighted_terms: Dict[str, Tuple[int, int]] = {}
+    for domain_term in GIS_TRAFFIC_DOMAIN_TERMS:
+        if domain_term.lower() in normalized:
+            weighted_terms[domain_term] = (3, len(domain_term))
+
+    for synonym, canonical in DOMAIN_SYNONYMS.items():
+        if synonym.lower() in normalized:
+            weighted_terms[canonical] = (2, len(canonical))
+
+    parts = [
+        part.strip()
+        for part in re.split(r"[\s,，、;；:：()（）]+", normalized)
+        if len(part.strip()) >= 2
+    ]
+    for part in parts:
+        if not any(part in term or term in part for term in weighted_terms):
+            weighted_terms[part] = (1, len(part))
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 29 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+    ordered = sorted(
+        weighted_terms.items(),
+        key=lambda item: (
+            -item[1][0],
+            -item[1][1],
+            item[0],
+        ),
+    )
+    return [term for term, _ in ordered[:3]]
+
+
+def _check_chat_rate_limit(request: Request) -> None:
+    client_ip = request.headers.get(
+        "x-real-ip",
+        request.client.host if request.client else "unknown",
+    )
+    if "*" in QA_CONFIG["whitelist"] or client_ip in QA_CONFIG["whitelist"]:
+        return
+
+    now = time.time()
+    window_start = now - 60
+
+    with CHAT_RATE_LOCK:
+        request_times = [
+            timestamp
+            for timestamp in CHAT_REQUEST_TIMES.get(client_ip, [])
+            if timestamp >= window_start
+        ]
+        if len(request_times) >= QA_CONFIG["rate_limit_per_minute"]:
+            raise HTTPException(
+                status_code=429,
+                detail=(
+                    "{0}教学问答请求过于频繁，请稍后再试。".format(
+                        MESSAGE_PREFIX
+                    )
+                ),
+            )
+        request_times.append(now)
+        CHAT_REQUEST_TIMES[client_ip] = request_times
+
+
+def _build_chat_context(
+    driver,
+    query: TeachingQaRequest,
+) -> Dict[str, Any]:
+    context: Dict[str, Any] = {
+        "modules": [],
+        "selectedModule": None,
+        "selectedKnowledgePoint": None,
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 30 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        "relatedKnowledgePoints": [],
+        "searchMatches": [],
+        "prerequisiteChain": [],
+        "learningPath": [],
+    }
+
+    with driver.session(
+        database=NEO4J_DATABASE,
+        default_access_mode=READ_ACCESS,
+    ) as session:
+        module_records = list(
+            session.run(
+                """
+                MATCH (module:Module)
+                RETURN module
+                ORDER BY
+                  coalesce(module.sort_order, module.order, 9999),
+                  module.module_id
+                """,
+                timeout=8.0,
+            )
+        )
+        context["modules"] = [
+            _context_node(record["module"])
+            for record in module_records
+        ]
+
+        if query.module_id:
+            module_record = session.run(
+                """
+                MATCH (module:Module {module_id: $module_id})
+                RETURN module
+                """,
+                {"module_id": query.module_id},
+                timeout=8.0,
+            ).single()
+            if module_record:
+                context["selectedModule"] = _context_node(
+                    module_record["module"]
+                )
+
+        if query.knowledge_point_id:
+            knowledge_record = session.run(
+                """
+                MATCH (knowledge:KnowledgePoint {kp_id: $kp_id})
+                OPTIONAL MATCH (knowledge)-[:BELONGS_TO]->(module:Module)
+                RETURN knowledge, module
+                """,
+                {"kp_id": query.knowledge_point_id},
+                timeout=8.0,
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 31 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+            ).single()
+            if knowledge_record:
+                module = knowledge_record["module"]
+                module_id = _business_id(module) if module else None
+                context["selectedKnowledgePoint"] = _context_node(
+                    knowledge_record["knowledge"],
+                    module_id,
+                )
+                if module and not context["selectedModule"]:
+                    context["selectedModule"] = _context_node(module)
+
+                relation_records = list(
+                    session.run(
+                        """
+                        MATCH (knowledge:KnowledgePoint {kp_id: $kp_id})
+                        MATCH (knowledge)-[relationship]-(related)
+                        WHERE related:KnowledgePoint
+                           OR related:Module
+                           OR related:Tool
+                        RETURN relationship, related
+                        LIMIT 24
+                        """,
+                        {"kp_id": query.knowledge_point_id},
+                        timeout=8.0,
+                    )
+                )
+                context["relatedKnowledgePoints"] = [
+                    {
+                        "relationship": record["relationship"].type,
+                        **_context_node(record["related"]),
+                    }
+                    for record in relation_records
+                ]
+                context["relatedKnowledgePoints"].sort(
+                    key=lambda item: (
+                        item.get("properties", {}).get(
+                            "difficultyLevel",
+                            item.get("difficultyRank", 3),
+                        ),
+                        item.get("name", ""),
+                    )
+                )
+
+                learning_engine = learning_path_engine.load_learning_graph(
+                    driver,
+                    NEO4J_DATABASE,
+                    KG_CONFIG["max_learning_path_length"],
+                )
+                context["prerequisiteChain"] = (
+                    learning_engine.prerequisite_chain(
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 32 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+                        query.knowledge_point_id,
+                        KG_CONFIG["max_learning_path_length"],
+                    )
+                )
+                context["learningPath"] = (
+                    learning_engine.build_learning_path(
+                        query.knowledge_point_id
+                    )
+                )
+
+        search_terms = _extract_search_terms(query.question)
+        if search_terms:
+            search_records = list(
+                session.run(
+                    """
+                    MATCH (node)
+                    WHERE (node:Module OR node:KnowledgePoint)
+                      AND any(
+                        term IN $terms
+                        WHERE toLower(coalesce(node.name, ''))
+                                CONTAINS toLower(term)
+                           OR toLower(coalesce(node.description, ''))
+                                CONTAINS toLower(term)
+                      )
+                    RETURN node
+                    LIMIT 18
+                    """,
+                    {"terms": search_terms},
+                    timeout=8.0,
+                )
+            )
+            context["searchMatches"] = [
+                _context_node(record["node"])
+                for record in search_records
+            ]
+
+    return context
+
+
+def _prerequisite_chain_query(
+    driver,
+    knowledge_point_id: str,
+    max_depth: int,
+) -> List[Dict[str, Any]]:
+    engine = learning_path_engine.load_learning_graph(
+        driver,
+        NEO4J_DATABASE,
+        max_depth,
+    )
+    return engine.prerequisite_chain(knowledge_point_id, max_depth)
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 33 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+
+def _module_difficulty_query(
+    driver,
+    module_id: str,
+    difficulty: str,
+) -> List[Dict[str, Any]]:
+    records = _read_query(
+        driver,
+        """
+        MATCH (knowledge:KnowledgePoint)-[:BELONGS_TO]->
+              (module:Module {module_id: $module_id})
+        WHERE knowledge.difficulty = $difficulty
+        RETURN knowledge
+        ORDER BY
+          coalesce(knowledge.sort_order, 9999),
+          knowledge.kp_id
+        """,
+        {
+            "module_id": module_id,
+            "difficulty": difficulty,
+        },
+    )
+    return [
+        _context_node(record["knowledge"], module_id)
+        for record in records
+    ]
+
+
+@app.get("/api/knowledge-points/{knowledge_point_id}/learning-path")
+def get_learning_path(
+    knowledge_point_id: str,
+    request: Request,
+    max_depth: int = Query(default=8, ge=1, le=20),
+) -> Dict[str, Any]:
+    path = _prerequisite_chain_query(
+        _get_driver(request),
+        knowledge_point_id,
+        max_depth,
+    )
+    return {
+        "code": 200,
+        "message": "{0}知识点前置学习链加载成功".format(MESSAGE_PREFIX),
+        "data": {
+            "knowledgePointId": knowledge_point_id,
+            "path": path,
+        },
+    }
+
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 34 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+@app.get("/api/modules/{module_id}/knowledge-points")
+def get_module_knowledge_points(
+    module_id: str,
+    request: Request,
+    difficulty: str = Query(min_length=1, max_length=20),
+) -> Dict[str, Any]:
+    items = _module_difficulty_query(
+        _get_driver(request),
+        module_id,
+        difficulty,
+    )
+    return {
+        "code": 200,
+        "message": "{0}模块难度知识点筛选成功".format(MESSAGE_PREFIX),
+        "data": {
+            "moduleId": module_id,
+            "difficulty": difficulty,
+            "items": items,
+        },
+    }
+
+
+@app.post("/api/topology/check")
+def run_topology_check(
+    request: Request,
+    payload: Optional[TopologyCheckRequest] = None,
+) -> Dict[str, Any]:
+    if not KG_CONFIG["enable_topology_check"]:
+        raise HTTPException(
+            status_code=404,
+            detail="{0}拓扑校验功能未启用。".format(MESSAGE_PREFIX),
+        )
+
+    records = _read_query(
+        _get_driver(request),
+        """
+        MATCH (node)
+        OPTIONAL MATCH (node)-[relationship]->(related)
+        RETURN node, relationship, related
+        LIMIT 2000
+        """,
+    )
+    graph = TrafficGraphBuilder()
+    for record in records:
+        graph.add_node(record["node"])
+        graph.add_node(record["related"])
+        graph.add_relationship(record["relationship"])
+    result = topology_checker.check_topology(
+        graph.nodes,
+        graph.links,
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 35 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        (
+            payload.coordinate_tolerance
+            if payload is not None
+            else KG_CONFIG["coordinate_tolerance"]
+        ),
+    )
+    return {
+        "code": 200,
+        "message": "{0}拓扑完整性校验完成".format(MESSAGE_PREFIX),
+        "data": result,
+    }
+
+
+@app.get("/api/chat/status")
+def chat_status() -> Dict[str, Any]:
+    return {
+        "code": 200,
+        "message": "{0}教学问答状态读取成功".format(MESSAGE_PREFIX),
+        "data": deepseek_service.get_status(),
+    }
+
+
+@app.post("/api/chat")
+def chat(
+    query: TeachingQaRequest,
+    request: Request,
+) -> Dict[str, Any]:
+    status = deepseek_service.get_status()
+    if not status["configured"]:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "{0}教学问答引擎尚未配置，请检查 backend/.env。".format(
+                    MESSAGE_PREFIX
+                )
+            ),
+        )
+
+    _check_chat_rate_limit(request)
+    graph_context = _build_chat_context(_get_driver(request), query)
+
+    try:
+        qa_result = deepseek_service.teaching_qa(
+            query.question,
+            graph_context,
+        )
+    except deepseek_service.QaEngineConfigError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except deepseek_service.QaEngineRequestError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 36 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+    return {
+        "code": 200,
+        "message": "{0}教学问答成功".format(MESSAGE_PREFIX),
+        "answer": qa_result["answer"],
+        "scene": qa_result.get("scene"),
+        "references": qa_result.get("references", [])[
+            : QA_CONFIG["max_references"]
+        ],
+        "model": status["model"],
+    }
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=18081,
+        reload=True,
+    )
+
+
+====================================================================================================
+FILE: backend/prompt_engine.py
+====================================================================================================
+# Copyright (c) 2026 ?????
+# GIS???????????? - ????
+# ?????????????????????
+
+# Copyright (c) 2026 版权所有人
+# GIS交通路网教学知识图谱平台 - 后端服务
+# 本文件为平台核心业务代码，受软件著作权保护
+
+import json
+from dataclasses import dataclass
+from typing import Any, Dict, Iterable, List, Tuple
+
+
+SCENE_KEYWORDS = {
+    "learning_path": {
+        "学习",
+        "路径",
+        "先学",
+        "顺序",
+        "前置",
+        "入门到",
+    },
+    "topology_issue": {
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 37 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        "拓扑",
+        "断头",
+        "伪节点",
+        "高程",
+        "高架",
+        "地下",
+        "衔接",
+        "连通",
+    },
+    "application_scenario": {
+        "应用",
+        "场景",
+        "案例",
+        "工程",
+        "实际",
+        "实践",
+    },
+}
+
+SCENE_RULES = {
+    "concept_explanation": (
+        "你正在解释GIS交通路网教学知识图谱中的概念。"
+        "先给出明确定义，再说明关键构成、适用条件和与相关知识点的关系。"
+    ),
+    "learning_path": (
+        "你正在生成学习路径。必须按照前置知识、基础知识、进阶知识的顺序组织，"
+        "不得跳过图谱中不存在的前置知识点。"
+    ),
+    "topology_issue": (
+        "你正在分析交通路网拓扑问题。区分伪节点、断头路、跨层错误连接和"
+        "线段衔接偏差，并给出可执行的检查或清理建议。"
+    ),
+    "application_scenario": (
+        "你正在讲解工程应用场景。说明该知识点在道路建模、导航、交通分析或"
+        "GIS平台中的实际用途，不得虚构不存在的项目案例。"
+    ),
+}
+
+
+@dataclass
+class PromptPackage:
+    scene: str
+    system_prompt: str
+    user_prompt: str
+    context_nodes: List[Dict[str, Any]]
+
+
+def classify_scene(question: str) -> str:
+    normalized = str(question or "").strip()
+    scores = {
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 38 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        scene: sum(1 for keyword in keywords if keyword in normalized)
+        for scene, keywords in SCENE_KEYWORDS.items()
+    }
+    best_scene = max(scores, key=scores.get)
+    return best_scene if scores[best_scene] > 0 else "concept_explanation"
+
+
+def _context_weight(item: Dict[str, Any], selected_id: str) -> Tuple[int, int, int]:
+    item_id = str(item.get("id", ""))
+    role = str(item.get("role", ""))
+    return (
+        0 if item_id == selected_id and selected_id else 1,
+        0 if role in {"current", "target", "prerequisite"} else 1,
+        int(item.get("depth", 99) or 99),
+    )
+
+
+def assemble_context(
+    graph_context: Dict[str, Any],
+    max_references: int = 6,
+) -> List[Dict[str, Any]]:
+    selected = graph_context.get("selectedKnowledgePoint") or {}
+    selected_id = str(selected.get("id", ""))
+    candidates: List[Dict[str, Any]] = []
+
+    if selected:
+        candidates.append({**selected, "role": "current", "depth": 0})
+
+    for item in graph_context.get("prerequisiteChain", []):
+        candidates.append({**item, "role": "prerequisite"})
+
+    for item in graph_context.get("relatedKnowledgePoints", []):
+        candidates.append({**item, "role": "related"})
+
+    for item in graph_context.get("searchMatches", []):
+        candidates.append({**item, "role": "search"})
+
+    selected_module = graph_context.get("selectedModule")
+    if selected_module:
+        candidates.append({**selected_module, "role": "module"})
+
+    deduplicated = {}
+    for item in candidates:
+        item_id = str(item.get("id", ""))
+        if not item_id:
+            continue
+        current = deduplicated.get(item_id)
+        if current is None or _context_weight(item, selected_id) < _context_weight(
+            current,
+            selected_id,
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 39 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        ):
+            deduplicated[item_id] = item
+
+    ordered = sorted(
+        deduplicated.values(),
+        key=lambda item: _context_weight(item, selected_id),
+    )
+    return ordered[: max(1, int(max_references))]
+
+
+def build_prompt(
+    question: str,
+    graph_context: Dict[str, Any],
+    max_references: int = 6,
+) -> PromptPackage:
+    scene = classify_scene(question)
+    context_nodes = assemble_context(graph_context, max_references)
+    context_json = json.dumps(
+        {
+            "scene": scene,
+            "knowledgeContext": context_nodes,
+            "moduleContext": graph_context.get("selectedModule"),
+            "availableModules": graph_context.get("modules", []),
+            "prerequisiteChain": graph_context.get("prerequisiteChain", []),
+        },
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+
+    system_prompt = (
+        "你是GIS交通路网教学知识图谱平台的自主教学问答引擎。"
+        "只能依据给定的教学知识图谱上下文回答，不得编造不存在的知识点、关系、"
+        "项目案例或数据。回答必须限定在GIS、交通路网、空间分析和相关教学范围。"
+        "回答中优先引用知识点名称，并在末尾用“知识来源：”列出实际使用的知识点。"
+        "如果上下文不足，明确说明知识图谱中没有足够资料。"
+        "不得输出Cypher，不得声称执行过数据库写操作。"
+        + SCENE_RULES[scene]
+    )
+    user_prompt = (
+        "教学知识图谱上下文：\n{0}\n\n"
+        "用户问题：{1}"
+    ).format(context_json, question)
+    return PromptPackage(
+        scene=scene,
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+        context_nodes=context_nodes,
+    )
+
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 40 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+def validate_answer(
+    answer: str,
+    prompt_package: PromptPackage,
+) -> str:
+    normalized = str(answer or "").strip()
+    if not normalized:
+        raise ValueError("教学问答引擎返回了空回答")
+
+    forbidden_fragments = (
+        "sk-",
+        "API Key",
+        "数据库密码",
+        "密码是",
+    )
+    for fragment in forbidden_fragments:
+        normalized = normalized.replace(fragment, "敏感信息已隐藏")
+
+    unsupported_claims = (
+        "我执行了数据库查询",
+        "我执行了Cypher",
+        "数据库中显示",
+        "系统已修改数据",
+    )
+    for claim in unsupported_claims:
+        normalized = normalized.replace(
+            claim,
+            "根据给定的教学知识图谱上下文",
+        )
+
+    context_names = [
+        str(node.get("name", "")).strip()
+        for node in prompt_package.context_nodes
+        if node.get("name")
+    ]
+    domain_terms = (
+        "GIS",
+        "交通",
+        "路网",
+        "空间",
+        "道路",
+        "轨迹",
+        "拓扑",
+        "地图",
+        "地理",
+    )
+    in_domain = any(
+        term.lower() in normalized.lower()
+        for term in domain_terms
+    ) or any(
+        name and name[: min(6, len(name))] in normalized
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 41 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        for name in context_names
+    )
+    if not in_domain:
+        raise ValueError("回答超出GIS交通路网教学知识图谱的领域范围")
+
+    if not any(
+        marker in normalized
+        for marker in ("知识来源：", "知识来源:")
+    ):
+        references = context_names
+        if references:
+            normalized += "\n\n知识来源：" + "、".join(references[:4])
+    return normalized
+
+
+def matched_references(
+    answer: str,
+    context_nodes: Iterable[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    answer_text = str(answer or "")
+    references = []
+    for node in context_nodes:
+        name = str(node.get("name", "")).strip()
+        if not name:
+            continue
+        short_name = name[: min(8, len(name))]
+        if name in answer_text or short_name in answer_text:
+            references.append(
+                {
+                    "id": node.get("id"),
+                    "name": name,
+                    "type": node.get("type", "KnowledgePoint"),
+                    "moduleId": node.get("moduleId"),
+                }
+            )
+    if references:
+        return references
+    return [
+        {
+            "id": node.get("id"),
+            "name": node.get("name", "未命名知识点"),
+            "type": node.get("type", "KnowledgePoint"),
+            "moduleId": node.get("moduleId"),
+        }
+        for node in list(context_nodes)[:3]
+    ]
+
+
+====================================================================================================
+FILE: backend/topology_checker.py
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 42 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+====================================================================================================
+# Copyright (c) 2026 ?????
+# GIS???????????? - ????
+# ?????????????????????
+
+# Copyright (c) 2026 版权所有人
+# GIS交通路网教学知识图谱平台 - 后端服务
+# 本文件为平台核心业务代码，受软件著作权保护
+
+from collections import defaultdict
+from math import hypot
+from typing import Any, Dict, Iterable, List, Optional, Tuple
+
+
+TOPOLOGY_RELATIONSHIPS = {
+    "APPLIED_IN",
+    "IMPLEMENTED_IN",
+    "PART_OF",
+    "PREREQUISITE_MODULE",
+    "PREREQUISITE_OF",
+    "RELATED_TO",
+    "SUPPORTS",
+}
+
+LAYER_CONNECTOR_TYPES = {
+    "INTERCHANGE",
+    "RAMP",
+    "LAYER_CONNECTOR",
+}
+
+
+def _node_id(node: Dict[str, Any]) -> str:
+    if node.get("id") is not None:
+        return str(node["id"])
+    properties = node.get("properties", {})
+    for key in ("module_id", "kp_id", "tool_id", "media_id", "road_id"):
+        if properties.get(key) is not None:
+            return str(properties[key])
+    return ""
+
+
+def _labels(node: Dict[str, Any]) -> List[str]:
+    return [str(label) for label in node.get("labels", [])]
+
+
+def _properties(node: Dict[str, Any]) -> Dict[str, Any]:
+    properties = node.get("properties", node)
+    return properties if isinstance(properties, dict) else {}
+
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 43 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+def _numeric(value: Any) -> Optional[float]:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _coordinate_from(properties: Dict[str, Any]) -> Optional[Tuple[float, float]]:
+    x = _numeric(
+        properties.get("x")
+        if properties.get("x") is not None
+        else properties.get("lon")
+    )
+    y = _numeric(
+        properties.get("y")
+        if properties.get("y") is not None
+        else properties.get("lat")
+    )
+    if x is None or y is None:
+        return None
+    return x, y
+
+
+def _layer_from(properties: Dict[str, Any]) -> Optional[str]:
+    explicit_layer = str(properties.get("layer", "")).strip().lower()
+    if explicit_layer:
+        aliases = {
+            "ground": "ground",
+            "surface": "ground",
+            "地面": "ground",
+            "elevated": "elevated",
+            "viaduct": "elevated",
+            "高架": "elevated",
+            "underground": "underground",
+            "tunnel": "underground",
+            "地下": "underground",
+        }
+        return aliases.get(explicit_layer, explicit_layer)
+
+    elevation = _numeric(
+        properties.get("elevation")
+        if properties.get("elevation") is not None
+        else properties.get("height")
+    )
+    if elevation is None:
+        return None
+    if elevation > 3:
+        return "elevated"
+    if elevation < -3:
+        return "underground"
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 44 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+    return "ground"
+
+
+def _is_intersection(properties: Dict[str, Any]) -> bool:
+    value = properties.get("is_intersection", False)
+    return value is True or str(value).strip().lower() in {"1", "true", "yes"}
+
+
+def _issue(
+    issue_type: str,
+    severity: str,
+    message: str,
+    node_ids: Optional[Iterable[str]] = None,
+    relationship_id: Optional[str] = None,
+    suggestion: str = "",
+) -> Dict[str, Any]:
+    return {
+        "type": issue_type,
+        "severity": severity,
+        "message": message,
+        "nodeIds": list(node_ids or []),
+        "relationshipId": relationship_id,
+        "suggestion": suggestion,
+    }
+
+
+def identify_pseudo_nodes(
+    nodes: List[Dict[str, Any]],
+    relationships: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    degrees: Dict[str, int] = defaultdict(int)
+    node_lookup = {_node_id(node): node for node in nodes}
+
+    for relationship in relationships:
+        if relationship.get("type") not in TOPOLOGY_RELATIONSHIPS:
+            continue
+        source = str(relationship.get("source", ""))
+        target = str(relationship.get("target", ""))
+        degrees[source] += 1
+        degrees[target] += 1
+
+    issues = []
+    for node_id, node in node_lookup.items():
+        properties = _properties(node)
+        if degrees[node_id] != 2 or _is_intersection(properties):
+            continue
+        issues.append(
+            _issue(
+                "PSEUDO_NODE",
+                "medium",
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 45 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+                "节点度为2且未标记为交叉口，可判定为伪节点。",
+                [node_id],
+                suggestion="合并相邻路段或将节点标记为真实交叉口。",
+            )
+        )
+    return issues
+
+
+def detect_dead_ends(
+    relationships: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    degrees: Dict[str, int] = defaultdict(int)
+    for relationship in relationships:
+        if relationship.get("type") not in TOPOLOGY_RELATIONSHIPS:
+            continue
+        source = str(relationship.get("source", ""))
+        target = str(relationship.get("target", ""))
+        degrees[source] += 1
+        degrees[target] += 1
+
+    issues = []
+    for relationship in relationships:
+        if relationship.get("type") not in TOPOLOGY_RELATIONSHIPS:
+            continue
+        source = str(relationship.get("source", ""))
+        target = str(relationship.get("target", ""))
+        if degrees[source] > 1 and degrees[target] > 1:
+            continue
+        issues.append(
+            _issue(
+                "DEAD_END",
+                "high",
+                "关系边存在仅一端具有连通度的端点，疑似断头路。",
+                [source, target],
+                str(relationship.get("id", "")),
+                suggestion="检查缺失线段并补齐道路连通关系。",
+            )
+        )
+    return issues
+
+
+def validate_multilayer_network(
+    nodes: List[Dict[str, Any]],
+    relationships: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    node_lookup = {_node_id(node): node for node in nodes}
+    issues = []
+
+    for relationship in relationships:
+        source_id = str(relationship.get("source", ""))
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 46 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        target_id = str(relationship.get("target", ""))
+        source = node_lookup.get(source_id)
+        target = node_lookup.get(target_id)
+        if source is None or target is None:
+            continue
+
+        source_layer = _layer_from(_properties(source))
+        target_layer = _layer_from(_properties(target))
+        if (
+            source_layer is None
+            or target_layer is None
+            or source_layer == target_layer
+        ):
+            continue
+
+        relationship_type = str(relationship.get("type", "")).upper()
+        if relationship_type in LAYER_CONNECTOR_TYPES:
+            continue
+
+        issues.append(
+            _issue(
+                "CROSS_LAYER_CONNECTION",
+                "high",
+                "检测到不同高程层之间的直接连接，缺少连接器语义。",
+                [source_id, target_id],
+                str(relationship.get("id", "")),
+                suggestion="补充匝道、互通或跨层连接节点。",
+            )
+        )
+    return issues
+
+
+def validate_seamless_connections(
+    nodes: List[Dict[str, Any]],
+    relationships: List[Dict[str, Any]],
+    tolerance: float = 1.0,
+) -> List[Dict[str, Any]]:
+    node_lookup = {_node_id(node): node for node in nodes}
+    issues = []
+
+    for relationship in relationships:
+        properties = relationship.get("properties", {})
+        source_id = str(relationship.get("source", ""))
+        target_id = str(relationship.get("target", ""))
+        source_node = node_lookup.get(source_id)
+        target_node = node_lookup.get(target_id)
+        if source_node is None or target_node is None:
+            continue
+
+        source_node_coordinate = _coordinate_from(_properties(source_node))
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 47 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        target_node_coordinate = _coordinate_from(_properties(target_node))
+        edge_source_coordinate = _coordinate_from(
+            {
+                "x": properties.get("source_x"),
+                "y": properties.get("source_y"),
+                "lon": properties.get("source_lon"),
+                "lat": properties.get("source_lat"),
+            }
+        )
+        edge_target_coordinate = _coordinate_from(
+            {
+                "x": properties.get("target_x"),
+                "y": properties.get("target_y"),
+                "lon": properties.get("target_lon"),
+                "lat": properties.get("target_lat"),
+            }
+        )
+
+        endpoint_checks = [
+            (source_node_coordinate, edge_source_coordinate),
+            (target_node_coordinate, edge_target_coordinate),
+        ]
+        max_deviation = 0.0
+        for node_coordinate, edge_coordinate in endpoint_checks:
+            if node_coordinate is None or edge_coordinate is None:
+                continue
+            max_deviation = max(
+                max_deviation,
+                hypot(
+                    node_coordinate[0] - edge_coordinate[0],
+                    node_coordinate[1] - edge_coordinate[1],
+                ),
+            )
+
+        if max_deviation <= tolerance:
+            continue
+        issues.append(
+            _issue(
+                "SEAM_GAP",
+                "medium",
+                "相邻路段端点坐标偏差超过阈值 {0}。".format(tolerance),
+                [source_id, target_id],
+                str(relationship.get("id", "")),
+                suggestion="吸附端点坐标或拆分错误拓扑连接。",
+            )
+        )
+        issues[-1]["deviation"] = round(max_deviation, 4)
+    return issues
+
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 48 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+def calculate_topology_score(issues: List[Dict[str, Any]]) -> float:
+    weights = {
+        "PSEUDO_NODE": 0.5,
+        "DEAD_END": 3.0,
+        "CROSS_LAYER_CONNECTION": 8.0,
+        "SEAM_GAP": 5.0,
+    }
+    deduction = sum(
+        weights.get(str(issue.get("type")), 1.0)
+        for issue in issues
+    )
+    return round(max(0.0, 100.0 - deduction), 2)
+
+
+def check_topology(
+    nodes: List[Dict[str, Any]],
+    relationships: List[Dict[str, Any]],
+    coordinate_tolerance: float = 1.0,
+) -> Dict[str, Any]:
+    issues = []
+    issues.extend(identify_pseudo_nodes(nodes, relationships))
+    issues.extend(detect_dead_ends(relationships))
+    issues.extend(validate_multilayer_network(nodes, relationships))
+    issues.extend(
+        validate_seamless_connections(
+            nodes,
+            relationships,
+            coordinate_tolerance,
+        )
+    )
+
+    issue_counts: Dict[str, int] = defaultdict(int)
+    suggestions = []
+    for issue in issues:
+        issue_counts[issue["type"]] += 1
+        if issue["suggestion"] and issue["suggestion"] not in suggestions:
+            suggestions.append(issue["suggestion"])
+
+    return {
+        "score": calculate_topology_score(issues),
+        "nodeCount": len(nodes),
+        "relationshipCount": len(relationships),
+        "summary": dict(issue_counts),
+        "issues": issues,
+        "suggestions": suggestions,
+    }
+
+
+====================================================================================================
+FILE: frontend/index.html
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 49 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+====================================================================================================
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="application-name" content="GIS交通路网教学知识图谱平台" />
+    <meta name="version" content="v1.0" />
+    <meta name="description" content="GIS交通路网教学知识图谱平台" />
+    <title>GIS交通路网教学知识图谱平台</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
+
+
+====================================================================================================
+FILE: frontend/package.json
+====================================================================================================
+{
+  "name": "gis-knowledge-platform",
+  "private": true,
+  "version": "1.0.0",
+  "releaseVersion": "v1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test:e2e": "node scripts/run-e2e.mjs"
+  },
+  "dependencies": {
+    "@lucide/vue": "^1.47.0",
+    "axios": "^1.20.0",
+    "d3": "^7.9.0",
+    "vue": "^3.5.42"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.8",
+    "@playwright/test": "^1.55.0",
+    "vite": "^8.3.0"
+  }
+}
+
+
+====================================================================================================
+FILE: frontend/playwright.config.js
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 50 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+====================================================================================================
+import { defineConfig } from '@playwright/test'
+
+
+export default defineConfig({
+  testDir: './tests/e2e',
+  timeout: 30000,
+  expect: {
+    timeout: 8000,
+  },
+  use: {
+    baseURL: 'http://127.0.0.1:5180',
+    channel: 'msedge',
+    headless: true,
+    trace: 'retain-on-failure',
+  },
+})
+
+
+====================================================================================================
+FILE: frontend/src/api/client.js
+====================================================================================================
+import axios from 'axios'
+
+const apiClient = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || '',
+  timeout: 15000,
+})
+
+export default apiClient
+
+
+====================================================================================================
+FILE: frontend/src/App.vue
+====================================================================================================
+<template>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">
+          <Network :size="21" />
+        </div>
+        <div class="brand-copy">
+          <h1>GIS交通路网教学知识图谱平台</h1>
+          <span>V1.0 · 课程知识组织与图谱可视化</span>
+        </div>
+      </div>
+
+      <div class="breadcrumb">
+        <Home :size="14" />
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 51 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        <span>{{ stageTitle }}</span>
+      </div>
+
+      <div class="topbar-actions">
+        <span class="connection-state" :class="{ error: Boolean(errorMessage) }">
+          <i></i>
+          {{ graphLoading ? '同步中' : errorMessage ? '连接异常' : 'Neo4j 在线' }}
+        </span>
+        <button
+          type="button"
+          class="mobile-button"
+          title="打开知识目录"
+          aria-label="打开知识目录"
+          @click="openLeftPanel"
+        >
+          <PanelLeft :size="18" />
+        </button>
+        <button
+          type="button"
+          class="mobile-button"
+          title="打开智能问答"
+          aria-label="打开智能问答"
+          @click="openChatPanel"
+        >
+          <MessageSquare :size="18" />
+        </button>
+      </div>
+    </header>
+
+    <div v-if="errorMessage" class="error-banner">
+      <AlertCircle :size="16" />
+      <span>{{ errorMessage }}</span>
+      <button
+        type="button"
+        title="关闭提示"
+        aria-label="关闭提示"
+        @click="errorMessage = ''"
+      >
+        <X :size="15" />
+      </button>
+    </div>
+
+    <main class="workspace">
+      <div
+        class="column directory-column"
+        :class="{ 'mobile-open': leftOpen }"
+      >
+        <DirectoryPanel
+          :modules="directoryModules"
+          :selected-module-id="selectedModuleId"
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 52 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+          :selected-knowledge-point-id="selectedKnowledgePointId"
+          :loading="directoryLoading"
+          :loading-module-id="loadingModuleId"
+          @select-module="selectModule"
+          @select-knowledge="selectKnowledgePoint"
+        />
+      </div>
+
+      <section class="stage">
+        <div class="stage-toolbar">
+          <div class="stage-title">
+            <div class="stage-icon">
+              <BookOpen :size="17" />
+            </div>
+            <div>
+              <strong>{{ stageTitle }}</strong>
+              <span>{{ stageSubtitle }}</span>
+            </div>
+          </div>
+
+          <div class="stage-actions">
+            <span class="graph-count">
+              {{ graphData.nodes.length }} 节点 · {{ graphData.links.length }} 关系
+            </span>
+            <button
+              v-if="selectedModuleId"
+              type="button"
+              class="back-button"
+              @click="backToOverview"
+            >
+              <RotateCcw :size="14" />
+              返回总览
+            </button>
+          </div>
+        </div>
+
+        <div class="canvas-shell">
+          <KnowledgeGraph
+            :nodes="graphData.nodes"
+            :links="graphData.links"
+            :selected-id="selectedKnowledgePointId || selectedModuleId"
+            :loading="graphLoading"
+            @node-click="handleGraphNode"
+          />
+
+          <KnowledgeDetail
+            v-if="detailLoading || detail"
+            :detail="detail"
+            :loading="detailLoading"
+            @close="closeDetail"
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 53 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+            @navigate="navigateFromDetail"
+          />
+        </div>
+      </section>
+
+      <div
+        class="column chat-column"
+        :class="{ 'mobile-open': chatOpen }"
+      >
+        <ChatPanel
+          :messages="chatMessages"
+          :loading="chatLoading"
+          :configured="chatConfigured"
+          @send="sendChat"
+          @select-reference="selectChatReference"
+        />
+      </div>
+    </main>
+
+    <button
+      v-if="leftOpen || chatOpen"
+      type="button"
+      class="drawer-backdrop"
+      title="关闭面板"
+      aria-label="关闭面板"
+      @click="closeDrawers"
+    ></button>
+  </div>
+</template>
+
+<script setup>
+import { computed, onMounted, ref } from 'vue'
+import {
+  AlertCircle,
+  BookOpen,
+  Home,
+  MessageSquare,
+  Network,
+  PanelLeft,
+  RotateCcw,
+  X,
+} from '@lucide/vue'
+import apiClient from './api/client'
+import ChatPanel from './components/ChatPanel.vue'
+import DirectoryPanel from './components/DirectoryPanel.vue'
+import KnowledgeDetail from './components/KnowledgeDetail.vue'
+import KnowledgeGraph from './components/KnowledgeGraph.vue'
+import { getNodeType } from './constants/graph'
+
+const emptyGraph = () => ({ nodes: [], links: [], summary: {} })
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 54 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+const directoryModules = ref([])
+const directoryLoading = ref(true)
+const overviewGraph = ref(emptyGraph())
+const graphData = ref(emptyGraph())
+const graphLoading = ref(true)
+const errorMessage = ref('')
+
+const selectedModuleId = ref('')
+const selectedKnowledgePointId = ref('')
+const loadingModuleId = ref('')
+const detail = ref(null)
+const detailLoading = ref(false)
+
+const chatMessages = ref([
+  {
+    role: 'assistant',
+    content:
+      '你好，我是课程知识图谱助手。你可以围绕当前知识图谱提出问题，我会依据相关知识点进行回答。',
+  },
+])
+const chatLoading = ref(false)
+const chatConfigured = ref(false)
+const leftOpen = ref(false)
+const chatOpen = ref(false)
+
+const moduleGraphCache = new Map()
+const detailCache = new Map()
+
+const selectedModule = computed(() =>
+  directoryModules.value.find((module) => module.id === selectedModuleId.value),
+)
+
+const stageTitle = computed(() => {
+  if (detail.value) return detail.value.node.properties.name || '知识点详情'
+  if (selectedModule.value) return selectedModule.value.name
+  return '知识图谱总览'
+})
+
+const stageSubtitle = computed(() => {
+  if (detail.value) return '知识点详情与关联知识'
+  if (selectedModule.value) {
+    return `${selectedModule.value.knowledgePoints.length} 个知识点`
+  }
+  return '点击模块查看对应知识点'
+})
+
+function getErrorMessage(error, fallback) {
+  return (
+    error?.response?.data?.detail ||
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 55 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+    error?.response?.data?.message ||
+    error?.message ||
+    fallback
+  )
+}
+
+async function loadDirectory() {
+  directoryLoading.value = true
+  try {
+    const response = await apiClient.get('/api/directory')
+    directoryModules.value = response.data.data.modules
+  } catch (error) {
+    errorMessage.value = getErrorMessage(error, '知识目录加载失败')
+  } finally {
+    directoryLoading.value = false
+  }
+}
+
+async function loadModuleOverview() {
+  graphLoading.value = true
+  try {
+    const response = await apiClient.get('/api/graph/modules')
+    overviewGraph.value = response.data.data
+    graphData.value = response.data.data
+  } catch (error) {
+    errorMessage.value = getErrorMessage(error, '模块总览加载失败')
+  } finally {
+    graphLoading.value = false
+  }
+}
+
+async function loadChatStatus() {
+  try {
+    const response = await apiClient.get('/api/chat/status')
+    chatConfigured.value = Boolean(response.data.data.configured)
+    if (!chatConfigured.value) {
+      chatMessages.value[0].content =
+        '你好，我是课程知识图谱助手。DeepSeek API Key 尚未配置，请在本地 backend/.env 中完成设置。'
+    }
+  } catch {
+    chatConfigured.value = false
+  }
+}
+
+async function selectModule(moduleId) {
+  if (!moduleId) return
+
+  selectedKnowledgePointId.value = ''
+  detail.value = null
+  selectedModuleId.value = moduleId
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 56 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  loadingModuleId.value = moduleId
+  graphLoading.value = true
+  errorMessage.value = ''
+  leftOpen.value = false
+
+  try {
+    if (!moduleGraphCache.has(moduleId)) {
+      const response = await apiClient.get(`/api/modules/${moduleId}/graph`)
+      moduleGraphCache.set(moduleId, response.data.data)
+    }
+    graphData.value = moduleGraphCache.get(moduleId)
+  } catch (error) {
+    errorMessage.value = getErrorMessage(error, '模块知识点加载失败')
+  } finally {
+    graphLoading.value = false
+    loadingModuleId.value = ''
+  }
+}
+
+async function loadKnowledgePoint(knowledgePointId, moduleId = '') {
+  if (!knowledgePointId) return
+
+  if (moduleId && moduleId !== selectedModuleId.value) {
+    await selectModule(moduleId)
+  }
+
+  selectedKnowledgePointId.value = knowledgePointId
+  detailLoading.value = true
+  errorMessage.value = ''
+  leftOpen.value = false
+
+  try {
+    if (!detailCache.has(knowledgePointId)) {
+      const response = await apiClient.get(
+        `/api/knowledge-points/${knowledgePointId}`,
+      )
+      detailCache.set(knowledgePointId, response.data.data)
+    }
+    detail.value = detailCache.get(knowledgePointId)
+  } catch (error) {
+    detail.value = null
+    errorMessage.value = getErrorMessage(error, '知识点详情加载失败')
+  } finally {
+    detailLoading.value = false
+  }
+}
+
+async function selectKnowledgePoint({ moduleId, knowledgePointId }) {
+  await loadKnowledgePoint(knowledgePointId, moduleId)
+}
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 57 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+function handleGraphNode(node) {
+  const type = getNodeType(node.labels)
+  if (type === 'Module') {
+    selectModule(node.id)
+  } else if (type === 'KnowledgePoint') {
+    loadKnowledgePoint(node.id)
+  }
+}
+
+function closeDetail() {
+  detail.value = null
+  selectedKnowledgePointId.value = ''
+}
+
+function backToOverview() {
+  selectedModuleId.value = ''
+  selectedKnowledgePointId.value = ''
+  detail.value = null
+  graphData.value = overviewGraph.value
+  graphLoading.value = false
+  leftOpen.value = false
+}
+
+function navigateFromDetail({ type, id, moduleId }) {
+  if (type === 'Module') {
+    selectModule(id)
+  } else if (type === 'KnowledgePoint') {
+    loadKnowledgePoint(id, moduleId || selectedModuleId.value)
+  }
+}
+
+async function sendChat(question) {
+  chatMessages.value.push({ role: 'user', content: question })
+  chatLoading.value = true
+
+  try {
+    const response = await apiClient.post('/api/chat', {
+      question,
+      module_id: selectedModuleId.value || null,
+      knowledge_point_id: selectedKnowledgePointId.value || null,
+    })
+    chatMessages.value.push({
+      role: 'assistant',
+      content: response.data.answer,
+      references: response.data.references || [],
+    })
+  } catch (error) {
+    chatMessages.value.push({
+      role: 'assistant',
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 58 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+      content: getErrorMessage(
+        error,
+        '智能问答暂时不可用，请稍后再试。',
+      ),
+    })
+  } finally {
+    chatLoading.value = false
+  }
+}
+
+function selectChatReference(reference) {
+  if (reference.type === 'Module') {
+    selectModule(reference.id)
+    return
+  }
+  if (reference.type === 'KnowledgePoint') {
+    loadKnowledgePoint(reference.id, reference.moduleId || '')
+  }
+}
+
+function openLeftPanel() {
+  chatOpen.value = false
+  leftOpen.value = true
+}
+
+function openChatPanel() {
+  leftOpen.value = false
+  chatOpen.value = true
+}
+
+function closeDrawers() {
+  leftOpen.value = false
+  chatOpen.value = false
+}
+
+onMounted(() => {
+  Promise.all([
+    loadDirectory(),
+    loadModuleOverview(),
+    loadChatStatus(),
+  ])
+})
+</script>
+
+<style scoped>
+.app-shell {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 59 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  color: #1f2937;
+  background: #f5f7fa;
+  overflow: hidden;
+}
+
+.topbar {
+  min-height: 64px;
+  padding: 0 18px;
+  border-bottom: 1px solid #dfe7f1;
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) auto minmax(260px, 1fr);
+  align-items: center;
+  gap: 18px;
+  background: #ffffff;
+}
+
+.brand {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-mark {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #ffffff;
+  background: #7c3aed;
+}
+
+.brand-copy {
+  min-width: 0;
+}
+
+.brand-copy h1 {
+  margin: 0 0 2px;
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 16px;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.brand-copy span {
+  display: block;
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 60 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  color: #64748b;
+  font-size: 11px;
+}
+
+.breadcrumb {
+  max-width: 360px;
+  padding: 6px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #475569;
+  background: #f8fafc;
+  font-size: 12px;
+}
+
+.breadcrumb span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.connection-state {
+  padding: 5px 8px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #166534;
+  background: #f0fdf4;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.connection-state i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.connection-state.error {
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 61 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  color: #991b1b;
+  background: #fef2f2;
+}
+
+.connection-state.error i {
+  background: #ef4444;
+}
+
+.mobile-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #dbe4ef;
+  border-radius: 6px;
+  display: none;
+  place-items: center;
+  color: #475569;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.error-banner {
+  min-height: 38px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #991b1b;
+  background: #fef2f2;
+  border-bottom: 1px solid #fecaca;
+  font-size: 12px;
+}
+
+.error-banner span {
+  flex: 1;
+}
+
+.error-banner button {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  color: #991b1b;
+  background: transparent;
+  cursor: pointer;
+}
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 62 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+.workspace {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 292px minmax(0, 1fr) 366px;
+  overflow: hidden;
+}
+
+.column {
+  min-width: 0;
+  min-height: 0;
+}
+
+.stage {
+  min-width: 0;
+  min-height: 0;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  background: #f5f7fa;
+  overflow: hidden;
+}
+
+.stage-toolbar {
+  min-height: 46px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.stage-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.stage-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 63 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+.stage-title strong,
+.stage-title span {
+  display: block;
+}
+
+.stage-title strong {
+  max-width: 520px;
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stage-title span {
+  margin-top: 2px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.stage-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.graph-count {
+  color: #64748b;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.back-button {
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #334155;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.back-button:hover {
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 64 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+.canvas-shell {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border: 1px solid #dfe7f1;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.drawer-backdrop {
+  position: fixed;
+  z-index: 30;
+  inset: 64px 0 0;
+  border: 0;
+  background: rgba(15, 23, 42, 0.34);
+}
+
+@media (max-width: 1320px) {
+  .workspace {
+    grid-template-columns: 260px minmax(0, 1fr) 332px;
+  }
+
+  .brand-copy span {
+    display: none;
+  }
+}
+
+@media (max-width: 1100px) {
+  .topbar {
+    grid-template-columns: minmax(260px, 1fr) auto;
+  }
+
+  .breadcrumb {
+    display: none;
+  }
+
+  .mobile-button {
+    display: grid;
+  }
+
+  .workspace {
+    grid-template-columns: 250px minmax(0, 1fr);
+  }
+
+  .chat-column {
+    position: fixed;
+    z-index: 40;
+    top: 64px;
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 65 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+    right: 0;
+    bottom: 0;
+    width: min(92vw, 360px);
+    box-shadow: -18px 0 40px rgba(15, 23, 42, 0.16);
+    transform: translateX(105%);
+    transition: transform 0.22s ease;
+  }
+
+  .chat-column.mobile-open {
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 760px) {
+  .topbar {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 58px;
+    padding: 0 88px 0 10px;
+    gap: 8px;
+  }
+
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+  }
+
+  .brand-copy h1 {
+    max-width: 210px;
+    font-size: 14px;
+  }
+
+  .topbar-actions {
+    position: absolute;
+    top: 11px;
+    right: 10px;
+  }
+
+  .connection-state {
+    display: none;
+  }
+
+  .workspace {
+    display: block;
+  }
+
+  .directory-column {
+    position: fixed;
+    z-index: 40;
+    top: 58px;
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 66 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+    left: 0;
+    bottom: 0;
+    width: min(88vw, 300px);
+    box-shadow: 18px 0 40px rgba(15, 23, 42, 0.16);
+    transform: translateX(-105%);
+    transition: transform 0.22s ease;
+  }
+
+  .directory-column.mobile-open {
+    transform: translateX(0);
+  }
+
+  .stage {
+    width: 100%;
+    height: 100%;
+    padding: 8px;
+  }
+
+  .stage-toolbar {
+    min-height: 42px;
+    margin-bottom: 7px;
+  }
+
+  .graph-count {
+    display: none;
+  }
+
+  .stage-title strong {
+    max-width: 220px;
+  }
+
+  .drawer-backdrop {
+    inset: 58px 0 0;
+  }
+
+  .chat-column {
+    top: 58px;
+  }
+}
+</style>
+
+
+====================================================================================================
+FILE: frontend/src/components/ChatPanel.vue
+====================================================================================================
+<template>
+  <aside class="chat-panel">
+    <header class="chat-header">
+      <div class="chat-heading">
+        <div class="bot-icon">
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 67 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+          <Bot :size="18" />
+        </div>
+        <div>
+          <h2>智能问答</h2>
+          <span>基于知识图谱的课程助手</span>
+        </div>
+      </div>
+      <span
+        class="status-dot"
+        :class="{ ready: configured }"
+      >
+        {{ configured ? '已连接' : '待配置' }}
+      </span>
+    </header>
+
+    <div ref="messageList" class="message-list">
+      <div
+        v-for="(message, index) in messages"
+        :key="`${message.role}-${index}`"
+        class="message-row"
+        :class="message.role"
+      >
+        <div class="message-avatar">
+          <User v-if="message.role === 'user'" :size="15" />
+          <Bot v-else :size="15" />
+        </div>
+        <div class="message-content">
+          <div class="message-bubble">{{ message.content }}</div>
+          <div
+            v-if="message.role === 'assistant' && message.references?.length"
+            class="message-references"
+          >
+            <button
+              v-for="reference in message.references"
+              :key="reference.id"
+              type="button"
+              @click="$emit('select-reference', reference)"
+            >
+              {{ reference.name }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="loading" class="message-row assistant">
+        <div class="message-avatar">
+          <Bot :size="15" />
+        </div>
+        <div class="message-bubble typing">
+          <span></span>
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 68 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-prompts">
+      <button
+        v-for="prompt in quickPrompts"
+        :key="prompt"
+        type="button"
+        @click="sendPrompt(prompt)"
+      >
+        {{ prompt }}
+      </button>
+    </div>
+
+    <form class="chat-composer" @submit.prevent="submit">
+      <textarea
+        v-model.trim="draft"
+        rows="3"
+        placeholder="输入关于知识图谱的问题"
+        aria-label="智能问答输入框"
+        @keydown.enter.exact.prevent="submit"
+      ></textarea>
+      <button
+        type="submit"
+        class="send-button"
+        :disabled="!draft || loading"
+        title="发送问题"
+        aria-label="发送问题"
+      >
+        <Send :size="17" />
+      </button>
+    </form>
+  </aside>
+</template>
+
+<script setup>
+import { nextTick, ref, watch } from 'vue'
+import { Bot, Send, User } from '@lucide/vue'
+
+const props = defineProps({
+  messages: { type: Array, default: () => [] },
+  loading: { type: Boolean, default: false },
+  configured: { type: Boolean, default: false },
+})
+
+const emit = defineEmits(['send', 'select-reference'])
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 69 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+const draft = ref('')
+const messageList = ref(null)
+const quickPrompts = [
+  '什么是交通路网数据模型？',
+  '轨迹数据有哪些关键技术？',
+  '推荐一条学习路径',
+]
+
+watch(
+  () => props.messages.length,
+  async () => {
+    await nextTick()
+    if (messageList.value) {
+      messageList.value.scrollTop = messageList.value.scrollHeight
+    }
+  },
+)
+
+function submit() {
+  sendPrompt(draft.value)
+}
+
+function sendPrompt(value) {
+  const question = value.trim()
+  if (!question || props.loading) return
+  emit('send', question)
+  draft.value = ''
+}
+</script>
+
+<style scoped>
+.chat-panel {
+  height: 100%;
+  min-height: 0;
+  border-left: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.chat-header {
+  min-height: 70px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e7edf5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 70 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+.chat-heading {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.bot-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #ffffff;
+  background: #0f766e;
+}
+
+h2 {
+  margin: 0 0 2px;
+  color: #0f172a;
+  font-size: 15px;
+}
+
+.chat-heading span {
+  display: block;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.status-dot {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  border-radius: 999px;
+  color: #9a3412;
+  background: #fff7ed;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.status-dot.ready {
+  color: #166534;
+  background: #f0fdf4;
+}
+
+.message-list {
+  flex: 1;
+  min-height: 0;
+  padding: 16px;
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 71 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  overflow-y: auto;
+  background: #f8fafc;
+}
+
+.message-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.message-row + .message-row {
+  margin-top: 14px;
+}
+
+.message-row.user {
+  flex-direction: row-reverse;
+}
+
+.message-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #475569;
+  background: #e2e8f0;
+}
+
+.assistant .message-avatar {
+  color: #ffffff;
+  background: #0f766e;
+}
+
+.message-bubble {
+  max-width: calc(100% - 42px);
+  padding: 9px 11px;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  color: #334155;
+  background: #ffffff;
+  font-size: 12px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.message-content {
+  min-width: 0;
+  max-width: calc(100% - 42px);
+}
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 72 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+.message-content .message-bubble {
+  max-width: 100%;
+}
+
+.user .message-bubble {
+  border-color: #bfdbfe;
+  color: #1e3a8a;
+  background: #eff6ff;
+}
+
+.message-references {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.message-references button {
+  max-width: 100%;
+  padding: 4px 7px;
+  border: 1px solid #bfdbfe;
+  border-radius: 5px;
+  overflow: hidden;
+  color: #1d4ed8;
+  background: #eff6ff;
+  cursor: pointer;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.message-references button:hover {
+  border-color: #60a5fa;
+  background: #dbeafe;
+}
+
+.typing {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 48px;
+}
+
+.typing span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #64748b;
+  animation: bounce 1s infinite ease-in-out;
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 73 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+}
+
+.typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.quick-prompts {
+  padding: 10px 12px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.quick-prompts button {
+  padding: 5px 8px;
+  border: 1px solid #dbe4ef;
+  border-radius: 5px;
+  color: #475569;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.quick-prompts button:hover {
+  border-color: #0f766e;
+  color: #0f766e;
+}
+
+.chat-composer {
+  padding: 10px 12px 12px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.chat-composer textarea {
+  min-width: 0;
+  flex: 1;
+  padding: 9px 10px;
+  border: 1px solid #d7dee8;
+  border-radius: 6px;
+  outline: 0;
+  color: #0f172a;
+  resize: none;
+  background: #ffffff;
+  font-size: 12px;
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 74 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  line-height: 1.5;
+}
+
+.chat-composer textarea:focus {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+}
+
+.send-button {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 6px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #ffffff;
+  background: #0f766e;
+  cursor: pointer;
+}
+
+.send-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+@keyframes bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-3px);
+  }
+}
+</style>
+
+
+====================================================================================================
+FILE: frontend/src/components/DirectoryPanel.vue
+====================================================================================================
+<template>
+  <aside class="directory-panel">
+    <div class="panel-heading">
+      <div class="heading-icon">
+        <Database :size="18" />
+      </div>
+      <div>
+        <span class="eyebrow">知识目录</span>
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 75 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        <h2>课程图谱</h2>
+      </div>
+    </div>
+
+    <div class="directory-summary">
+      <span>{{ modules.length }} 个模块</span>
+      <span>{{ knowledgePointCount }} 个知识点</span>
+    </div>
+
+    <label class="search-box">
+      <Search :size="16" />
+      <input
+        v-model.trim="keyword"
+        type="search"
+        placeholder="搜索模块或知识点"
+        aria-label="搜索模块或知识点"
+      />
+    </label>
+
+    <div v-if="loading" class="panel-state">
+      <LoaderCircle class="spin" :size="20" />
+      <span>正在加载目录</span>
+    </div>
+
+    <div v-else-if="filteredModules.length === 0" class="panel-state">
+      <Search :size="20" />
+      <span>没有匹配结果</span>
+    </div>
+
+    <nav v-else class="directory-tree" aria-label="知识图谱目录">
+      <div
+        v-for="module in filteredModules"
+        :key="module.id"
+        class="module-group"
+      >
+        <button
+          type="button"
+          class="module-row"
+          :class="{ active: module.id === selectedModuleId }"
+          :aria-expanded="isExpanded(module.id)"
+          @click="toggleModule(module)"
+        >
+          <ChevronRight
+            class="chevron"
+            :class="{ expanded: isExpanded(module.id) }"
+            :size="16"
+          />
+          <Layers3 :size="16" />
+          <span class="module-name">{{ module.name }}</span>
+          <span class="item-count">{{ module.knowledgePoints.length }}</span>
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 76 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+          <LoaderCircle
+            v-if="loadingModuleId === module.id"
+            class="spin"
+            :size="14"
+          />
+        </button>
+
+        <div
+          v-if="isExpanded(module.id)"
+          class="knowledge-list"
+        >
+          <button
+            v-for="knowledge in module.knowledgePoints"
+            :key="knowledge.id"
+            type="button"
+            class="knowledge-row"
+            :class="{ active: knowledge.id === selectedKnowledgePointId }"
+            @click="selectKnowledge(module.id, knowledge.id)"
+          >
+            <FileText :size="14" />
+            <span>{{ knowledge.name }}</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+  </aside>
+</template>
+
+<script setup>
+import { computed, ref, watch } from 'vue'
+import {
+  ChevronRight,
+  Database,
+  FileText,
+  Layers3,
+  LoaderCircle,
+  Search,
+} from '@lucide/vue'
+
+const props = defineProps({
+  modules: { type: Array, default: () => [] },
+  selectedModuleId: { type: String, default: '' },
+  selectedKnowledgePointId: { type: String, default: '' },
+  loading: { type: Boolean, default: false },
+  loadingModuleId: { type: String, default: '' },
+})
+
+const emit = defineEmits(['select-module', 'select-knowledge'])
+
+const keyword = ref('')
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 77 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+const expandedModuleId = ref('')
+
+const knowledgePointCount = computed(() =>
+  props.modules.reduce(
+    (total, module) => total + module.knowledgePoints.length,
+    0,
+  ),
+)
+
+const filteredModules = computed(() => {
+  const query = keyword.value.toLowerCase()
+  if (!query) return props.modules
+
+  return props.modules
+    .map((module) => {
+      const moduleMatches = module.name.toLowerCase().includes(query)
+      const matchingKnowledgePoints = module.knowledgePoints.filter(
+        (knowledge) => knowledge.name.toLowerCase().includes(query),
+      )
+
+      if (moduleMatches) return module
+      if (matchingKnowledgePoints.length) {
+        return { ...module, knowledgePoints: matchingKnowledgePoints }
+      }
+      return null
+    })
+    .filter(Boolean)
+})
+
+watch(
+  () => props.selectedModuleId,
+  (moduleId) => {
+    if (moduleId) expandedModuleId.value = moduleId
+  },
+)
+
+function isExpanded(moduleId) {
+  return Boolean(keyword.value) || expandedModuleId.value === moduleId
+}
+
+function toggleModule(module) {
+  expandedModuleId.value =
+    expandedModuleId.value === module.id ? '' : module.id
+  emit('select-module', module.id)
+}
+
+function selectKnowledge(moduleId, knowledgePointId) {
+  emit('select-knowledge', { moduleId, knowledgePointId })
+}
+</script>
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 78 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+<style scoped>
+.directory-panel {
+  height: 100%;
+  min-height: 0;
+  padding: 18px 14px;
+  border-right: 1px solid #e2e8f0;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 4px;
+}
+
+.heading-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: #7c3aed;
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 2px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.directory-summary {
+  display: flex;
+  justify-content: space-between;
+  margin: 14px 4px 12px;
+  color: #64748b;
+  font-size: 12px;
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 79 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+}
+
+.search-box {
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #d7dee8;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  background: #f8fafc;
+}
+
+.search-box:focus-within {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+  background: #ffffff;
+}
+
+.search-box input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #0f172a;
+  background: transparent;
+  font-size: 13px;
+}
+
+.directory-tree {
+  min-height: 0;
+  margin-top: 10px;
+  padding-right: 2px;
+  overflow-y: auto;
+}
+
+.module-group + .module-group {
+  margin-top: 3px;
+}
+
+.module-row,
+.knowledge-row {
+  width: 100%;
+  border: 0;
+  display: flex;
+  align-items: center;
+  color: #334155;
+  background: transparent;
+  cursor: pointer;
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 80 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  text-align: left;
+}
+
+.module-row {
+  min-height: 38px;
+  padding: 7px 8px;
+  border-radius: 6px;
+  gap: 7px;
+}
+
+.module-row:hover,
+.module-row.active {
+  color: #5b21b6;
+  background: #f3e8ff;
+}
+
+.chevron {
+  flex: 0 0 auto;
+  transition: transform 0.18s ease;
+}
+
+.chevron.expanded {
+  transform: rotate(90deg);
+}
+
+.module-name {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-count {
+  flex: 0 0 auto;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.knowledge-list {
+  margin: 2px 0 6px 24px;
+  border-left: 1px solid #e2e8f0;
+}
+
+.knowledge-row {
+  min-height: 34px;
+  padding: 6px 8px;
+  border-radius: 0 6px 6px 0;
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 81 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  gap: 7px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.knowledge-row:hover,
+.knowledge-row.active {
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.knowledge-row span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.panel-state {
+  flex: 1;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>
+
+
+====================================================================================================
+FILE: frontend/src/components/KnowledgeDetail.vue
+====================================================================================================
+<template>
+  <aside class="detail-panel" aria-label="知识点详情">
+    <div v-if="loading" class="detail-state">
+      <LoaderCircle class="spin" :size="22" />
+      <span>正在加载知识点</span>
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 82 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+    </div>
+
+    <template v-else-if="detail">
+      <header class="detail-header">
+        <div class="title-wrap">
+          <span class="type-badge">知识点</span>
+          <h2>{{ nodeName }}</h2>
+        </div>
+        <button
+          type="button"
+          class="icon-button"
+          title="关闭详情"
+          aria-label="关闭详情"
+          @click="$emit('close')"
+        >
+          <X :size="18" />
+        </button>
+      </header>
+
+      <div class="detail-content">
+        <div class="meta-grid">
+          <div class="meta-item">
+            <Gauge :size="16" />
+            <span>难度</span>
+            <strong>{{ properties.difficulty || '未标注' }}</strong>
+          </div>
+          <div class="meta-item">
+            <Star :size="16" />
+            <span>重要性</span>
+            <strong>{{ properties.importance || '未标注' }}</strong>
+          </div>
+          <div class="meta-item">
+            <Tags :size="16" />
+            <span>分类</span>
+            <strong>{{ properties.subcategory || '未分类' }}</strong>
+          </div>
+          <div class="meta-item">
+            <Network :size="16" />
+            <span>所属模块</span>
+            <strong>{{ moduleName }}</strong>
+          </div>
+        </div>
+
+        <section class="content-section">
+          <h3><Info :size="15" />知识点说明</h3>
+          <p>{{ properties.description || '暂无详细说明。' }}</p>
+        </section>
+
+        <section
+          v-if="relationGroups.length"
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 83 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+          class="content-section"
+        >
+          <h3><Link2 :size="15" />关联知识</h3>
+          <div
+            v-for="group in relationGroups"
+            :key="group.type"
+            class="relation-group"
+          >
+            <span class="relation-label">{{ group.label }}</span>
+            <button
+              v-for="item in group.items"
+              :key="item.node.id"
+              type="button"
+              class="related-row"
+              @click="navigateToNode(item.node)"
+            >
+              <span>{{ getNodeName(item.node) }}</span>
+              <ChevronRight :size="14" />
+            </button>
+          </div>
+        </section>
+
+        <section class="content-section">
+          <h3><PlayCircle :size="15" />教学资源</h3>
+
+          <div v-if="videos.length" class="media-list">
+            <article
+              v-for="video in videos"
+              :key="video.id"
+              class="media-card"
+            >
+              <div class="media-title">
+                <Film :size="16" />
+                <strong>{{ video.title }}</strong>
+              </div>
+              <video
+                v-if="video.url"
+                class="video-player"
+                controls
+                preload="metadata"
+                :poster="video.coverUrl || undefined"
+                :src="video.url"
+              >
+                当前浏览器不支持视频播放。
+              </video>
+            </article>
+          </div>
+
+          <div v-else class="resource-placeholder">
+            <Film :size="20" />
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 84 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+            <div>
+              <strong>暂无视频资源</strong>
+              <span>后续可在媒体清单中添加 MP4 或 WebM 文件。</span>
+            </div>
+          </div>
+
+          <div v-if="slides.length" class="media-list">
+            <a
+              v-for="slide in slides"
+              :key="slide.id"
+              class="media-link"
+              :href="slide.url"
+              target="_blank"
+              rel="noopener"
+            >
+              <Presentation :size="17" />
+              <span>
+                <strong>{{ slide.title }}</strong>
+                <small>{{ slide.format || '课件' }}</small>
+              </span>
+              <ExternalLink :size="14" />
+            </a>
+          </div>
+
+          <div v-else class="resource-placeholder">
+            <Presentation :size="20" />
+            <div>
+              <strong>暂无课件资源</strong>
+              <span>后续可添加 PDF、PPT 或 PPTX 文件。</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </template>
+  </aside>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+import {
+  ChevronRight,
+  ExternalLink,
+  Film,
+  Gauge,
+  Info,
+  Link2,
+  LoaderCircle,
+  Network,
+  PlayCircle,
+  Presentation,
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 85 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  Star,
+  Tags,
+  X,
+} from '@lucide/vue'
+import {
+  getNodeName,
+  getNodeType,
+  RELATION_LABELS,
+} from '../constants/graph'
+
+const props = defineProps({
+  detail: { type: Object, default: null },
+  loading: { type: Boolean, default: false },
+})
+
+const emit = defineEmits(['close', 'navigate'])
+
+const properties = computed(() => props.detail?.node?.properties || {})
+const nodeName = computed(() => getNodeName(props.detail?.node))
+const moduleName = computed(() =>
+  props.detail?.module ? getNodeName(props.detail.module) : '未关联模块',
+)
+const videos = computed(() => props.detail?.materials?.videos || [])
+const slides = computed(() => props.detail?.materials?.slides || [])
+
+const relationGroups = computed(() => {
+  const groups = new Map()
+  for (const relation of props.detail?.relations || []) {
+    if (!groups.has(relation.type)) {
+      groups.set(relation.type, {
+        type: relation.type,
+        label: RELATION_LABELS[relation.type] || relation.type,
+        items: [],
+      })
+    }
+    groups.get(relation.type).items.push(relation)
+  }
+  return Array.from(groups.values())
+})
+
+function navigateToNode(node) {
+  const type = getNodeType(node.labels)
+  if (type === 'Module') {
+    emit('navigate', { type, id: node.id })
+  } else if (type === 'KnowledgePoint') {
+    emit('navigate', {
+      type,
+      id: node.id,
+      moduleId: node.properties.module_id,
+    })
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 86 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  }
+}
+</script>
+
+<style scoped>
+.detail-panel {
+  position: absolute;
+  z-index: 8;
+  top: 14px;
+  right: 14px;
+  bottom: 14px;
+  width: min(410px, calc(100% - 28px));
+  border: 1px solid #dfe7f1;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.16);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.detail-header {
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid #e7edf5;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title-wrap {
+  min-width: 0;
+}
+
+.type-badge {
+  display: inline-flex;
+  padding: 3px 7px;
+  border-radius: 4px;
+  color: #1d4ed8;
+  background: #eff6ff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+h2 {
+  margin: 8px 0 0;
+  color: #0f172a;
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 87 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+.icon-button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 6px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #475569;
+  background: #f8fafc;
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  color: #0f172a;
+  background: #eef2f7;
+}
+
+.detail-content {
+  min-height: 0;
+  padding: 16px 18px 24px;
+  overflow-y: auto;
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.meta-item {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #e7edf5;
+  border-radius: 6px;
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  column-gap: 6px;
+  color: #64748b;
+  background: #f8fafc;
+  font-size: 11px;
+}
+
+.meta-item svg {
+  grid-row: span 2;
+  margin-top: 2px;
+  color: #2563eb;
+}
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 88 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+.meta-item strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #1e293b;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.content-section + .content-section {
+  margin-top: 20px;
+}
+
+.content-section h3 {
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #0f172a;
+  font-size: 13px;
+}
+
+.content-section p {
+  margin: 0;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.relation-group + .relation-group {
+  margin-top: 12px;
+}
+
+.relation-label {
+  display: block;
+  margin-bottom: 5px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.related-row {
+  width: 100%;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #334155;
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 89 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  background: #f8fafc;
+  cursor: pointer;
+  text-align: left;
+  font-size: 12px;
+}
+
+.related-row + .related-row {
+  margin-top: 4px;
+}
+
+.related-row:hover {
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.related-row span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resource-placeholder {
+  padding: 11px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #64748b;
+  background: #fbfdff;
+}
+
+.resource-placeholder + .resource-placeholder {
+  margin-top: 8px;
+}
+
+.media-list + .media-list,
+.resource-placeholder + .media-list,
+.media-list + .resource-placeholder {
+  margin-top: 8px;
+}
+
+.media-card {
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 90 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+.media-card + .media-card {
+  margin-top: 8px;
+}
+
+.media-title {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #334155;
+  font-size: 12px;
+}
+
+.media-title svg {
+  color: #7c3aed;
+}
+
+.video-player {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  border-radius: 5px;
+  background: #0f172a;
+}
+
+.media-link {
+  padding: 10px;
+  border: 1px solid #dbe4ef;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #334155;
+  background: #ffffff;
+  text-decoration: none;
+}
+
+.media-link + .media-link {
+  margin-top: 6px;
+}
+
+.media-link:hover {
+  border-color: #93c5fd;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.media-link > svg:first-child {
+  flex: 0 0 auto;
+  color: #7c3aed;
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 91 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+}
+
+.media-link > svg:last-child {
+  flex: 0 0 auto;
+  color: #64748b;
+}
+
+.media-link span {
+  min-width: 0;
+  flex: 1;
+}
+
+.media-link strong,
+.media-link small {
+  display: block;
+}
+
+.media-link strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.media-link small {
+  margin-top: 2px;
+  color: #64748b;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.resource-placeholder > svg {
+  flex: 0 0 auto;
+  color: #7c3aed;
+}
+
+.resource-placeholder div {
+  min-width: 0;
+}
+
+.resource-placeholder strong,
+.resource-placeholder span {
+  display: block;
+}
+
+.resource-placeholder strong {
+  margin-bottom: 2px;
+  color: #334155;
+  font-size: 12px;
+}
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 92 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+.resource-placeholder span {
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.detail-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 640px) {
+  .detail-panel {
+    top: 8px;
+    right: 8px;
+    bottom: 8px;
+    width: calc(100% - 16px);
+  }
+
+  .meta-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+
+====================================================================================================
+FILE: frontend/src/components/KnowledgeGraph.vue
+====================================================================================================
+<template>
+  <div ref="graphContainer" class="graph-container">
+    <svg ref="svgRef" aria-label="知识图谱可视化"></svg>
+
+    <div v-if="loading" class="graph-state">
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 93 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+      <LoaderCircle class="spin" :size="24" />
+      <span>正在加载图谱</span>
+    </div>
+
+    <div v-else-if="nodes.length === 0" class="graph-state">
+      <Network :size="28" />
+      <strong>暂无可展示内容</strong>
+      <span>请从左侧目录选择模块</span>
+    </div>
+
+    <div class="graph-controls">
+      <button
+        type="button"
+        title="放大"
+        aria-label="放大图谱"
+        @click="zoomBy(1.25)"
+      >
+        <ZoomIn :size="16" />
+      </button>
+      <button
+        type="button"
+        title="缩小"
+        aria-label="缩小图谱"
+        @click="zoomBy(0.8)"
+      >
+        <ZoomOut :size="16" />
+      </button>
+      <button
+        type="button"
+        title="适应画布"
+        aria-label="适应画布"
+        @click="fitGraph(true)"
+      >
+        <Maximize2 :size="16" />
+      </button>
+    </div>
+
+    <div class="graph-legend">
+      <span><i class="legend-module"></i>模块</span>
+      <span><i class="legend-knowledge"></i>知识点</span>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import {
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 94 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  watch,
+} from 'vue'
+import * as d3 from 'd3'
+import {
+  LoaderCircle,
+  Maximize2,
+  Network,
+  ZoomIn,
+  ZoomOut,
+} from '@lucide/vue'
+import {
+  getNodeName,
+  getNodeType,
+  NODE_TYPE_COLORS,
+  RELATION_LABELS,
+} from '../constants/graph'
+
+const props = defineProps({
+  nodes: { type: Array, default: () => [] },
+  links: { type: Array, default: () => [] },
+  selectedId: { type: String, default: '' },
+  loading: { type: Boolean, default: false },
+})
+
+const emit = defineEmits(['node-click'])
+
+const graphContainer = ref(null)
+const svgRef = ref(null)
+
+let simulation = null
+let resizeObserver = null
+let renderTimer = null
+let fitTimer = null
+let zoomBehavior = null
+let svgSelection = null
+let graphSelection = null
+let nodeSelection = null
+
+function nodeRadius(node) {
+  return getNodeType(node.labels) === 'Module' ? 21 : 10
+}
+
+function clearTimers() {
+  if (renderTimer) {
+    clearTimeout(renderTimer)
+    renderTimer = null
+  }
+  if (fitTimer) {
+    clearTimeout(fitTimer)
+    fitTimer = null
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 95 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  }
+}
+
+function stopSimulation() {
+  if (simulation) {
+    simulation.stop()
+    simulation = null
+  }
+}
+
+function clearGraph() {
+  stopSimulation()
+  if (svgSelection) {
+    svgSelection.selectAll('*').remove()
+  }
+  nodeSelection = null
+  graphSelection = null
+}
+
+function truncateLabel(value, maxLength = 12) {
+  const text = String(value || '')
+  return text.length > maxLength
+    ? `${text.slice(0, maxLength)}...`
+    : text
+}
+
+function updateSelection() {
+  if (!nodeSelection) return
+
+  nodeSelection
+    .attr('stroke', (node) =>
+      node.id === props.selectedId ? '#0f172a' : '#ffffff',
+    )
+    .attr('stroke-width', (node) =>
+      node.id === props.selectedId ? 3 : 2,
+    )
+}
+
+function renderGraph() {
+  clearTimers()
+  stopSimulation()
+
+  if (!svgRef.value || !graphContainer.value) return
+
+  const width = graphContainer.value.clientWidth
+  const height = graphContainer.value.clientHeight
+
+  svgSelection = d3.select(svgRef.value)
+  clearGraph()
+  svgSelection = d3.select(svgRef.value)
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 96 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+  if (!width || !height) return
+
+  svgSelection
+    .attr('width', width)
+    .attr('height', height)
+    .attr('viewBox', `0 0 ${width} ${height}`)
+
+  if (!props.nodes.length) return
+
+  const nodes = props.nodes.map((node) => ({
+    ...node,
+    id: String(node.id),
+  }))
+  const links = props.links
+    .filter((link) => {
+      const nodeIds = new Set(nodes.map((node) => node.id))
+      return nodeIds.has(String(link.source)) && nodeIds.has(String(link.target))
+    })
+    .map((link) => ({
+      ...link,
+      source: String(link.source),
+      target: String(link.target),
+    }))
+
+  const definitions = svgSelection.append('defs')
+  definitions
+    .append('marker')
+    .attr('id', 'graph-arrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 10)
+    .attr('refY', 0)
+    .attr('markerWidth', 6)
+    .attr('markerHeight', 6)
+    .attr('orient', 'auto')
+    .append('path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('fill', '#94a3b8')
+
+  zoomBehavior = d3
+    .zoom()
+    .scaleExtent([0.25, 4])
+    .on('zoom', (event) => {
+      graphSelection.attr('transform', event.transform)
+    })
+
+  svgSelection.call(zoomBehavior)
+
+  graphSelection = svgSelection.append('g')
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 97 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  const link = graphSelection
+    .append('g')
+    .attr('class', 'graph-links')
+    .selectAll('line')
+    .data(links)
+    .enter()
+    .append('line')
+    .attr('stroke', '#94a3b8')
+    .attr('stroke-opacity', 0.5)
+    .attr('stroke-width', (item) =>
+      item.type === 'BELONGS_TO' ? 1.2 : 1.5,
+    )
+    .attr('marker-end', 'url(#graph-arrow)')
+
+  link
+    .append('title')
+    .text((item) => RELATION_LABELS[item.type] || item.type)
+
+  nodeSelection = graphSelection
+    .append('g')
+    .attr('class', 'graph-nodes')
+    .selectAll('circle')
+    .data(nodes)
+    .enter()
+    .append('circle')
+    .attr('class', 'graph-node')
+    .attr('r', nodeRadius)
+    .attr('fill', (node) => NODE_TYPE_COLORS[getNodeType(node.labels)])
+    .attr('stroke', '#ffffff')
+    .attr('stroke-width', 2)
+    .attr('cursor', 'pointer')
+    .call(
+      d3
+        .drag()
+        .on('start', dragStarted)
+        .on('drag', dragged)
+        .on('end', dragEnded),
+    )
+    .on('click', (event, node) => {
+      event.stopPropagation()
+      emit('node-click', node)
+    })
+
+  nodeSelection
+    .append('title')
+    .text((node) => {
+      const type = getNodeType(node.labels)
+      return `${type === 'Module' ? '模块' : '知识点'}：${getNodeName(node)}`
+    })
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 98 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  const label = graphSelection
+    .append('g')
+    .attr('class', 'graph-labels')
+    .selectAll('text')
+    .data(nodes)
+    .enter()
+    .append('text')
+    .text((node) => truncateLabel(getNodeName(node)))
+    .attr('font-size', (node) =>
+      getNodeType(node.labels) === 'Module' ? 12 : 10,
+    )
+    .attr('font-weight', (node) =>
+      getNodeType(node.labels) === 'Module' ? 700 : 500,
+    )
+    .attr('text-anchor', 'middle')
+    .attr('dy', (node) => (getNodeType(node.labels) === 'Module' ? -29 : -17))
+    .attr('fill', '#334155')
+    .style('paint-order', 'stroke')
+    .style('stroke', '#ffffff')
+    .style('stroke-width', 3)
+    .style('stroke-linejoin', 'round')
+    .style('user-select', 'none')
+    .style('pointer-events', 'none')
+
+  updateSelection()
+
+  simulation = d3
+    .forceSimulation(nodes)
+    .force(
+      'link',
+      d3
+        .forceLink(links)
+        .id((node) => node.id)
+        .distance((item) =>
+          item.type === 'BELONGS_TO' ? 74 : 108,
+        )
+        .strength((item) =>
+          item.type === 'BELONGS_TO' ? 0.9 : 0.55,
+        ),
+    )
+    .force(
+      'charge',
+      d3.forceManyBody().strength((node) =>
+        getNodeType(node.labels) === 'Module' ? -520 : -190,
+      ),
+    )
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('x', d3.forceX(width / 2).strength(0.025))
+    .force('y', d3.forceY(height / 2).strength(0.035))
+    .force(
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 99 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+      'collision',
+      d3
+        .forceCollide()
+        .radius((node) => nodeRadius(node) + 30)
+        .iterations(2),
+    )
+    .on('tick', () => {
+      nodes.forEach((node) => {
+        const padding = nodeRadius(node) + 18
+        node.x = Math.max(padding, Math.min(width - padding, node.x))
+        node.y = Math.max(padding, Math.min(height - padding, node.y))
+      })
+
+      link
+        .attr('x1', (item) => item.source.x)
+        .attr('y1', (item) => item.source.y)
+        .attr('x2', (item) => item.target.x)
+        .attr('y2', (item) => item.target.y)
+
+      nodeSelection
+        .attr('cx', (node) => node.x)
+        .attr('cy', (node) => node.y)
+
+      label
+        .attr('x', (node) => node.x)
+        .attr('y', (node) => node.y)
+    })
+
+  fitTimer = setTimeout(() => fitGraph(false), 650)
+
+  function dragStarted(event, node) {
+    if (!event.active) simulation.alphaTarget(0.25).restart()
+    node.fx = node.x
+    node.fy = node.y
+  }
+
+  function dragged(event, node) {
+    node.fx = event.x
+    node.fy = event.y
+  }
+
+  function dragEnded(event, node) {
+    if (!event.active) simulation.alphaTarget(0)
+    node.fx = null
+    node.fy = null
+  }
+}
+
+function fitGraph(animate = true) {
+  if (!graphSelection || !svgSelection || !zoomBehavior) return
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 100 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  if (!graphSelection.node()) return
+
+  const width = graphContainer.value?.clientWidth || 0
+  const height = graphContainer.value?.clientHeight || 0
+  if (!width || !height) return
+
+  const bounds = graphSelection.node().getBBox()
+  if (!bounds.width || !bounds.height) return
+
+  const scale = Math.max(
+    0.3,
+    Math.min(
+      2,
+      Math.min(width / bounds.width, height / bounds.height) * 0.82,
+    ),
+  )
+  const midX = bounds.x + bounds.width / 2
+  const midY = bounds.y + bounds.height / 2
+  const transform = d3.zoomIdentity
+    .translate(width / 2, height / 2)
+    .scale(scale)
+    .translate(-midX, -midY)
+  const target = animate ? svgSelection.transition().duration(450) : svgSelection
+
+  target.call(zoomBehavior.transform, transform)
+}
+
+function zoomBy(factor) {
+  if (!svgSelection || !zoomBehavior) return
+  svgSelection
+    .transition()
+    .duration(180)
+    .call(zoomBehavior.scaleBy, factor)
+}
+
+function scheduleRender(delay = 80) {
+  nextTick(() => {
+    if (renderTimer) clearTimeout(renderTimer)
+    renderTimer = setTimeout(renderGraph, delay)
+  })
+}
+
+watch(
+  () => [props.nodes, props.links],
+  () => scheduleRender(),
+  { flush: 'post' },
+)
+
+watch(
+  () => props.selectedId,
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 101 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  () => updateSelection(),
+)
+
+onMounted(() => {
+  scheduleRender(120)
+  resizeObserver = new ResizeObserver(() => scheduleRender(120))
+  if (graphContainer.value) {
+    resizeObserver.observe(graphContainer.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  clearTimers()
+  stopSimulation()
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+    resizeObserver = null
+  }
+})
+</script>
+
+<style scoped>
+.graph-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(148, 163, 184, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.09) 1px, transparent 1px),
+    #ffffff;
+  background-size: 24px 24px;
+}
+
+.graph-container svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.graph-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #64748b;
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 102 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  background: rgba(255, 255, 255, 0.82);
+  font-size: 13px;
+  text-align: center;
+}
+
+.graph-state strong {
+  color: #334155;
+  font-size: 14px;
+}
+
+.graph-controls {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.graph-controls button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #dbe4ef;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  color: #475569;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  cursor: pointer;
+}
+
+.graph-controls button:hover {
+  color: #1d4ed8;
+  border-color: #93c5fd;
+}
+
+.graph-legend {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  padding: 7px 9px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  display: flex;
+  gap: 12px;
+  color: #475569;
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 11px;
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 103 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+}
+
+.graph-legend span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.graph-legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.legend-module {
+  background: #7c3aed;
+}
+
+.legend-knowledge {
+  background: #2563eb;
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>
+
+
+====================================================================================================
+FILE: frontend/src/constants/graph.js
+====================================================================================================
+export const NODE_TYPE_LABELS = {
+  Module: '模块',
+  KnowledgePoint: '知识点',
+  Tool: '工具',
+}
+
+export const NODE_TYPE_COLORS = {
+  Module: '#7c3aed',
+  KnowledgePoint: '#2563eb',
+  Tool: '#0f766e',
+}
+
+export const RELATION_LABELS = {
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 104 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+  BELONGS_TO: '属于',
+  PREREQUISITE_OF: '前置知识',
+  PREREQUISITE_MODULE: '模块前置',
+  RELATED_TO: '相关知识',
+  PART_OF: '组成部分',
+  APPLIED_IN: '应用于',
+  IMPLEMENTED_IN: '实现于',
+  SUPPORTS: '支撑',
+}
+
+export function getNodeType(labels = []) {
+  if (labels.includes('Module')) return 'Module'
+  if (labels.includes('KnowledgePoint')) return 'KnowledgePoint'
+  if (labels.includes('Tool')) return 'Tool'
+  return labels[0] || 'Unknown'
+}
+
+export function getNodeName(node) {
+  return node?.properties?.name || '未命名'
+}
+
+
+====================================================================================================
+FILE: frontend/src/main.js
+====================================================================================================
+import { createApp } from 'vue'
+import './style.css'
+import App from './App.vue'
+
+createApp(App).mount('#app')
+
+
+====================================================================================================
+FILE: frontend/src/style.css
+====================================================================================================
+:root {
+  font-family:
+    Inter, "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", system-ui,
+    sans-serif;
+  color: #1f2937;
+  background: #f5f7fa;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 105 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  min-width: 320px;
+  overflow: hidden;
+}
+
+button,
+textarea,
+input {
+  font: inherit;
+}
+
+button {
+  font-family: inherit;
+}
+
+
+====================================================================================================
+FILE: frontend/vite.config.js
+====================================================================================================
+import vue from '@vitejs/plugin-vue'
+import { defineConfig, loadEnv } from 'vite'
+
+// https://vite.dev/config/
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+
+  return {
+    plugins: [vue()],
+    server: {
+      port: 9080,
+      strictPort: true,
+      proxy: {
+        '/api': {
+          target: env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:18081',
+          changeOrigin: true,
+        },
+      },
+    },
+  }
+})
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 106 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+====================================================================================================
+FILE: scripts/build_copyright_source.py
+====================================================================================================
+# Copyright (c) 2026 ?????
+# GIS???????????? - ????
+# ?????????????????????
+
+import hashlib
+import json
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Dict, List
+
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+RELEASE_DIR = ROOT_DIR / "release"
+LINES_PER_PAGE = 50
+PAGE_WIDTH = 100
+
+SOURCE_PATTERNS = [
+    "backend/*.py",
+    "frontend/*.html",
+    "frontend/*.js",
+    "frontend/*.json",
+    "frontend/src/**/*.js",
+    "frontend/src/**/*.vue",
+    "frontend/src/**/*.css",
+    "scripts/build_copyright_source.py",
+    "scripts/export_graph.py",
+    "scripts/import_media.py",
+]
+
+EXCLUDED_PARTS = {
+    ".git",
+    ".python",
+    ".venv",
+    "__pycache__",
+    "dist",
+    "node_modules",
+    "release",
+    "test-results",
+    "playwright-report",
+}
+
+EXCLUDED_FILES = {
+    "package-lock.json",
+}
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 107 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+def collect_source_files() -> List[Path]:
+    files = set()
+    for pattern in SOURCE_PATTERNS:
+        for path in ROOT_DIR.glob(pattern):
+            if not path.is_file():
+                continue
+            relative = path.relative_to(ROOT_DIR)
+            if any(part in EXCLUDED_PARTS for part in relative.parts):
+                continue
+            if path.name in EXCLUDED_FILES:
+                continue
+            files.add(path)
+
+    return sorted(
+        files,
+        key=lambda path: path.relative_to(ROOT_DIR).as_posix().lower(),
+    )
+
+
+def normalize_source_line(line: str) -> str:
+    return line.replace("\t", "    ").rstrip()
+
+
+def collect_code_lines(files: List[Path]) -> List[str]:
+    lines = []
+    for path in files:
+        relative = path.relative_to(ROOT_DIR).as_posix()
+        lines.append("")
+        lines.append("=" * PAGE_WIDTH)
+        lines.append("FILE: {0}".format(relative))
+        lines.append("=" * PAGE_WIDTH)
+        content = path.read_text(encoding="utf-8").splitlines()
+        lines.extend(normalize_source_line(line) for line in content)
+        if not content or content[-1].strip():
+            lines.append("")
+    return lines
+
+
+def paginate(code_lines: List[str]) -> List[List[str]]:
+    return [
+        code_lines[index:index + LINES_PER_PAGE]
+        for index in range(0, len(code_lines), LINES_PER_PAGE)
+    ]
+
+
+def render_pages(pages: List[List[str]], start_page: int = 1) -> str:
+    total_pages = len(pages)
+    rendered = []
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 108 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+    for offset, page_lines in enumerate(pages):
+        page_number = start_page + offset
+        rendered.extend(
+            [
+                "GIS交通路网教学知识图谱平台 V1.0",
+                "源代码整理件  第 {0} 页 / 共 {1} 页".format(
+                    page_number,
+                    total_pages,
+                ),
+                "-" * PAGE_WIDTH,
+            ]
+        )
+        padded = page_lines + [""] * (LINES_PER_PAGE - len(page_lines))
+        rendered.extend(padded[:LINES_PER_PAGE])
+        rendered.append("")
+        if offset < len(pages) - 1:
+            rendered.append("\f")
+
+    return "\n".join(rendered).rstrip() + "\n"
+
+
+def file_manifest(files: List[Path]) -> List[Dict[str, object]]:
+    manifest = []
+    for path in files:
+        content = path.read_bytes()
+        manifest.append(
+            {
+                "path": path.relative_to(ROOT_DIR).as_posix(),
+                "bytes": len(content),
+                "lines": len(path.read_text(encoding="utf-8").splitlines()),
+                "sha256": hashlib.sha256(content).hexdigest(),
+            }
+        )
+    return manifest
+
+
+def main() -> None:
+    RELEASE_DIR.mkdir(parents=True, exist_ok=True)
+    source_files = collect_source_files()
+    if not source_files:
+        raise RuntimeError("No source files found")
+
+    code_lines = collect_code_lines(source_files)
+    pages = paginate(code_lines)
+    total_pages = len(pages)
+
+    (RELEASE_DIR / "source-code-full.txt").write_text(
+        render_pages(pages),
+        encoding="utf-8",
+    )
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 109 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+    if total_pages <= 60:
+        submission_text = render_pages(pages)
+        submission_note = (
+            "总页数不超过60页，送审版本采用全部源码。"
+        )
+    else:
+        first_pages = pages[:30]
+        last_pages = pages[-30:]
+        first_text = render_pages(first_pages, start_page=1)
+        last_text = render_pages(
+            last_pages,
+            start_page=total_pages - 29,
+        )
+        (RELEASE_DIR / "source-code-first-30-pages.txt").write_text(
+            first_text,
+            encoding="utf-8",
+        )
+        (RELEASE_DIR / "source-code-last-30-pages.txt").write_text(
+            last_text,
+            encoding="utf-8",
+        )
+        submission_text = (
+            first_text.rstrip()
+            + "\n\f\n"
+            + last_text
+        )
+        submission_note = (
+            "总页数超过60页，送审版本采用前30页和后30页。"
+        )
+
+    (RELEASE_DIR / "source-code-submission.txt").write_text(
+        submission_text,
+        encoding="utf-8",
+    )
+
+    manifest = {
+        "metadata": {
+            "software_name": "GIS交通路网教学知识图谱平台",
+            "version": "V1.0",
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "source_file_count": len(source_files),
+            "source_line_count": len(code_lines),
+            "lines_per_page": LINES_PER_PAGE,
+            "total_pages": total_pages,
+            "submission_note": submission_note,
+        },
+        "files": file_manifest(source_files),
+    }
+    (RELEASE_DIR / "source-code-manifest.json").write_text(
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 110 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        json.dumps(manifest, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+    readme = """# 软著源码整理件
+
+软件名称：GIS交通路网教学知识图谱平台
+
+版本：V1.0
+
+## 文件说明
+
+| 文件 | 说明 |
+| --- | --- |
+| `source-code-full.txt` | 全部源码分页整理 |
+| `source-code-submission.txt` | 总页数不超过60页时生成 |
+| `source-code-first-30-pages.txt` | 总页数超过60页时生成 |
+| `source-code-last-30-pages.txt` | 总页数超过60页时生成 |
+| `source-code-manifest.json` | 源码文件、行数、页数和SHA-256清单 |
+
+## 分页规则
+
+1. 每页正文最多50行。
+2. 页眉包含软件名称、版本号和页码。
+3. 不包含第三方依赖、虚拟环境、构建产物和真实密钥。
+4. 生成内容为UTF-8纯文本，可转换为Word或PDF后送审。
+
+{0}
+""".format(submission_note)
+    (RELEASE_DIR / "README.md").write_text(readme, encoding="utf-8")
+
+    print(
+        "Generated {0} pages from {1} source files ({2} code lines).".format(
+            total_pages,
+            len(source_files),
+            len(code_lines),
+        )
+    )
+    print(submission_note)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as exc:
+        print("Build failed: {0}".format(exc), file=sys.stderr)
+        raise
+
+
+====================================================================================================
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 111 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+FILE: scripts/export_graph.py
+====================================================================================================
+# Copyright (c) 2026 ?????
+# GIS???????????? - ????
+# ?????????????????????
+
+import json
+import re
+import sys
+from collections import Counter, defaultdict
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+from neo4j import GraphDatabase, READ_ACCESS
+
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+BACKEND_DIR = ROOT_DIR / "backend"
+DATA_DIR = ROOT_DIR / "data"
+DOCS_DIR = ROOT_DIR / "docs"
+
+sys.path.insert(0, str(BACKEND_DIR))
+
+from config import (  # noqa: E402
+    NEO4J_DATABASE,
+    NEO4J_PASSWORD,
+    NEO4J_URI,
+    NEO4J_USER,
+)
+
+
+PRIMARY_ID_KEYS = {
+    "Module": "module_id",
+    "KnowledgePoint": "kp_id",
+    "Tool": "tool_id",
+    "Media": "media_id",
+}
+
+
+def json_safe(value: Any) -> Any:
+    if value is None or isinstance(value, (bool, int, float, str)):
+        return value
+    if isinstance(value, (list, tuple)):
+        return [json_safe(item) for item in value]
+    if isinstance(value, dict):
+        return {str(key): json_safe(item) for key, item in value.items()}
+    return str(value)
+
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 112 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+def primary_label(labels: List[str]) -> str:
+    for label in ("Module", "KnowledgePoint", "Tool", "Media"):
+        if label in labels:
+            return label
+    return sorted(labels)[0] if labels else "Node"
+
+
+def primary_id_key(label: str) -> str:
+    return PRIMARY_ID_KEYS.get(label, "id")
+
+
+def business_id(label: str, properties: Dict[str, Any]) -> Optional[str]:
+    value = properties.get(primary_id_key(label))
+    return str(value) if value is not None else None
+
+
+def cypher_literal(value: Any) -> str:
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, (int, float)):
+        return str(value)
+    if isinstance(value, str):
+        return json.dumps(value, ensure_ascii=False)
+    if isinstance(value, (list, tuple)):
+        return "[" + ", ".join(cypher_literal(item) for item in value) + "]"
+    if isinstance(value, dict):
+        entries = ", ".join(
+            "{0}: {1}".format(
+                "`{0}`".format(str(key).replace("`", "``")),
+                cypher_literal(item),
+            )
+            for key, item in value.items()
+        )
+        return "{" + entries + "}"
+    return json.dumps(str(value), ensure_ascii=False)
+
+
+def cypher_map(properties: Dict[str, Any]) -> str:
+    entries = ", ".join(
+        "{0}: {1}".format(
+            "`{0}`".format(str(key).replace("`", "``")),
+            cypher_literal(value),
+        )
+        for key, value in properties.items()
+    )
+    return "{" + entries + "}"
+
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 113 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+def write_text(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content.rstrip() + "\n", encoding="utf-8")
+
+
+def fetch_graph(driver) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    with driver.session(
+        database=NEO4J_DATABASE,
+        default_access_mode=READ_ACCESS,
+    ) as session:
+        node_records = list(
+            session.run(
+                """
+                MATCH (node)
+                RETURN node
+                ORDER BY
+                  labels(node)[0],
+                  coalesce(
+                    node.module_id,
+                    node.kp_id,
+                    node.tool_id,
+                    node.media_id,
+                    ''
+                  )
+                """,
+                timeout=15.0,
+            )
+        )
+        relationship_records = list(
+            session.run(
+                """
+                MATCH (source)-[relationship]->(target)
+                RETURN source, relationship, target
+                ORDER BY type(relationship), elementId(relationship)
+                """,
+                timeout=20.0,
+            )
+        )
+
+    nodes = []
+    for record in node_records:
+        node = record["node"]
+        labels = sorted(node.labels)
+        properties = {
+            key: json_safe(value)
+            for key, value in dict(node).items()
+        }
+        nodes.append(
+            {
+                "elementId": node.element_id,
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 114 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+                "labels": labels,
+                "primaryLabel": primary_label(labels),
+                "businessId": business_id(primary_label(labels), properties),
+                "properties": properties,
+            }
+        )
+
+    relationships = []
+    for record in relationship_records:
+        source = record["source"]
+        relationship = record["relationship"]
+        target = record["target"]
+        source_labels = sorted(source.labels)
+        target_labels = sorted(target.labels)
+        source_label = primary_label(source_labels)
+        target_label = primary_label(target_labels)
+        source_properties = {
+            key: json_safe(value)
+            for key, value in dict(source).items()
+        }
+        target_properties = {
+            key: json_safe(value)
+            for key, value in dict(target).items()
+        }
+        relationships.append(
+            {
+                "elementId": relationship.element_id,
+                "type": relationship.type,
+                "sourceElementId": source.element_id,
+                "targetElementId": target.element_id,
+                "sourceLabel": source_label,
+                "targetLabel": target_label,
+                "sourceBusinessId": business_id(
+                    source_label,
+                    source_properties,
+                ),
+                "targetBusinessId": business_id(
+                    target_label,
+                    target_properties,
+                ),
+                "properties": {
+                    key: json_safe(value)
+                    for key, value in dict(relationship).items()
+                },
+            }
+        )
+
+    return nodes, relationships
+
+
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 115 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+def validate_graph(
+    nodes: List[Dict[str, Any]],
+    relationships: List[Dict[str, Any]],
+) -> None:
+    node_element_ids = set()
+    business_ids = set()
+
+    for node in nodes:
+        if node["elementId"] in node_element_ids:
+            raise ValueError(
+                "Duplicate node element ID: {0}".format(node["elementId"])
+            )
+        node_element_ids.add(node["elementId"])
+
+        if not node["businessId"]:
+            raise ValueError(
+                "Missing business ID for node {0}".format(node["elementId"])
+            )
+        business_key = (node["primaryLabel"], node["businessId"])
+        if business_key in business_ids:
+            raise ValueError(
+                "Duplicate business ID: {0}".format(business_key)
+            )
+        business_ids.add(business_key)
+
+    relationship_signatures = set()
+    for relationship in relationships:
+        if relationship["sourceElementId"] not in node_element_ids:
+            raise ValueError("Relationship source is missing from nodes")
+        if relationship["targetElementId"] not in node_element_ids:
+            raise ValueError("Relationship target is missing from nodes")
+        if not relationship["sourceBusinessId"]:
+            raise ValueError("Relationship source business ID is missing")
+        if not relationship["targetBusinessId"]:
+            raise ValueError("Relationship target business ID is missing")
+
+        signature = (
+            relationship["sourceBusinessId"],
+            relationship["type"],
+            relationship["targetBusinessId"],
+        )
+        if signature in relationship_signatures:
+            raise ValueError(
+                "Duplicate relationship signature: {0}".format(signature)
+            )
+        relationship_signatures.add(signature)
+
+
+def build_schema_cypher() -> str:
+    return """// GIS交通路网教学知识图谱平台 V1.0
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 116 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+// Neo4j schema constraints and indexes.
+
+CREATE CONSTRAINT module_id_unique IF NOT EXISTS
+FOR (node:Module) REQUIRE node.module_id IS UNIQUE;
+
+CREATE CONSTRAINT knowledge_point_id_unique IF NOT EXISTS
+FOR (node:KnowledgePoint) REQUIRE node.kp_id IS UNIQUE;
+
+CREATE CONSTRAINT tool_id_unique IF NOT EXISTS
+FOR (node:Tool) REQUIRE node.tool_id IS UNIQUE;
+
+CREATE CONSTRAINT media_id_unique IF NOT EXISTS
+FOR (node:Media) REQUIRE node.media_id IS UNIQUE;
+
+CREATE INDEX module_name_index IF NOT EXISTS
+FOR (node:Module) ON (node.name);
+
+CREATE INDEX knowledge_point_name_index IF NOT EXISTS
+FOR (node:KnowledgePoint) ON (node.name);
+
+CREATE INDEX knowledge_point_module_index IF NOT EXISTS
+FOR (node:KnowledgePoint) ON (node.kp_id);
+"""
+
+
+def build_node_cypher(
+    nodes: List[Dict[str, Any]],
+    label: str,
+) -> str:
+    lines = [
+        "// GIS交通路网教学知识图谱平台 V1.0",
+        "// Generated node import file for {0}.".format(label),
+        "",
+    ]
+    id_key = primary_id_key(label)
+
+    for node in nodes:
+        if node["primaryLabel"] != label:
+            continue
+        node_id = node["businessId"]
+        properties = node["properties"]
+        lines.append(
+            "MERGE (node:{0} {{{1}: {2}}})".format(
+                label,
+                id_key,
+                cypher_literal(node_id),
+            )
+        )
+        lines.append("SET node = {0};".format(cypher_map(properties)))
+        lines.append("")
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 117 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+
+    return "\n".join(lines)
+
+
+def build_relationship_cypher(
+    relationships: List[Dict[str, Any]],
+) -> str:
+    lines = [
+        "// GIS交通路网教学知识图谱平台 V1.0",
+        "// Generated relationship import file.",
+        "",
+    ]
+
+    for relationship in relationships:
+        relationship_type = relationship["type"]
+        if not re.match(r"^[A-Z][A-Z0-9_]*$", relationship_type):
+            raise ValueError(
+                "Unsupported relationship type: {0}".format(
+                    relationship_type
+                )
+            )
+
+        source_id_key = primary_id_key(relationship["sourceLabel"])
+        target_id_key = primary_id_key(relationship["targetLabel"])
+        lines.append(
+            (
+                "MATCH (source:{0} {{{1}: {2}}}), "
+                "(target:{3} {{{4}: {5}}})"
+            ).format(
+                relationship["sourceLabel"],
+                source_id_key,
+                cypher_literal(relationship["sourceBusinessId"]),
+                relationship["targetLabel"],
+                target_id_key,
+                cypher_literal(relationship["targetBusinessId"]),
+            )
+        )
+        lines.append(
+            "MERGE (source)-[relationship:{0}]->(target)".format(
+                relationship_type
+            )
+        )
+        if relationship["properties"]:
+            lines.append(
+                "SET relationship = {0};".format(
+                    cypher_map(relationship["properties"])
+                )
+            )
+        else:
+            lines[-1] += ";"
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 118 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        lines.append("")
+
+    return "\n".join(lines)
+
+
+def build_data_readme(metadata: Dict[str, Any]) -> str:
+    return """# Neo4j 数据导入说明
+
+本目录由 `scripts/export_graph.py` 从实际 Neo4j 数据库只读导出。
+
+## 快照统计
+
+- 模块节点：{module_count}
+- 知识点节点：{knowledge_point_count}
+- 工具节点：{tool_count}
+- 媒体节点：{media_count}
+- 关系总数：{relationship_count}
+- Neo4j 版本：{neo4j_version}
+
+## 导入顺序
+
+1. `schema.cypher`
+2. `modules.cypher`
+3. `knowledge-points.cypher`
+4. `tools.cypher`
+5. `media.cypher`
+6. `relationships.cypher`
+
+节点文件使用 `MERGE` 和主键匹配，关系文件在节点导入完成后执行。
+`graph-snapshot.json` 用于数据核对和备份，不用于 Neo4j 导入。
+""".format(**metadata)
+
+
+def build_database_document(
+    nodes: List[Dict[str, Any]],
+    relationships: List[Dict[str, Any]],
+    metadata: Dict[str, Any],
+) -> str:
+    label_counts = Counter(node["primaryLabel"] for node in nodes)
+    relationship_counts = Counter(
+        relationship["type"] for relationship in relationships
+    )
+    relation_shapes = Counter(
+        (
+            relationship["type"],
+            relationship["sourceLabel"],
+            relationship["targetLabel"],
+        )
+        for relationship in relationships
+    )
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 119 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+    properties_by_label = defaultdict(set)
+
+    for node in nodes:
+        properties_by_label[node["primaryLabel"]].update(
+            node["properties"].keys()
+        )
+
+    lines = [
+        "# 数据库设计说明",
+        "",
+        "## 软件信息",
+        "",
+        "| 项目 | 内容 |",
+        "| --- | --- |",
+        "| 软件名称 | GIS交通路网教学知识图谱平台 |",
+        "| 版本 | V1.0 |",
+        "| 数据库 | Neo4j {0} |".format(metadata["neo4j_version"]),
+        "| 快照生成时间 | {0} |".format(metadata["generated_at"]),
+        "",
+        "## 节点设计",
+        "",
+        "| 标签 | 数量 | 主键 | 属性 |",
+        "| --- | ---: | --- | --- |",
+    ]
+
+    for label in ("Module", "KnowledgePoint", "Tool", "Media"):
+        properties = ", ".join(
+            "`{0}`".format(key)
+            for key in sorted(properties_by_label.get(label, set()))
+        )
+        lines.append(
+            "| `{0}` | {1} | `{2}` | {3} |".format(
+                label,
+                label_counts.get(label, 0),
+                primary_id_key(label),
+                properties or "无",
+            )
+        )
+
+    lines.extend(
+        [
+            "",
+            "## 关系设计",
+            "",
+            "| 关系类型 | 起点 | 终点 | 数量 |",
+            "| --- | --- | --- | ---: |",
+        ]
+    )
+
+    for relationship_type in sorted(relationship_counts):
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 120 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        shapes = [
+            shape
+            for shape in relation_shapes
+            if shape[0] == relationship_type
+        ]
+        for _, source_label, target_label in sorted(shapes):
+            count = relation_shapes[
+                (relationship_type, source_label, target_label)
+            ]
+            lines.append(
+                "| `{0}` | `{1}` | `{2}` | {3} |".format(
+                    relationship_type,
+                    source_label,
+                    target_label,
+                    count,
+                )
+            )
+
+    lines.extend(
+        [
+            "",
+            "## 数据完整性",
+            "",
+            "1. 每类节点使用业务主键进行唯一性校验。",
+            "2. 所有关系的起点和终点必须能够匹配到已导入节点。",
+            "3. 导出脚本会检查重复节点主键和重复关系签名。",
+            "4. 导入文件使用 `MERGE`，可以重复执行。",
+            "",
+            "## 数据恢复",
+            "",
+            "在空白 Neo4j 数据库中按 `data/README.md` 的顺序执行导入文件。",
+            "完成后可重新执行本导出脚本，核对节点和关系数量是否一致。",
+        ]
+    )
+
+    return "\n".join(lines)
+
+
+def main() -> None:
+    if not NEO4J_PASSWORD:
+        raise RuntimeError(
+            "NEO4J_PASSWORD is not configured. Set backend/.env first."
+        )
+
+    driver = GraphDatabase.driver(
+        NEO4J_URI,
+        auth=(NEO4J_USER, NEO4J_PASSWORD),
+    )
+
+    try:
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 121 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        driver.verify_connectivity()
+        with driver.session(
+            database=NEO4J_DATABASE,
+            default_access_mode=READ_ACCESS,
+        ) as session:
+            neo4j_version = session.run(
+                """
+                CALL dbms.components()
+                YIELD name, versions
+                RETURN versions[0] AS version
+                """
+            ).single()["version"]
+
+        nodes, relationships = fetch_graph(driver)
+        validate_graph(nodes, relationships)
+    finally:
+        driver.close()
+
+    label_counts = Counter(node["primaryLabel"] for node in nodes)
+    metadata = {
+        "module_count": label_counts.get("Module", 0),
+        "knowledge_point_count": label_counts.get("KnowledgePoint", 0),
+        "tool_count": label_counts.get("Tool", 0),
+        "media_count": label_counts.get("Media", 0),
+        "relationship_count": len(relationships),
+        "neo4j_version": neo4j_version,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    snapshot = {
+        "metadata": metadata,
+        "nodes": nodes,
+        "relationships": relationships,
+    }
+
+    write_text(
+        DATA_DIR / "graph-snapshot.json",
+        json.dumps(snapshot, ensure_ascii=False, indent=2),
+    )
+    write_text(DATA_DIR / "schema.cypher", build_schema_cypher())
+    write_text(
+        DATA_DIR / "modules.cypher",
+        build_node_cypher(nodes, "Module"),
+    )
+    write_text(
+        DATA_DIR / "knowledge-points.cypher",
+        build_node_cypher(nodes, "KnowledgePoint"),
+    )
+    write_text(DATA_DIR / "tools.cypher", build_node_cypher(nodes, "Tool"))
+    write_text(DATA_DIR / "media.cypher", build_node_cypher(nodes, "Media"))
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 122 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+    write_text(
+        DATA_DIR / "relationships.cypher",
+        build_relationship_cypher(relationships),
+    )
+    write_text(DATA_DIR / "README.md", build_data_readme(metadata))
+    write_text(
+        DOCS_DIR / "02-database-design.md",
+        build_database_document(nodes, relationships, metadata),
+    )
+
+    print(
+        "Exported {0} nodes and {1} relationships.".format(
+            len(nodes),
+            len(relationships),
+        )
+    )
+    print(
+        "Modules: {0}, KnowledgePoints: {1}, Tools: {2}, Media: {3}".format(
+            metadata["module_count"],
+            metadata["knowledge_point_count"],
+            metadata["tool_count"],
+            metadata["media_count"],
+        )
+    )
+    print("Output: {0}".format(DATA_DIR))
+
+
+if __name__ == "__main__":
+    main()
+
+
+====================================================================================================
+FILE: scripts/import_media.py
+====================================================================================================
+# Copyright (c) 2026 ?????
+# GIS???????????? - ????
+# ?????????????????????
+
+import argparse
+import json
+import sys
+from collections import Counter
+from pathlib import Path
+from typing import Any, Dict, List
+from urllib.parse import quote
+
+from neo4j import GraphDatabase, READ_ACCESS
+
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 123 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+BACKEND_DIR = ROOT_DIR / "backend"
+MEDIA_DIR = BACKEND_DIR / "media"
+MANIFEST_PATH = ROOT_DIR / "data" / "media-manifest.json"
+
+sys.path.insert(0, str(BACKEND_DIR))
+
+from config import (  # noqa: E402
+    NEO4J_DATABASE,
+    NEO4J_PASSWORD,
+    NEO4J_URI,
+    NEO4J_USER,
+)
+
+
+ALLOWED_MEDIA_TYPES = {
+    "video": {".mp4", ".webm"},
+    "slides": {".pdf", ".ppt", ".pptx"},
+}
+ALLOWED_COVER_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+
+
+def load_manifest() -> List[Dict[str, Any]]:
+    if not MANIFEST_PATH.exists():
+        raise FileNotFoundError(
+            "Media manifest not found: {0}".format(MANIFEST_PATH)
+        )
+
+    data = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    items = data.get("items")
+    if not isinstance(items, list):
+        raise ValueError("media-manifest.json must contain an items array")
+    return items
+
+
+def safe_media_path(relative_path: str) -> Path:
+    if not relative_path:
+        raise ValueError("Media file path cannot be empty")
+
+    candidate = (MEDIA_DIR / relative_path).resolve()
+    media_root = MEDIA_DIR.resolve()
+    try:
+        candidate.relative_to(media_root)
+    except ValueError as exc:
+        raise ValueError(
+            "Media path escapes backend/media: {0}".format(relative_path)
+        ) from exc
+    return candidate
+
+
+def validate_item(
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 124 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+    item: Dict[str, Any],
+    apply_changes: bool,
+) -> Dict[str, Any]:
+    required_fields = (
+        "media_id",
+        "knowledge_point_id",
+        "type",
+        "title",
+        "file",
+    )
+    missing = [
+        field for field in required_fields if not str(item.get(field, "")).strip()
+    ]
+    if missing:
+        raise ValueError(
+            "Media item is missing fields: {0}".format(", ".join(missing))
+        )
+
+    media_type = str(item["type"]).strip()
+    if media_type not in ALLOWED_MEDIA_TYPES:
+        raise ValueError(
+            "Unsupported media type: {0}".format(media_type)
+        )
+
+    file_path = safe_media_path(str(item["file"]).strip())
+    extension = file_path.suffix.lower()
+    if extension not in ALLOWED_MEDIA_TYPES[media_type]:
+        raise ValueError(
+            "Extension {0} is not valid for {1}".format(
+                extension,
+                media_type,
+            )
+        )
+    if apply_changes and not file_path.is_file():
+        raise FileNotFoundError(
+            "Media file does not exist: {0}".format(file_path)
+        )
+
+    cover_value = str(item.get("cover", "")).strip()
+    cover_path = None
+    if cover_value:
+        cover_path = safe_media_path(cover_value)
+        if cover_path.suffix.lower() not in ALLOWED_COVER_EXTENSIONS:
+            raise ValueError(
+                "Unsupported cover extension: {0}".format(
+                    cover_path.suffix
+                )
+            )
+        if apply_changes and not cover_path.is_file():
+            raise FileNotFoundError(
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 125 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+                "Cover file does not exist: {0}".format(cover_path)
+            )
+
+    file_relative = file_path.relative_to(MEDIA_DIR.resolve()).as_posix()
+    cover_relative = None
+    if cover_path:
+        cover_relative = cover_path.relative_to(MEDIA_DIR.resolve()).as_posix()
+
+    return {
+        "media_id": str(item["media_id"]).strip(),
+        "knowledge_point_id": str(item["knowledge_point_id"]).strip(),
+        "type": media_type,
+        "title": str(item["title"]).strip(),
+        "format": extension.lstrip("."),
+        "url": "/media/{0}".format(quote(file_relative, safe="/")),
+        "cover_url": (
+            "/media/{0}".format(quote(cover_relative, safe="/"))
+            if cover_relative
+            else None
+        ),
+        "order": int(item.get("order", 9999)),
+    }
+
+
+def ensure_knowledge_points(driver, knowledge_point_ids) -> None:
+    with driver.session(
+        database=NEO4J_DATABASE,
+        default_access_mode=READ_ACCESS,
+    ) as session:
+        records = session.run(
+            """
+            MATCH (knowledge:KnowledgePoint)
+            WHERE knowledge.kp_id IN $knowledge_point_ids
+            RETURN collect(DISTINCT knowledge.kp_id) AS ids
+            """,
+            {"knowledge_point_ids": knowledge_point_ids},
+            timeout=10.0,
+        ).single()
+
+    found_ids = set(records["ids"] if records else [])
+    missing_ids = sorted(set(knowledge_point_ids) - found_ids)
+    if missing_ids:
+        raise ValueError(
+            "Knowledge points not found: {0}".format(", ".join(missing_ids))
+        )
+
+
+def upsert_media_item(tx, item: Dict[str, Any]) -> None:
+    tx.run(
+        """
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 126 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+        MATCH (knowledge:KnowledgePoint {kp_id: $knowledge_point_id})
+        MERGE (media:Media {media_id: $media_id})
+        SET media.type = $type,
+            media.title = $title,
+            media.format = $format,
+            media.url = $url,
+            media.cover_url = $cover_url,
+            media.order = $order
+        MERGE (knowledge)-[:HAS_MEDIA]->(media)
+        """,
+        item,
+        timeout=10.0,
+    )
+
+
+def apply_media_items(driver, items: List[Dict[str, Any]]) -> None:
+    with driver.session(database=NEO4J_DATABASE) as session:
+        for item in items:
+            session.execute_write(upsert_media_item, item)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Validate and import teaching media metadata."
+    )
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="Write validated media nodes and relationships to Neo4j.",
+    )
+    args = parser.parse_args()
+
+    if not NEO4J_PASSWORD:
+        raise RuntimeError(
+            "NEO4J_PASSWORD is not configured. Set backend/.env first."
+        )
+
+    raw_items = load_manifest()
+    if not raw_items:
+        print("Media manifest is empty. Nothing to import.")
+        return
+
+    media_ids = [
+        str(item.get("media_id", "")).strip()
+        for item in raw_items
+    ]
+    duplicate_ids = sorted(
+        media_id
+        for media_id, count in Counter(media_ids).items()
+        if media_id and count > 1
+
+
+GIS交通路网教学知识图谱平台 V1.0
+源代码整理件  第 127 页 / 共 127 页
+----------------------------------------------------------------------------------------------------
+    )
+    if duplicate_ids:
+        raise ValueError(
+            "Duplicate media IDs: {0}".format(", ".join(duplicate_ids))
+        )
+
+    validated_items = [
+        validate_item(item, apply_changes=args.apply)
+        for item in raw_items
+    ]
+
+    driver = GraphDatabase.driver(
+        NEO4J_URI,
+        auth=(NEO4J_USER, NEO4J_PASSWORD),
+    )
+    try:
+        driver.verify_connectivity()
+        ensure_knowledge_points(
+            driver,
+            {
+                item["knowledge_point_id"]
+                for item in validated_items
+            },
+        )
+        if args.apply:
+            apply_media_items(driver, validated_items)
+    finally:
+        driver.close()
+
+    mode = "Imported" if args.apply else "Validated"
+    print(
+        "{0} {1} media items.".format(
+            mode,
+            len(validated_items),
+        )
+    )
+    for item in validated_items:
+        print(
+            "{0}: {1} -> {2}".format(
+                item["knowledge_point_id"],
+                item["type"],
+                item["url"],
+            )
+        )
+
+
+if __name__ == "__main__":
+    main()

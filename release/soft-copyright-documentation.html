@@ -1,0 +1,2100 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GIS交通路网教学知识图谱平台 V1.0 软著材料</title>
+  <style>
+    :root {
+      color: #1f2937;
+      background: #ffffff;
+      font: 14px/1.7 "Microsoft YaHei", "PingFang SC", sans-serif;
+    }
+    body {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+    .document {
+      page-break-before: always;
+    }
+    .document:first-child {
+      page-break-before: auto;
+    }
+    h1, h2, h3, h4 {
+      color: #111827;
+      break-after: avoid;
+    }
+    h1 {
+      padding-bottom: 10px;
+      border-bottom: 2px solid #7c3aed;
+      font-size: 24px;
+    }
+    h2 {
+      margin-top: 26px;
+      font-size: 19px;
+    }
+    h3 {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+    p {
+      margin: 9px 0;
+    }
+    code {
+      padding: 2px 5px;
+      border-radius: 3px;
+      color: #7c2d12;
+      background: #fff7ed;
+    }
+    pre {
+      padding: 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      background: #f8fafc;
+    }
+    pre code {
+      padding: 0;
+      color: #0f172a;
+      background: transparent;
+    }
+    table {
+      width: 100%;
+      margin: 14px 0;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 7px 9px;
+      border: 1px solid #cbd5e1;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f1f5f9;
+    }
+    figure {
+      margin: 22px 0;
+      text-align: center;
+    }
+    figure img {
+      max-width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+    }
+    figcaption {
+      margin-top: 7px;
+      color: #64748b;
+      font-size: 12px;
+    }
+    @media print {
+      body {
+        max-width: none;
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>GIS交通路网教学知识图谱平台 V1.0</h1>
+  <p>软件著作权说明材料</p>
+</header>
+<section class="document">
+<h1>00-version-baseline.md</h1>
+<h1>软件版本基线</h1>
+<h2>基本信息</h2>
+<table><thead><tr>
+<th>项目</th>
+<th>内容</th>
+</tr></thead><tbody>
+<tr>
+<td>正式名称</td>
+<td>GIS交通路网教学知识图谱平台</td>
+</tr>
+<tr>
+<td>正式简称</td>
+<td>GIS知识图谱平台</td>
+</tr>
+<tr>
+<td>版本号</td>
+<td>V1.0</td>
+</tr>
+<tr>
+<td>内部项目名</td>
+<td>gis-knowledge-platform</td>
+</tr>
+<tr>
+<td>软件类型</td>
+<td>教学知识图谱可视化 Web 平台</td>
+</tr>
+</tbody></table>
+<h2>项目用途</h2>
+<p>本软件面向 GIS 交通路网相关课程，提供知识图谱目录浏览、模块与知识点可视化、 知识点详情展示、教学资源扩展和智能问答扩展能力。</p>
+<h2>技术栈</h2>
+<table><thead><tr>
+<th>层级</th>
+<th>技术</th>
+</tr></thead><tbody>
+<tr>
+<td>前端</td>
+<td>Vue 3、Vite、Axios、D3.js</td>
+</tr>
+<tr>
+<td>后端</td>
+<td>Python、FastAPI、Neo4j Python Driver</td>
+</tr>
+<tr>
+<td>数据库</td>
+<td>Neo4j</td>
+</tr>
+<tr>
+<td>智能问答</td>
+<td>DeepSeek API，通过本地环境变量配置启用</td>
+</tr>
+</tbody></table>
+<h2>命名规则</h2>
+<p>以下位置必须使用统一名称和版本：</p>
+<ol>
+<li>网页标题与页面品牌区。</li>
+<li>后端 OpenAPI 标题与版本。</li>
+<li>前端 <code>package.json</code>。</li>
+<li>系统设计说明书。</li>
+<li>操作手册、测试报告和部署说明。</li>
+<li>软著源码整理件的页眉与封面。</li>
+</ol>
+<h2>版本说明</h2>
+<p>V1.0 的核心功能定位为：</p>
+<ol>
+<li>完整知识目录。</li>
+<li>模块总览图。</li>
+<li>模块知识点展开。</li>
+<li>知识点详情。</li>
+<li>视频与 PPT 资源扩展接口。</li>
+<li>智能问答界面与后端扩展接口。</li>
+</ol>
+</section>
+
+<section class="document">
+<h1>01-system-design.md</h1>
+<h1>系统设计说明书</h1>
+<h2>一、软件信息</h2>
+<table><thead><tr>
+<th>项目</th>
+<th>内容</th>
+</tr></thead><tbody>
+<tr>
+<td>软件名称</td>
+<td>GIS交通路网教学知识图谱平台</td>
+</tr>
+<tr>
+<td>软件版本</td>
+<td>V1.0</td>
+</tr>
+<tr>
+<td>软件类型</td>
+<td>教学知识图谱可视化 Web 平台</td>
+</tr>
+<tr>
+<td>后端技术</td>
+<td>Python 3.12、FastAPI</td>
+</tr>
+<tr>
+<td>前端技术</td>
+<td>Vue 3、Vite、D3.js、Axios</td>
+</tr>
+<tr>
+<td>数据库</td>
+<td>Neo4j 5.x</td>
+</tr>
+<tr>
+<td>智能问答</td>
+<td>DeepSeek API</td>
+</tr>
+</tbody></table>
+<h2>二、建设目标</h2>
+<p>本软件面向 GIS 交通路网课程教学，将模块、知识点、前置关系、相关关系、 工具关系等内容组织为知识图谱，并通过网页提供目录浏览、图谱可视化、 知识点详情、媒体资源和智能问答能力。</p>
+<h2>三、总体架构</h2>
+<p>系统采用前后端分离架构：</p>
+<pre><code class="language-text">浏览器
+├── Vue 3 页面
+├── D3.js 知识图谱
+└── Axios API 客户端
+        │
+        ▼
+FastAPI 后端
+├── 目录与图谱接口
+├── 知识点详情接口
+├── 媒体访问
+├── 搜索服务
+└── DeepSeek 图谱问答服务
+        │
+        ▼
+Neo4j 知识图谱数据库</code></pre>
+<p>前端负责页面布局和交互，后端负责数据查询、业务聚合和外部 AI 服务调用， Neo4j 负责保存教学知识图谱。</p>
+<h2>四、前端设计</h2>
+<h3>页面框架</h3>
+<p>网页采用三栏式布局：</p>
+<table><thead><tr>
+<th>区域</th>
+<th>功能</th>
+</tr></thead><tbody>
+<tr>
+<td>左侧</td>
+<td>完整知识目录、模块折叠和知识点选择</td>
+</tr>
+<tr>
+<td>中间</td>
+<td>模块总览、知识点子图和详情面板</td>
+</tr>
+<tr>
+<td>右侧</td>
+<td>DeepSeek 智能问答和关联知识点引用</td>
+</tr>
+</tbody></table>
+<h3>前端组件</h3>
+<table><thead><tr>
+<th>组件</th>
+<th>主要职责</th>
+</tr></thead><tbody>
+<tr>
+<td><code>App.vue</code></td>
+<td>页面状态、接口调用、模块和知识点联动</td>
+</tr>
+<tr>
+<td><code>DirectoryPanel.vue</code></td>
+<td>知识目录、目录搜索和知识点选择</td>
+</tr>
+<tr>
+<td><code>KnowledgeGraph.vue</code></td>
+<td>D3 力导向图、缩放、拖拽和节点点击</td>
+</tr>
+<tr>
+<td><code>KnowledgeDetail.vue</code></td>
+<td>知识点属性、关联知识和教学媒体</td>
+</tr>
+<tr>
+<td><code>ChatPanel.vue</code></td>
+<td>问答消息、配置状态和引用节点</td>
+</tr>
+<tr>
+<td><code>api/client.js</code></td>
+<td>Axios 实例、基础地址和请求超时</td>
+</tr>
+<tr>
+<td><code>constants/graph.js</code></td>
+<td>节点颜色、类型和关系统一名称</td>
+</tr>
+</tbody></table>
+<h3>页面状态</h3>
+<p>页面使用三个主要状态：</p>
+<ol>
+<li>模块总览：只显示模块节点和模块关系。</li>
+<li>模块知识点：显示当前模块和所属知识点。</li>
+<li>知识点详情：在中间区域显示详情抽屉。</li>
+</ol>
+<h2>五、后端设计</h2>
+<h3>应用入口</h3>
+<p><code>backend/main.py</code> 负责：</p>
+<ol>
+<li>创建 FastAPI 应用。</li>
+<li>管理 Neo4j Driver 生命周期。</li>
+<li>配置 CORS。</li>
+<li>提供知识图谱、目录、搜索和问答接口。</li>
+<li>挂载本地教学媒体目录。</li>
+</ol>
+<h3>配置模块</h3>
+<p><code>backend/config.py</code> 从 <code>backend/.env</code> 读取：</p>
+<ul>
+<li>Neo4j 地址、用户、密码和数据库名。</li>
+<li>DeepSeek API Key、地址、模型和参数。</li>
+<li>CORS 允许来源。</li>
+</ul>
+<p>密钥和密码不写入前端代码，也不提交到源码仓库。</p>
+<h3>DeepSeek 服务</h3>
+<p><code>backend/deepseek_service.py</code> 负责：</p>
+<ol>
+<li>检查 API Key 是否配置。</li>
+<li>使用 OpenAI 兼容 SDK 调用 DeepSeek。</li>
+<li>设置系统提示词和回答约束。</li>
+<li>处理超时、连接失败、状态异常和空回答。</li>
+</ol>
+<p>模型不能直接生成并执行 Cypher。</p>
+<h2>六、数据设计</h2>
+<p>系统使用属性图模型：</p>
+<pre><code class="language-text">(KnowledgePoint)-[:BELONGS_TO]-&gt;(Module)
+(KnowledgePoint)-[:PREREQUISITE_OF]-&gt;(KnowledgePoint)
+(KnowledgePoint)-[:RELATED_TO]-&gt;(KnowledgePoint)
+(Module)-[:PREREQUISITE_MODULE]-&gt;(Module)
+(KnowledgePoint)-[:HAS_MEDIA]-&gt;(Media)</code></pre>
+<p>节点业务主键：</p>
+<table><thead><tr>
+<th>标签</th>
+<th>主键</th>
+</tr></thead><tbody>
+<tr>
+<td>Module</td>
+<td><code>module_id</code></td>
+</tr>
+<tr>
+<td>KnowledgePoint</td>
+<td><code>kp_id</code></td>
+</tr>
+<tr>
+<td>Tool</td>
+<td><code>tool_id</code></td>
+</tr>
+<tr>
+<td>Media</td>
+<td><code>media_id</code></td>
+</tr>
+</tbody></table>
+<p>详细字段和关系统计见 <code>02-database-design.md</code>。</p>
+<h2>七、核心业务流程</h2>
+<h3>模块总览</h3>
+<ol>
+<li>页面启动时读取目录和模块总览。</li>
+<li>后端只读查询 Neo4j。</li>
+<li>返回节点、关系和统计信息。</li>
+<li>D3 渲染模块力导向图。</li>
+</ol>
+<h3>知识点展开</h3>
+<ol>
+<li>用户点击模块。</li>
+<li>前端请求模块子图接口。</li>
+<li>后端查询模块、知识点和内部关系。</li>
+<li>前端更新左侧目录和中间图谱。</li>
+</ol>
+<h3>知识点详情</h3>
+<ol>
+<li>用户点击知识点。</li>
+<li>后端读取属性和关联节点。</li>
+<li>后端查询 <code>HAS_MEDIA</code>。</li>
+<li>前端显示详情抽屉和教学资源。</li>
+</ol>
+<h3>智能问答</h3>
+<ol>
+<li>用户输入问题。</li>
+<li>后端取得当前模块和知识点。</li>
+<li>根据问题关键词搜索相关知识点。</li>
+<li>构建有限图谱上下文。</li>
+<li>DeepSeek 根据上下文生成回答。</li>
+<li>返回答案和相关节点引用。</li>
+<li>前端显示回答，点击引用可跳转。</li>
+</ol>
+<h2>八、安全设计</h2>
+<ol>
+<li>数据查询全部使用参数化 Cypher。</li>
+<li>普通业务接口采用只读事务。</li>
+<li>浏览器不能提交任意 Cypher。</li>
+<li>API Key 和数据库密码使用环境变量。</li>
+<li>媒体导入检查路径穿越和文件扩展名。</li>
+<li>DeepSeek 输入限制为 500 个字符。</li>
+<li>上游 AI 异常不会直接暴露 Key 或内部堆栈。</li>
+</ol>
+<h2>九、异常设计</h2>
+<table><thead><tr>
+<th>场景</th>
+<th>处理方式</th>
+</tr></thead><tbody>
+<tr>
+<td>Neo4j 不可用</td>
+<td>健康检查返回 HTTP 503</td>
+</tr>
+<tr>
+<td>知识点不存在</td>
+<td>返回 HTTP 404</td>
+</tr>
+<tr>
+<td>DeepSeek 未配置</td>
+<td>返回 HTTP 503</td>
+</tr>
+<tr>
+<td>DeepSeek 超时或服务异常</td>
+<td>返回 HTTP 502</td>
+</tr>
+<tr>
+<td>图谱为空</td>
+<td>前端显示空状态</td>
+</tr>
+<tr>
+<td>媒体为空</td>
+<td>显示资源待添加状态</td>
+</tr>
+</tbody></table>
+<h2>十、部署结构</h2>
+<p>开发阶段：</p>
+<pre><code class="language-text">Vite 5173 -&gt; FastAPI 8000 -&gt; Neo4j 7687</code></pre>
+<p>生产阶段建议：</p>
+<pre><code class="language-text">Nginx
+├── 静态前端文件
+└── /api 反向代理
+        │
+        ▼
+Uvicorn/FastAPI
+        │
+        ▼
+Neo4j</code></pre>
+</section>
+
+<section class="document">
+<h1>02-database-design.md</h1>
+<h1>数据库设计说明</h1>
+<h2>软件信息</h2>
+<table><thead><tr>
+<th>项目</th>
+<th>内容</th>
+</tr></thead><tbody>
+<tr>
+<td>软件名称</td>
+<td>GIS交通路网教学知识图谱平台</td>
+</tr>
+<tr>
+<td>软件版本</td>
+<td>V1.0</td>
+</tr>
+<tr>
+<td>数据库类型</td>
+<td>Neo4j</td>
+</tr>
+<tr>
+<td>数据库版本</td>
+<td>5.26.30</td>
+</tr>
+<tr>
+<td>数据快照日期</td>
+<td>2026-09-20</td>
+</tr>
+</tbody></table>
+<h2>数据模型概述</h2>
+<p>系统使用属性图模型存储教学知识内容。节点表示模块、知识点和工具， 关系表示知识点归属、前置依赖、相关内容、组成部分、应用关系以及工具实现关系。</p>
+<p>数据库快照包含：</p>
+<table><thead><tr>
+<th>数据类型</th>
+<th>数量</th>
+</tr></thead><tbody>
+<tr>
+<td>模块节点</td>
+<td>9</td>
+</tr>
+<tr>
+<td>知识点节点</td>
+<td>344</td>
+</tr>
+<tr>
+<td>工具节点</td>
+<td>10</td>
+</tr>
+<tr>
+<td>媒体节点</td>
+<td>0</td>
+</tr>
+<tr>
+<td>关系</td>
+<td>1016</td>
+</tr>
+<tr>
+<td>节点总数</td>
+<td>363</td>
+</tr>
+</tbody></table>
+<h2>节点设计</h2>
+<h3>Module 模块节点</h3>
+<p>模块表示课程章节或教学主题。</p>
+<table><thead><tr>
+<th>属性</th>
+<th>类型</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td><code>module_id</code></td>
+<td>字符串</td>
+<td>模块业务主键，例如 <code>M1</code></td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>字符串</td>
+<td>模块名称</td>
+</tr>
+<tr>
+<td><code>knowledge_count</code></td>
+<td>整数</td>
+<td>模块知识点数量</td>
+</tr>
+<tr>
+<td><code>sort_order</code></td>
+<td>整数</td>
+<td>页面排序序号</td>
+</tr>
+<tr>
+<td><code>order</code></td>
+<td>整数</td>
+<td>兼容排序字段，仅部分节点存在</td>
+</tr>
+</tbody></table>
+<p>唯一性约束：<code>module_id</code>。</p>
+<h3>KnowledgePoint 知识点节点</h3>
+<p>知识点表示模块中的具体教学内容。</p>
+<table><thead><tr>
+<th>属性</th>
+<th>类型</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td><code>kp_id</code></td>
+<td>字符串</td>
+<td>知识点业务主键，例如 <code>M1-001</code></td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>字符串</td>
+<td>知识点名称</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>字符串</td>
+<td>知识点说明</td>
+</tr>
+<tr>
+<td><code>difficulty</code></td>
+<td>字符串</td>
+<td>难度等级</td>
+</tr>
+<tr>
+<td><code>importance</code></td>
+<td>字符串</td>
+<td>重要性等级</td>
+</tr>
+<tr>
+<td><code>subcategory</code></td>
+<td>字符串</td>
+<td>分类名称</td>
+</tr>
+<tr>
+<td><code>sort_order</code></td>
+<td>整数</td>
+<td>模块内排序序号</td>
+</tr>
+</tbody></table>
+<p>唯一性约束：<code>kp_id</code>。</p>
+<h3>Tool 工具节点</h3>
+<p>工具节点用于表示 GIS 平台、软件或技术工具。</p>
+<table><thead><tr>
+<th>属性</th>
+<th>类型</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td><code>tool_id</code></td>
+<td>字符串</td>
+<td>工具业务主键</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>字符串</td>
+<td>工具名称</td>
+</tr>
+<tr>
+<td><code>category</code></td>
+<td>字符串</td>
+<td>工具类别</td>
+</tr>
+<tr>
+<td><code>vendor</code></td>
+<td>字符串</td>
+<td>开发厂商或提供方</td>
+</tr>
+</tbody></table>
+<p>唯一性约束：<code>tool_id</code>。</p>
+<h3>Media 媒体节点</h3>
+<p>媒体节点用于保存视频和 PPT 课件的元数据，文件本体存放在后端媒体目录。</p>
+<table><thead><tr>
+<th>属性</th>
+<th>类型</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td><code>media_id</code></td>
+<td>字符串</td>
+<td>媒体唯一标识</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>字符串</td>
+<td><code>video</code> 或 <code>slides</code></td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>字符串</td>
+<td>资源标题</td>
+</tr>
+<tr>
+<td><code>format</code></td>
+<td>字符串</td>
+<td><code>mp4</code>、<code>webm</code>、<code>pdf</code>、<code>ppt</code> 或 <code>pptx</code></td>
+</tr>
+<tr>
+<td><code>url</code></td>
+<td>字符串</td>
+<td>浏览器访问地址</td>
+</tr>
+<tr>
+<td><code>cover_url</code></td>
+<td>字符串</td>
+<td>视频封面地址，可选</td>
+</tr>
+<tr>
+<td><code>order</code></td>
+<td>整数</td>
+<td>显示顺序</td>
+</tr>
+</tbody></table>
+<p>唯一性约束：<code>media_id</code>。</p>
+<h2>关系设计</h2>
+<table><thead><tr>
+<th>关系类型</th>
+<th>起点</th>
+<th>终点</th>
+<th>数量</th>
+<th>含义</th>
+</tr></thead><tbody>
+<tr>
+<td><code>BELONGS_TO</code></td>
+<td>KnowledgePoint</td>
+<td>Module</td>
+<td>344</td>
+<td>知识点属于模块</td>
+</tr>
+<tr>
+<td><code>PREREQUISITE_OF</code></td>
+<td>KnowledgePoint</td>
+<td>KnowledgePoint</td>
+<td>86</td>
+<td>前置知识点</td>
+</tr>
+<tr>
+<td><code>RELATED_TO</code></td>
+<td>KnowledgePoint</td>
+<td>KnowledgePoint</td>
+<td>41</td>
+<td>相关知识</td>
+</tr>
+<tr>
+<td><code>PART_OF</code></td>
+<td>KnowledgePoint</td>
+<td>KnowledgePoint</td>
+<td>28</td>
+<td>组成部分</td>
+</tr>
+<tr>
+<td><code>APPLIED_IN</code></td>
+<td>KnowledgePoint</td>
+<td>KnowledgePoint</td>
+<td>42</td>
+<td>应用于</td>
+</tr>
+<tr>
+<td><code>IMPLEMENTED_IN</code></td>
+<td>KnowledgePoint</td>
+<td>Tool</td>
+<td>11</td>
+<td>通过工具实现</td>
+</tr>
+<tr>
+<td><code>PREREQUISITE_MODULE</code></td>
+<td>Module</td>
+<td>Module</td>
+<td>5</td>
+<td>模块前置关系</td>
+</tr>
+<tr>
+<td><code>SUPPORTS</code></td>
+<td>Module</td>
+<td>Module</td>
+<td>3</td>
+<td>模块支撑关系</td>
+</tr>
+<tr>
+<td><code>HAS_MEDIA</code></td>
+<td>KnowledgePoint</td>
+<td>Media</td>
+<td>0</td>
+<td>知识点关联媒体资源</td>
+</tr>
+</tbody></table>
+<p>所有关系均有明确方向。当前关系没有业务属性。</p>
+<h2>约束与索引</h2>
+<p><code>data/schema.cypher</code> 定义以下结构：</p>
+<ol>
+<li><code>Module.module_id</code> 唯一性约束。</li>
+<li><code>KnowledgePoint.kp_id</code> 唯一性约束。</li>
+<li><code>Tool.tool_id</code> 唯一性约束。</li>
+<li><code>Media.media_id</code> 唯一性约束。</li>
+<li>模块名称索引。</li>
+<li>知识点名称索引。</li>
+</ol>
+<h2>数据导出文件</h2>
+<table><thead><tr>
+<th>文件</th>
+<th>用途</th>
+</tr></thead><tbody>
+<tr>
+<td><code>data/graph-snapshot.json</code></td>
+<td>完整节点和关系快照</td>
+</tr>
+<tr>
+<td><code>data/schema.cypher</code></td>
+<td>约束与索引</td>
+</tr>
+<tr>
+<td><code>data/modules.cypher</code></td>
+<td>模块节点导入</td>
+</tr>
+<tr>
+<td><code>data/knowledge-points.cypher</code></td>
+<td>知识点节点导入</td>
+</tr>
+<tr>
+<td><code>data/tools.cypher</code></td>
+<td>工具节点导入</td>
+</tr>
+<tr>
+<td><code>data/media.cypher</code></td>
+<td>媒体节点导入</td>
+</tr>
+<tr>
+<td><code>data/relationships.cypher</code></td>
+<td>关系导入</td>
+</tr>
+<tr>
+<td><code>scripts/export_graph.py</code></td>
+<td>从 Neo4j 重新生成全部数据文件</td>
+</tr>
+</tbody></table>
+<h2>数据恢复顺序</h2>
+<p>在空白 Neo4j 数据库中依次执行：</p>
+<ol>
+<li><code>data/schema.cypher</code></li>
+<li><code>data/modules.cypher</code></li>
+<li><code>data/knowledge-points.cypher</code></li>
+<li><code>data/tools.cypher</code></li>
+<li><code>data/media.cypher</code></li>
+<li><code>data/relationships.cypher</code></li>
+</ol>
+<p>节点和关系导入均使用 <code>MERGE</code>，可以重复执行，不会因为重复导入而创建重复数据。</p>
+</section>
+
+<section class="document">
+<h1>03-api-design.md</h1>
+<h1>接口设计说明书</h1>
+<h2>一、接口规范</h2>
+<p>所有业务接口使用 <code>/api</code> 前缀，默认返回 JSON。</p>
+<p>通用成功格式：</p>
+<pre><code class="language-json">{
+  &quot;code&quot;: 200,
+  &quot;message&quot;: &quot;操作成功&quot;,
+  &quot;data&quot;: {}
+}</code></pre>
+<p>问答接口成功时直接返回答案：</p>
+<pre><code class="language-json">{
+  &quot;code&quot;: 200,
+  &quot;message&quot;: &quot;问答成功&quot;,
+  &quot;answer&quot;: &quot;回答内容&quot;,
+  &quot;references&quot;: [],
+  &quot;model&quot;: &quot;deepseek-chat&quot;
+}</code></pre>
+<p>错误使用标准 HTTP 状态码：</p>
+<table><thead><tr>
+<th>状态码</th>
+<th>含义</th>
+</tr></thead><tbody>
+<tr>
+<td>200</td>
+<td>成功</td>
+</tr>
+<tr>
+<td>404</td>
+<td>资源不存在</td>
+</tr>
+<tr>
+<td>429</td>
+<td>提问过于频繁</td>
+</tr>
+<tr>
+<td>422</td>
+<td>请求参数错误</td>
+</tr>
+<tr>
+<td>502</td>
+<td>DeepSeek 上游异常</td>
+</tr>
+<tr>
+<td>503</td>
+<td>数据库或 AI 服务未就绪</td>
+</tr>
+</tbody></table>
+<h2>二、健康检查</h2>
+<h3><code>GET /api/health</code></h3>
+<p>检查 FastAPI 服务和 Neo4j 连接。</p>
+<p>响应：</p>
+<pre><code class="language-json">{
+  &quot;status&quot;: &quot;ok&quot;,
+  &quot;message&quot;: &quot;后端服务正常&quot;,
+  &quot;database&quot;: &quot;connected&quot;
+}</code></pre>
+<h2>三、模块总览</h2>
+<h3><code>GET /api/graph/modules</code></h3>
+<p>返回模块节点和模块间关系。</p>
+<p>响应数据：</p>
+<pre><code class="language-json">{
+  &quot;nodes&quot;: [],
+  &quot;links&quot;: [],
+  &quot;summary&quot;: {
+    &quot;moduleCount&quot;: 9,
+    &quot;knowledgePointCount&quot;: null,
+    &quot;relationCount&quot;: 8
+  }
+}</code></pre>
+<p>节点格式：</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;M1&quot;,
+  &quot;elementId&quot;: &quot;...&quot;,
+  &quot;labels&quot;: [&quot;Module&quot;],
+  &quot;properties&quot;: {
+    &quot;module_id&quot;: &quot;M1&quot;,
+    &quot;name&quot;: &quot;基础理论与拓扑建模&quot;
+  }
+}</code></pre>
+<p>关系格式：</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;...&quot;,
+  &quot;type&quot;: &quot;PREREQUISITE_MODULE&quot;,
+  &quot;source&quot;: &quot;M1&quot;,
+  &quot;target&quot;: &quot;M2&quot;,
+  &quot;properties&quot;: {}
+}</code></pre>
+<h2>四、目录接口</h2>
+<h3><code>GET /api/directory</code></h3>
+<p>一次返回九个模块和各模块的知识点目录，数据量较小，不返回完整描述。</p>
+<p>响应数据：</p>
+<pre><code class="language-json">{
+  &quot;modules&quot;: [
+    {
+      &quot;id&quot;: &quot;M1&quot;,
+      &quot;name&quot;: &quot;基础理论与拓扑建模&quot;,
+      &quot;properties&quot;: {},
+      &quot;knowledgePoints&quot;: [
+        {
+          &quot;id&quot;: &quot;M1-001&quot;,
+          &quot;name&quot;: &quot;GIS交通路网的专业定义与核心研究范畴&quot;,
+          &quot;properties&quot;: {}
+        }
+      ]
+    }
+  ]
+}</code></pre>
+<h2>五、模块子图</h2>
+<h3><code>GET /api/modules/{module_id}/graph</code></h3>
+<p>查询参数：</p>
+<table><thead><tr>
+<th>参数</th>
+<th>类型</th>
+<th>必填</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td><code>module_id</code></td>
+<td>路径参数</td>
+<td>是</td>
+<td>模块业务主键</td>
+</tr>
+<tr>
+<td><code>internal_relation_limit</code></td>
+<td>查询参数</td>
+<td>否</td>
+<td>模块内关系上限，默认 800</td>
+</tr>
+</tbody></table>
+<p>返回模块、模块下全部知识点、<code>BELONGS_TO</code> 关系和知识点内部关系。</p>
+<p>不存在的模块返回 HTTP 404。</p>
+<h2>六、知识点详情</h2>
+<h3><code>GET /api/knowledge-points/{knowledge_point_id}</code></h3>
+<p>返回：</p>
+<ul>
+<li>知识点节点。</li>
+<li>所属模块。</li>
+<li>关联知识点、模块或工具。</li>
+<li>视频和课件资源。</li>
+</ul>
+<p>示例：</p>
+<pre><code class="language-json">{
+  &quot;node&quot;: {
+    &quot;id&quot;: &quot;M1-001&quot;,
+    &quot;labels&quot;: [&quot;KnowledgePoint&quot;],
+    &quot;properties&quot;: {
+      &quot;name&quot;: &quot;GIS交通路网的专业定义与核心研究范畴&quot;,
+      &quot;description&quot;: &quot;...&quot;,
+      &quot;difficulty&quot;: &quot;入门&quot;,
+      &quot;importance&quot;: &quot;核心&quot;
+    }
+  },
+  &quot;module&quot;: {
+    &quot;id&quot;: &quot;M1&quot;,
+    &quot;labels&quot;: [&quot;Module&quot;],
+    &quot;properties&quot;: {
+      &quot;name&quot;: &quot;基础理论与拓扑建模&quot;
+    }
+  },
+  &quot;relations&quot;: [],
+  &quot;materials&quot;: {
+    &quot;videos&quot;: [],
+    &quot;slides&quot;: []
+  }
+}</code></pre>
+<h2>七、搜索接口</h2>
+<h3><code>GET /api/search</code></h3>
+<p>查询参数：</p>
+<table><thead><tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td><code>keyword</code></td>
+<td>字符串</td>
+<td>无</td>
+<td>搜索关键词，长度 1 至 100</td>
+</tr>
+<tr>
+<td><code>limit</code></td>
+<td>整数</td>
+<td>20</td>
+<td>返回数量，范围 1 至 50</td>
+</tr>
+</tbody></table>
+<p>搜索模块和知识点的名称及描述。</p>
+<h2>八、DeepSeek 状态</h2>
+<h3><code>GET /api/chat/status</code></h3>
+<p>响应：</p>
+<pre><code class="language-json">{
+  &quot;configured&quot;: true,
+  &quot;model&quot;: &quot;deepseek-chat&quot;,
+  &quot;message&quot;: &quot;DeepSeek API 已配置&quot;
+}</code></pre>
+<p>该接口不返回 API Key。</p>
+<h2>九、智能问答</h2>
+<h3><code>POST /api/chat</code></h3>
+<p>请求：</p>
+<pre><code class="language-json">{
+  &quot;question&quot;: &quot;什么是交通路网数据模型？&quot;,
+  &quot;module_id&quot;: &quot;M1&quot;,
+  &quot;knowledge_point_id&quot;: &quot;M1-001&quot;
+}</code></pre>
+<p>参数约束：</p>
+<table><thead><tr>
+<th>参数</th>
+<th>必填</th>
+<th>最大长度</th>
+</tr></thead><tbody>
+<tr>
+<td><code>question</code></td>
+<td>是</td>
+<td>500</td>
+</tr>
+<tr>
+<td><code>module_id</code></td>
+<td>否</td>
+<td>50</td>
+</tr>
+<tr>
+<td><code>knowledge_point_id</code></td>
+<td>否</td>
+<td>50</td>
+</tr>
+</tbody></table>
+<p>处理流程：</p>
+<ol>
+<li>查询当前模块和知识点。</li>
+<li>提取问题搜索词。</li>
+<li>搜索相关知识点。</li>
+<li>构建有限图谱上下文。</li>
+<li>调用 DeepSeek。</li>
+<li>返回答案和最多 12 个关联知识点。</li>
+</ol>
+<h2>十、媒体静态资源</h2>
+<h3><code>GET /media/{path}</code></h3>
+<p>由 FastAPI 静态文件服务提供。</p>
+<p>支持：</p>
+<ul>
+<li><code>/media/videos/*</code></li>
+<li><code>/media/slides/*</code></li>
+<li><code>/media/covers/*</code></li>
+</ul>
+<p>真实文件默认不进入源码仓库。</p>
+</section>
+
+<section class="document">
+<h1>04-operation-manual.md</h1>
+<h1>操作手册</h1>
+<h2>一、系统启动</h2>
+<h3>启动 Neo4j</h3>
+<p>确认 Neo4j 服务已启动：</p>
+<pre><code class="language-text">bolt://localhost:7687
+http://localhost:7474</code></pre>
+<h3>启动后端</h3>
+<pre><code class="language-powershell">cd E:\gis-knowledge-platform\backend
+.\.venv\Scripts\python.exe main.py</code></pre>
+<p>后端地址：</p>
+<pre><code class="language-text">http://localhost:8000</code></pre>
+<h3>启动前端</h3>
+<pre><code class="language-powershell">cd E:\gis-knowledge-platform\frontend
+npm run dev</code></pre>
+<p>浏览器打开终端显示的地址，通常为：</p>
+<pre><code class="language-text">http://localhost:5173</code></pre>
+<h2>二、页面说明</h2>
+<p>页面分为三个区域：</p>
+<ol>
+<li>左侧知识目录。</li>
+<li>中间知识图谱。</li>
+<li>右侧智能问答。</li>
+</ol>
+<h3>左侧知识目录</h3>
+<p>目录按模块组织知识点，并显示模块和知识点数量。</p>
+<p>操作方法：</p>
+<ol>
+<li>点击模块名称可以展开或折叠知识点。</li>
+<li>点击模块名称会同步加载模块知识图谱。</li>
+<li>点击知识点会打开知识点详情。</li>
+<li>在搜索框中输入名称可以过滤模块和知识点。</li>
+</ol>
+<h3>中间知识图谱</h3>
+<p>初始状态显示模块总览。点击模块后显示该模块的知识点及内部关系。</p>
+<p>图谱操作：</p>
+<ol>
+<li>鼠标滚轮缩放。</li>
+<li>拖动节点调整位置。</li>
+<li>点击模块进入模块子图。</li>
+<li>点击知识点打开详情。</li>
+<li>使用左上角按钮放大、缩小和适应画布。</li>
+<li>点击“返回总览”返回九个模块。</li>
+</ol>
+<p>节点颜色：</p>
+<table><thead><tr>
+<th>颜色</th>
+<th>类型</th>
+</tr></thead><tbody>
+<tr>
+<td>紫色</td>
+<td>模块</td>
+</tr>
+<tr>
+<td>蓝色</td>
+<td>知识点</td>
+</tr>
+<tr>
+<td>青绿色</td>
+<td>工具，预留</td>
+</tr>
+</tbody></table>
+<h3>知识点详情</h3>
+<p>详情面板显示：</p>
+<ol>
+<li>知识点名称。</li>
+<li>难度。</li>
+<li>重要性。</li>
+<li>分类。</li>
+<li>所属模块。</li>
+<li>知识点说明。</li>
+<li>关联知识。</li>
+<li>视频和课件。</li>
+</ol>
+<p>点击关联知识可以继续跳转。</p>
+<h2>三、智能问答</h2>
+<p>右上状态显示：</p>
+<ul>
+<li><code>已连接</code>：DeepSeek 已配置。</li>
+<li><code>待配置</code>：尚未填写 API Key。</li>
+</ul>
+<p>提问方法：</p>
+<ol>
+<li>可先选择模块或知识点。</li>
+<li>在右侧输入问题。</li>
+<li>点击发送按钮或按 Enter。</li>
+<li>等待回答。</li>
+<li>点击回答下方的知识点引用可以跳转。</li>
+</ol>
+<p>建议问题：</p>
+<ul>
+<li>什么是交通路网数据模型？</li>
+<li>轨迹数据有哪些关键技术？</li>
+<li>推荐一条学习路径。</li>
+</ul>
+<h2>四、维护知识图谱</h2>
+<p>新增知识点示例：</p>
+<pre><code class="language-cypher">MATCH (module:Module {module_id: &#x27;M1&#x27;})
+MERGE (knowledge:KnowledgePoint {kp_id: &#x27;M1-999&#x27;})
+SET knowledge.name = &#x27;新的知识点&#x27;,
+    knowledge.description = &#x27;知识点说明&#x27;,
+    knowledge.difficulty = &#x27;中等&#x27;,
+    knowledge.importance = &#x27;重点&#x27;,
+    knowledge.sort_order = 999
+MERGE (knowledge)-[:BELONGS_TO]-&gt;(module)</code></pre>
+<p>修改完成后刷新网页即可同步。只需改数据时不需要重启后端。</p>
+<h2>五、导入视频和 PPT</h2>
+<ol>
+<li>将视频放入 <code>backend/media/videos</code>。</li>
+<li>将 PDF 或 PPT 放入 <code>backend/media/slides</code>。</li>
+<li>将封面放入 <code>backend/media/covers</code>。</li>
+<li>编辑 <code>data/media-manifest.json</code>。</li>
+<li>执行检查：</li>
+</ol>
+<pre><code class="language-powershell">cd E:\gis-knowledge-platform
+backend\.venv\Scripts\python.exe scripts\import_media.py</code></pre>
+<ol>
+<li>检查通过后写入数据库：</li>
+</ol>
+<pre><code class="language-powershell">backend\.venv\Scripts\python.exe scripts\import_media.py --apply</code></pre>
+<p>详细格式见 <code>08-media-import.md</code>。</p>
+<h2>六、常见问题</h2>
+<h3>页面提示“连接异常”</h3>
+<p>检查后端和 Neo4j 是否启动，并访问：</p>
+<pre><code class="language-text">http://localhost:8000/api/health</code></pre>
+<h3>新修改的 Neo4j 数据没有显示</h3>
+<p>刷新浏览器页面。页面存在内存缓存，完整刷新后会重新获取。</p>
+<h3>DeepSeek 显示“待配置”</h3>
+<p>检查 <code>backend/.env</code> 中的 <code>DEEPSEEK_API_KEY</code>，并重启后端。</p>
+<h3>DeepSeek 返回服务异常</h3>
+<p>检查：</p>
+<ol>
+<li>API Key 是否正确。</li>
+<li>账户是否有余额。</li>
+<li>本机是否可以访问 DeepSeek。</li>
+<li>网络是否稳定。</li>
+</ol>
+<h3>提示“提问过于频繁”</h3>
+<p>系统按 IP 限制提问频率，默认每分钟最多 5 次。稍等一分钟后再提问。</p>
+<h3>视频无法播放</h3>
+<p>建议使用 MP4 或 WebM。浏览器对编码格式支持不同，优先使用 H.264 编码 MP4。</p>
+<h3>PPT 无法在网页中预览</h3>
+<p>浏览器通常不能直接预览 PPTX。建议同时上传 PDF 预览版。</p>
+<h2>七、环境检查</h2>
+<pre><code class="language-powershell">cd E:\gis-knowledge-platform
+.\scripts\check_environment.ps1</code></pre>
+<p>该命令检查 Python、pip 依赖、Node.js 和 npm 版本。</p>
+</section>
+
+<section class="document">
+<h1>05-deployment-guide.md</h1>
+<h1>部署说明</h1>
+<p>腾讯云 Ubuntu 一键部署包位于 <code>deploy/</code>，详细步骤见 <code>deploy/README.md</code>。该部署使用 Docker Compose、Nginx、FastAPI 和 Neo4j。</p>
+<h2>一、目标环境</h2>
+<p>本项目开发环境固定版本：</p>
+<table><thead><tr>
+<th>组件</th>
+<th>版本</th>
+</tr></thead><tbody>
+<tr>
+<td>Python</td>
+<td>3.12.10</td>
+</tr>
+<tr>
+<td>Node.js</td>
+<td>24.21.0</td>
+</tr>
+<tr>
+<td>npm</td>
+<td>11.x</td>
+</tr>
+<tr>
+<td>Neo4j</td>
+<td>5.x</td>
+</tr>
+<tr>
+<td>浏览器</td>
+<td>Microsoft Edge 或其他现代浏览器</td>
+</tr>
+</tbody></table>
+<h2>二、目录要求</h2>
+<pre><code class="language-text">E:\gis-knowledge-platform
+├── backend
+├── frontend
+├── data
+├── docs
+├── scripts
+└── release</code></pre>
+<h2>三、Neo4j 初始化</h2>
+<p>在 Neo4j Browser 中按顺序执行：</p>
+<ol>
+<li><code>data/schema.cypher</code></li>
+<li><code>data/modules.cypher</code></li>
+<li><code>data/knowledge-points.cypher</code></li>
+<li><code>data/tools.cypher</code></li>
+<li><code>data/media.cypher</code></li>
+<li><code>data/relationships.cypher</code></li>
+</ol>
+<p>导入完成后检查：</p>
+<pre><code class="language-cypher">MATCH (module:Module) RETURN count(module);
+MATCH (knowledge:KnowledgePoint) RETURN count(knowledge);
+MATCH ()-[relationship]-&gt;() RETURN count(relationship);</code></pre>
+<p>预期：</p>
+<pre><code class="language-text">Module: 9
+KnowledgePoint: 344
+Relationship: 1016</code></pre>
+<h2>四、后端部署</h2>
+<p>创建虚拟环境：</p>
+<pre><code class="language-powershell">cd E:\gis-knowledge-platform\backend
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.lock.txt
+Copy-Item .env.example .env</code></pre>
+<p>配置 <code>backend/.env</code>：</p>
+<pre><code class="language-dotenv">NEO4J_URI=bolt://localhost:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=&lt;实际密码&gt;
+NEO4J_DATABASE=neo4j
+
+DEEPSEEK_API_KEY=&lt;实际Key&gt;
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-chat</code></pre>
+<p>开发启动：</p>
+<pre><code class="language-powershell">python main.py</code></pre>
+<p>生产启动建议关闭 reload：</p>
+<pre><code class="language-powershell">.\.venv\Scripts\python.exe -m uvicorn main:app `
+  --host 127.0.0.1 `
+  --port 8000 `
+  --workers 2</code></pre>
+<h2>五、前端构建</h2>
+<pre><code class="language-powershell">cd E:\gis-knowledge-platform\frontend
+npm ci
+npm run build</code></pre>
+<p>构建产物：</p>
+<pre><code class="language-text">frontend/dist</code></pre>
+<h2>六、Nginx 推荐配置</h2>
+<pre><code class="language-nginx">server {
+    listen 80;
+    server_name example.com;
+
+    root /var/www/gis-knowledge-platform;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000/api/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /media/ {
+        proxy_pass http://127.0.0.1:8000/media/;
+    }
+}</code></pre>
+<h2>七、生产环境注意事项</h2>
+<ol>
+<li>不要将 <code>backend/.env</code> 提交到源码仓库。</li>
+<li>使用独立只读 Neo4j 账号运行查询服务。</li>
+<li>限制 CORS 来源，不使用通配符。</li>
+<li>为 DeepSeek 接口配置限流和日志。</li>
+<li>媒体文件建议迁移到对象存储。</li>
+<li>定期备份 Neo4j 数据和媒体目录。</li>
+<li>为容器 Nginx 挂载证书并配置 HTTPS，不要在宿主机重复安装一套 Nginx。</li>
+<li>Uvicorn 建议由 systemd、NSSM 或容器平台托管。</li>
+</ol>
+<h2>八、测试命令</h2>
+<p>后端：</p>
+<pre><code class="language-powershell">cd backend
+.\.venv\Scripts\python.exe -m pytest</code></pre>
+<p>前端：</p>
+<pre><code class="language-powershell">cd frontend
+npm run build
+npm run test:e2e</code></pre>
+<h2>九、发布检查</h2>
+<ol>
+<li>前端构建成功。</li>
+<li>后端健康检查返回正常。</li>
+<li>Neo4j 节点和关系数量正确。</li>
+<li>DeepSeek 状态接口正常。</li>
+<li>问答可以返回结果。</li>
+<li>媒体目录可以访问。</li>
+<li><code>.env</code>、虚拟环境和依赖目录未进入发布包。</li>
+</ol>
+</section>
+
+<section class="document">
+<h1>06-test-report.md</h1>
+<h1>软件测试报告</h1>
+<h2>一、软件信息</h2>
+<table><thead><tr>
+<th>项目</th>
+<th>内容</th>
+</tr></thead><tbody>
+<tr>
+<td>软件名称</td>
+<td>GIS交通路网教学知识图谱平台</td>
+</tr>
+<tr>
+<td>软件版本</td>
+<td>V1.0</td>
+</tr>
+<tr>
+<td>测试日期</td>
+<td>2026-09-20</td>
+</tr>
+<tr>
+<td>后端环境</td>
+<td>Python 3.12.10</td>
+</tr>
+<tr>
+<td>前端环境</td>
+<td>Node.js 24.21.0</td>
+</tr>
+<tr>
+<td>数据库</td>
+<td>Neo4j 5.26.30</td>
+</tr>
+<tr>
+<td>浏览器</td>
+<td>Microsoft Edge</td>
+</tr>
+</tbody></table>
+<h2>二、测试范围</h2>
+<ol>
+<li>Neo4j 连接和健康检查。</li>
+<li>知识目录、模块图谱和知识点详情。</li>
+<li>搜索接口。</li>
+<li>媒体空数据和媒体导入校验。</li>
+<li>DeepSeek 配置状态、图谱上下文和异常降级。</li>
+<li>数据库快照完整性。</li>
+<li>前端目录、图谱、详情和智能问答交互。</li>
+<li>前端生产构建。</li>
+</ol>
+<h2>三、测试结果摘要</h2>
+<table><thead><tr>
+<th>测试项目</th>
+<th>结果</th>
+</tr></thead><tbody>
+<tr>
+<td>后端自动化测试</td>
+<td>17 项，数据库离线时 11 项通过、6 项跳过</td>
+</tr>
+<tr>
+<td>后端核心代码覆盖率</td>
+<td>数据库离线时 41%</td>
+</tr>
+<tr>
+<td>前端 Edge E2E 测试</td>
+<td>1 项通过</td>
+</tr>
+<tr>
+<td>前端生产构建</td>
+<td>通过</td>
+</tr>
+<tr>
+<td>Python 依赖检查</td>
+<td>无冲突</td>
+</tr>
+<tr>
+<td>npm 安全审计</td>
+<td>0 个漏洞</td>
+</tr>
+</tbody></table>
+<h2>四、后端测试明细</h2>
+<p>执行命令：</p>
+<pre><code class="language-powershell">cd E:\gis-knowledge-platform\backend
+.\.venv\Scripts\python.exe -m pytest `
+  --cov=main `
+  --cov=deepseek_service `
+  --cov=config `
+  --cov-report=term-missing</code></pre>
+<p>测试内容：</p>
+<ol>
+<li><code>/api/health</code> 返回数据库连接正常。</li>
+<li>目录返回 9 个模块和 344 个知识点。</li>
+<li>M1 返回 38 个知识点、39 个节点和 56 条关系。</li>
+<li>知识点 <code>M1-001</code> 可以返回节点、模块和媒体数组。</li>
+<li>不存在的知识点返回 HTTP 404。</li>
+<li>搜索接口能够返回匹配结果。</li>
+<li>未配置 DeepSeek Key 时，状态正确降级。</li>
+<li>未配置 DeepSeek Key 时，问答接口返回 HTTP 503。</li>
+<li>问答接口会构建真实图谱上下文。</li>
+<li>DeepSeek 上游异常时返回 HTTP 502。</li>
+<li>数据快照节点和关系统计正确。</li>
+<li>数据快照不存在重复业务主键。</li>
+<li>所有关系端点均能匹配到对应节点。</li>
+<li>关系类型集合与冻结版本一致。</li>
+<li>合法视频媒体可以通过导入校验。</li>
+<li>非法路径和不支持的文件扩展名会被拒绝。</li>
+<li>超过每分钟提问限制时返回 HTTP 429。</li>
+</ol>
+<p>实际结果：</p>
+<pre><code class="language-text">11 passed, 6 skipped in 4.29s
+TOTAL coverage: 41%</code></pre>
+<p>Neo4j 运行时可执行全部 17 项测试；本机数据库离线时会自动跳过 6 项 数据库集成测试，其他接口、问答、限流、快照和媒体逻辑仍会执行。</p>
+<h2>五、前端 E2E 测试明细</h2>
+<p>测试使用系统 Edge 浏览器，API 响应使用模拟数据，不消耗 DeepSeek API 额度。</p>
+<p>执行命令：</p>
+<pre><code class="language-powershell">cd E:\gis-knowledge-platform\frontend
+npm run test:e2e</code></pre>
+<p>测试流程：</p>
+<ol>
+<li>加载完整知识目录。</li>
+<li>显示 DeepSeek“已连接”状态。</li>
+<li>点击模块并加载知识点。</li>
+<li>点击知识点并打开详情。</li>
+<li>在问答窗口提交问题。</li>
+<li>显示模拟智能回答。</li>
+<li>显示相关知识点引用。</li>
+</ol>
+<p>实际结果：</p>
+<pre><code class="language-text">1 passed (1.7s)</code></pre>
+<h2>六、真实 DeepSeek 联调</h2>
+<p>开发过程中已经完成真实 API 联调：</p>
+<ol>
+<li><code>/api/chat/status</code> 返回 <code>configured: true</code>。</li>
+<li>基于当前知识点提问正常返回中文回答。</li>
+<li>根据“轨迹数据有哪些关键技术”等问题搜索相关节点。</li>
+<li>回答返回相关知识点引用。</li>
+<li>网页状态显示“已连接”。</li>
+<li>点击引用可以打开对应知识点详情。</li>
+</ol>
+<p>自动化测试默认模拟 DeepSeek 响应，避免每次执行测试产生 API 费用。</p>
+<h2>七、测试限制</h2>
+<ol>
+<li>当前测试主要面向单用户本地教学环境。</li>
+<li>尚未进行多用户并发和压力测试。</li>
+<li>尚未执行长时间运行稳定性测试。</li>
+<li>DeepSeek 模型输出存在正常波动，可通过固定测试提示词和模拟响应保证测试可重复。</li>
+</ol>
+<h2>八、测试结论</h2>
+<p>V1.0 的核心功能、数据恢复、接口行为、前端交互和异常降级均通过测试， 可以继续进行软著说明书、操作手册、部署说明和界面截图整理。</p>
+</section>
+
+<section class="document">
+<h1>07-third-party-licenses.md</h1>
+<h1>第三方组件与许可证说明</h1>
+<h2>一、说明</h2>
+<p>本清单用于软件开发过程和软件著作权材料整理。软件作者应保留各依赖自带的 许可证文件，并遵守对应条款。本清单不构成法律意见。</p>
+<h2>二、前端组件</h2>
+<table><thead><tr>
+<th>组件</th>
+<th>版本</th>
+<th>许可证</th>
+<th>用途</th>
+</tr></thead><tbody>
+<tr>
+<td>Vue</td>
+<td>3.5.43</td>
+<td>MIT</td>
+<td>页面框架</td>
+</tr>
+<tr>
+<td>Vite</td>
+<td>8.3.0</td>
+<td>MIT</td>
+<td>前端构建</td>
+</tr>
+<tr>
+<td>Axios</td>
+<td>1.20.0</td>
+<td>MIT</td>
+<td>HTTP 请求</td>
+</tr>
+<tr>
+<td>D3.js</td>
+<td>7.9.0</td>
+<td>ISC</td>
+<td>知识图谱可视化</td>
+</tr>
+<tr>
+<td>Lucide Vue</td>
+<td>1.47.0</td>
+<td>ISC</td>
+<td>图标</td>
+</tr>
+<tr>
+<td>Playwright Test</td>
+<td>1.63.0</td>
+<td>Apache-2.0</td>
+<td>自动化测试</td>
+</tr>
+</tbody></table>
+<h2>三、后端组件</h2>
+<table><thead><tr>
+<th>组件</th>
+<th>版本</th>
+<th>许可证</th>
+<th>用途</th>
+</tr></thead><tbody>
+<tr>
+<td>FastAPI</td>
+<td>0.141.1</td>
+<td>MIT</td>
+<td>Web API 框架</td>
+</tr>
+<tr>
+<td>Uvicorn</td>
+<td>0.53.0</td>
+<td>BSD-3-Clause</td>
+<td>ASGI 服务</td>
+</tr>
+<tr>
+<td>Pydantic</td>
+<td>2.13.5</td>
+<td>MIT</td>
+<td>请求数据模型</td>
+</tr>
+<tr>
+<td>Neo4j Python Driver</td>
+<td>5.28.6</td>
+<td>Apache-2.0</td>
+<td>Neo4j 连接</td>
+</tr>
+<tr>
+<td>python-dotenv</td>
+<td>1.2.3</td>
+<td>BSD-3-Clause</td>
+<td>环境变量加载</td>
+</tr>
+<tr>
+<td>OpenAI Python SDK</td>
+<td>1.109.1</td>
+<td>Apache-2.0</td>
+<td>DeepSeek OpenAI 兼容调用</td>
+</tr>
+<tr>
+<td>Pytest</td>
+<td>9.1.1</td>
+<td>MIT</td>
+<td>后端测试</td>
+</tr>
+</tbody></table>
+<h2>四、数据库及外部服务</h2>
+<h3>Neo4j Community</h3>
+<ul>
+<li>产品：Neo4j Community</li>
+<li>当前数据库版本：5.26.30</li>
+<li>许可证：GPLv3</li>
+<li>说明：Neo4j Community 不是 MIT/Apache 许可。软件分发或部署方式必须符合</li>
+</ul>
+<p>GPLv3 要求；如需闭源商业分发，应单独评估 Neo4j 商业许可。</p>
+<h3>DeepSeek API</h3>
+<ul>
+<li>服务：DeepSeek API</li>
+<li>用途：自然语言问答</li>
+<li>说明：DeepSeek API 是外部网络服务，不属于本项目自带开源组件。</li>
+</ul>
+<p>使用时应遵守 DeepSeek 开放平台协议、计费规则、数据处理规则及内容政策。</p>
+<h2>五、项目自有内容</h2>
+<p>以下内容由项目作者负责确认权利：</p>
+<ol>
+<li>GIS 交通路网知识点文本。</li>
+<li>教学视频、PPT、PDF 和封面。</li>
+<li>软件名称、界面设计、图标和说明文档。</li>
+<li>项目截图和演示数据。</li>
+</ol>
+<p>如果引用教材、论文、网络图片或其他第三方素材，应保留授权依据或替换为 自有内容。</p>
+<h2>六、许可证保留</h2>
+<p>正式发布时建议保留：</p>
+<pre><code class="language-text">frontend/package-lock.json
+backend/requirements.lock.txt
+THIRD_PARTY_LICENSES.md</code></pre>
+<p>并在安装目录或说明文档中提供开源许可证文本。</p>
+<h2>七、合规检查</h2>
+<ol>
+<li>不在源码中提交第三方 API Key。</li>
+<li>不删除第三方包的版权和许可证文件。</li>
+<li>不将 GPLv3 组件描述为 MIT/Apache。</li>
+<li>视频、PPT 和图片来源必须可追溯。</li>
+<li>DeepSeek 输出用于教学展示时，应遵守服务协议和内容规范。</li>
+</ol>
+</section>
+
+<section class="document">
+<h1>08-media-import.md</h1>
+<h1>视频与 PPT 导入说明</h1>
+<h2>数据设计</h2>
+<p>媒体文件本体存放在 <code>backend/media</code>，Neo4j 只保存媒体元数据和文件地址：</p>
+<pre><code class="language-cypher">(:KnowledgePoint)-[:HAS_MEDIA]-&gt;(:Media)</code></pre>
+<p><code>Media</code> 节点属性：</p>
+<table><thead><tr>
+<th>属性</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td><code>media_id</code></td>
+<td>媒体唯一标识</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td><code>video</code> 或 <code>slides</code></td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>资源标题</td>
+</tr>
+<tr>
+<td><code>format</code></td>
+<td><code>mp4</code>、<code>webm</code>、<code>pdf</code>、<code>ppt</code> 或 <code>pptx</code></td>
+</tr>
+<tr>
+<td><code>url</code></td>
+<td>浏览器访问地址</td>
+</tr>
+<tr>
+<td><code>cover_url</code></td>
+<td>视频封面地址，可选</td>
+</tr>
+<tr>
+<td><code>order</code></td>
+<td>同一知识点下的显示顺序</td>
+</tr>
+</tbody></table>
+<h2>文件目录</h2>
+<pre><code class="language-text">backend/media/
+├── videos/
+├── slides/
+└── covers/</code></pre>
+<p>推荐文件命名：</p>
+<pre><code class="language-text">videos/M1-001.mp4
+slides/M1-001.pdf
+covers/M1-001.jpg</code></pre>
+<h2>导入清单</h2>
+<p>将媒体文件放入对应目录后，编辑 <code>data/media-manifest.json</code>：</p>
+<pre><code class="language-json">{
+  &quot;items&quot;: [
+    {
+      &quot;media_id&quot;: &quot;M1-001-video-01&quot;,
+      &quot;knowledge_point_id&quot;: &quot;M1-001&quot;,
+      &quot;type&quot;: &quot;video&quot;,
+      &quot;title&quot;: &quot;GIS交通路网基础介绍&quot;,
+      &quot;file&quot;: &quot;videos/M1-001.mp4&quot;,
+      &quot;cover&quot;: &quot;covers/M1-001.jpg&quot;,
+      &quot;order&quot;: 1
+    },
+    {
+      &quot;media_id&quot;: &quot;M1-001-slides-01&quot;,
+      &quot;knowledge_point_id&quot;: &quot;M1-001&quot;,
+      &quot;type&quot;: &quot;slides&quot;,
+      &quot;title&quot;: &quot;知识点配套课件&quot;,
+      &quot;file&quot;: &quot;slides/M1-001.pdf&quot;,
+      &quot;order&quot;: 1
+    }
+  ]
+}</code></pre>
+<h2>检查清单</h2>
+<p>默认只检查，不写入数据库：</p>
+<pre><code class="language-powershell">backend\.venv\Scripts\python.exe scripts\import_media.py</code></pre>
+<p>确认检查通过后写入 Neo4j：</p>
+<pre><code class="language-powershell">backend\.venv\Scripts\python.exe scripts\import_media.py --apply</code></pre>
+<h2>浏览器支持</h2>
+<ol>
+<li>MP4 和 WebM 用于视频播放。</li>
+<li>PDF 用于网页预览。</li>
+<li>PPTX 通常只能下载，建议同时提供 PDF 预览版。</li>
+<li>媒体文件默认不进入源码提交，需单独备份。</li>
+</ol>
+</section>
+
+<section class="document">
+<h1>09-deepseek-setup.md</h1>
+<h1>DeepSeek 智能问答配置说明</h1>
+<h2>一、获取 API Key</h2>
+<ol>
+<li>访问 DeepSeek 开放平台：</li>
+</ol>
+<p>``<code>text https://platform.deepseek.com/ </code>``</p>
+<ol>
+<li>注册或登录账号。</li>
+<li>进入 API Keys 页面。</li>
+<li>创建一个新的 API Key。</li>
+<li>立即复制并妥善保存，页面通常不会再次完整显示该 Key。</li>
+<li>确认账号中已有可用额度。</li>
+</ol>
+<p>不要将 API Key 粘贴到聊天记录、源代码、截图或 Git 仓库中。</p>
+<h2>二、配置后端</h2>
+<p>进入后端目录：</p>
+<pre><code class="language-powershell">cd E:\gis-knowledge-platform\backend
+Copy-Item .env.example .env</code></pre>
+<p>编辑 <code>backend/.env</code>：</p>
+<pre><code class="language-dotenv">DEEPSEEK_API_KEY=sk-你的实际Key
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-chat
+DEEPSEEK_TIMEOUT_SECONDS=30
+DEEPSEEK_MAX_TOKENS=800
+DEEPSEEK_TEMPERATURE=0.2
+CHAT_RATE_LIMIT_PER_MINUTE=5</code></pre>
+<p><code>backend/.env</code> 已被 Git 忽略，不会进入源码提交文件。</p>
+<h2>三、重启后端</h2>
+<pre><code class="language-powershell">cd E:\gis-knowledge-platform\backend
+.\.venv\Scripts\Activate.ps1
+python main.py</code></pre>
+<h2>四、检查配置</h2>
+<p>浏览器访问：</p>
+<pre><code class="language-text">http://localhost:8000/api/chat/status</code></pre>
+<p>未配置时返回：</p>
+<pre><code class="language-json">{
+  &quot;configured&quot;: false,
+  &quot;model&quot;: &quot;deepseek-chat&quot;,
+  &quot;message&quot;: &quot;DeepSeek API Key 尚未配置&quot;
+}</code></pre>
+<p>配置成功后返回：</p>
+<pre><code class="language-json">{
+  &quot;configured&quot;: true,
+  &quot;model&quot;: &quot;deepseek-chat&quot;,
+  &quot;message&quot;: &quot;DeepSeek API 已配置&quot;
+}</code></pre>
+<h2>五、网页使用</h2>
+<ol>
+<li>打开知识图谱平台。</li>
+<li>选择模块或知识点。</li>
+<li>在右侧智能问答窗口输入问题。</li>
+<li>后端会根据当前模块、知识点和问题搜索相关内容。</li>
+<li>DeepSeek 仅依据检索到的图谱上下文回答。</li>
+<li>回答下方会显示相关知识点，点击后可以直接跳转。</li>
+</ol>
+<h2>六、常用参数</h2>
+<table><thead><tr>
+<th>参数</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td><code>DEEPSEEK_API_KEY</code></td>
+<td>API 密钥</td>
+</tr>
+<tr>
+<td><code>DEEPSEEK_BASE_URL</code></td>
+<td>DeepSeek API 地址</td>
+</tr>
+<tr>
+<td><code>DEEPSEEK_MODEL</code></td>
+<td>默认 <code>deepseek-chat</code></td>
+</tr>
+<tr>
+<td><code>DEEPSEEK_TIMEOUT_SECONDS</code></td>
+<td>请求超时时间</td>
+</tr>
+<tr>
+<td><code>DEEPSEEK_MAX_TOKENS</code></td>
+<td>单次回答最大长度</td>
+</tr>
+<tr>
+<td><code>DEEPSEEK_TEMPERATURE</code></td>
+<td>回答随机性，知识问答建议使用较低值</td>
+</tr>
+<tr>
+<td><code>CHAT_RATE_LIMIT_PER_MINUTE</code></td>
+<td>每个IP每分钟最大提问次数</td>
+</tr>
+</tbody></table>
+<h2>七、注意事项</h2>
+<ol>
+<li>网页不会把图谱全文发送给模型，只会发送当前问题相关的有限上下文。</li>
+<li>模型不会直接生成或执行 Cypher。</li>
+<li>API Key 无效、账户欠费或网络异常时，接口会返回可读错误。</li>
+<li>DeepSeek 是外部服务，正式部署前应阅读其服务条款和数据处理规则。</li>
+</ol>
+</section>
+
+<section class="document">
+<h1>software-overview.md</h1>
+<h1>软件概述</h1>
+<h2>一、软件名称</h2>
+<p>GIS交通路网教学知识图谱平台 V1.0</p>
+<h2>二、开发目的</h2>
+<p>本软件用于整理和展示 GIS 交通路网课程知识结构，解决传统章节列表难以 表达知识点之间多关系的问题，为教学展示、知识检索和智能答疑提供统一平台。</p>
+<h2>三、主要功能</h2>
+<table><thead><tr>
+<th>功能</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td>知识目录</td>
+<td>展示九个模块及全部知识点</td>
+</tr>
+<tr>
+<td>模块总览</td>
+<td>以力导向图展示模块及模块间关系</td>
+</tr>
+<tr>
+<td>知识点展开</td>
+<td>展示模块下知识点和内部关系</td>
+</tr>
+<tr>
+<td>知识点详情</td>
+<td>展示说明、难度、重要性、分类和关联知识</td>
+</tr>
+<tr>
+<td>媒体资源</td>
+<td>支持视频、PDF、PPT、PPTX 扩展</td>
+</tr>
+<tr>
+<td>智能问答</td>
+<td>基于图谱上下文调用 DeepSeek</td>
+</tr>
+<tr>
+<td>引用跳转</td>
+<td>回答可以关联并跳转知识点</td>
+</tr>
+<tr>
+<td>数据导出</td>
+<td>支持节点、关系和数据库快照导出</td>
+</tr>
+</tbody></table>
+<h2>四、软件结构</h2>
+<pre><code class="language-text">知识图谱网页平台
+├── 知识目录
+├── 图谱可视化
+├── 知识点详情
+├── 教学媒体
+└── 智能问答</code></pre>
+<h2>五、技术路线</h2>
+<ol>
+<li>Neo4j 保存教学知识图谱。</li>
+<li>FastAPI 提供数据查询和业务接口。</li>
+<li>Vue 3 和 D3.js 实现页面和图形交互。</li>
+<li>DeepSeek API 提供自然语言回答。</li>
+<li>参数化只读查询保证数据访问安全。</li>
+</ol>
+<h2>六、软件特点</h2>
+<ol>
+<li>面向 GIS 交通路网教学场景。</li>
+<li>模块、知识点和关系分层展示。</li>
+<li>支持知识点前置和相关关系。</li>
+<li>支持教学视频和课件扩展。</li>
+<li>智能问答基于图谱上下文，不直接执行模型生成的 Cypher。</li>
+<li>数据库结构、快照和测试材料可复现。</li>
+</ol>
+</section>
+
+<section class="document">
+<h1>application-information.md</h1>
+<h1>软件著作权申报信息表</h1>
+<h2>一、基本信息</h2>
+<table><thead><tr>
+<th>申报字段</th>
+<th>内容</th>
+</tr></thead><tbody>
+<tr>
+<td>软件全称</td>
+<td>GIS交通路网教学知识图谱平台</td>
+</tr>
+<tr>
+<td>软件简称</td>
+<td>GIS知识图谱平台，待确认</td>
+</tr>
+<tr>
+<td>版本号</td>
+<td>V1.0</td>
+</tr>
+<tr>
+<td>软件分类</td>
+<td>教育教学应用软件</td>
+</tr>
+<tr>
+<td>著作权人</td>
+<td>待确认</td>
+</tr>
+<tr>
+<td>开发完成日期</td>
+<td>待确认</td>
+</tr>
+<tr>
+<td>是否已发表</td>
+<td>待确认</td>
+</tr>
+<tr>
+<td>首次发表日期</td>
+<td>待确认，如未发表则填写“未发表”</td>
+</tr>
+<tr>
+<td>权利取得方式</td>
+<td>原始取得</td>
+</tr>
+<tr>
+<td>开发方式</td>
+<td>独立开发，待确认</td>
+</tr>
+</tbody></table>
+<h2>二、开发信息</h2>
+<table><thead><tr>
+<th>项目</th>
+<th>内容</th>
+</tr></thead><tbody>
+<tr>
+<td>开发起始日期</td>
+<td>待确认</td>
+</tr>
+<tr>
+<td>开发完成日期</td>
+<td>待确认</td>
+</tr>
+<tr>
+<td>开发硬件环境</td>
+<td>个人计算机，64位 Windows 环境</td>
+</tr>
+<tr>
+<td>运行硬件环境</td>
+<td>支持现代浏览器的个人计算机或服务器</td>
+</tr>
+<tr>
+<td>开发操作系统</td>
+<td>Windows</td>
+</tr>
+<tr>
+<td>开发工具</td>
+<td>VS Code、Neo4j Browser、PowerShell</td>
+</tr>
+<tr>
+<td>开发语言</td>
+<td>Python、JavaScript、Vue、CSS、Cypher</td>
+</tr>
+<tr>
+<td>后端环境</td>
+<td>Python 3.12.10、FastAPI</td>
+</tr>
+<tr>
+<td>前端环境</td>
+<td>Node.js 24.21.0、Vue 3、Vite、D3.js</td>
+</tr>
+<tr>
+<td>数据库环境</td>
+<td>Neo4j 5.x</td>
+</tr>
+</tbody></table>
+<h2>三、软件功能简介</h2>
+<p>本软件面向 GIS 交通路网课程教学，将课程模块、知识点及其前置、相关、 组成部分等关系组织为知识图谱。系统提供完整知识目录、模块总览图、 知识点展开、知识点详情、视频和 PPT 资源扩展、全文目录搜索以及基于 DeepSeek API 的智能问答功能。用户可以从模块进入知识点，查看属性、 难度、重要性和关联知识，人工智能问答会结合当前图谱上下文回答， 并返回可供继续查看的相关知识点。</p>
+<h2>四、主要技术特点</h2>
+<ol>
+<li>使用 Neo4j 属性图模型存储教学知识结构。</li>
+<li>使用 D3.js 实现模块和知识点力导向图。</li>
+<li>使用 Vue 3 实现三栏式交互界面。</li>
+<li>使用 FastAPI 提供参数化只读查询接口。</li>
+<li>使用 DeepSeek API 实现知识图谱增强问答。</li>
+<li>使用独立媒体目录和 <code>HAS_MEDIA</code> 关系扩展教学视频及课件。</li>
+<li>提供数据库快照、自动化测试和软著源码整理脚本。</li>
+</ol>
+<h2>五、运行环境</h2>
+<pre><code class="language-text">操作系统：Windows 10/11 或主流 Linux
+浏览器：Microsoft Edge、Chrome 等现代浏览器
+后端：Python 3.12+
+前端：Node.js 24+
+数据库：Neo4j 5.x
+网络：智能问答功能需要访问 DeepSeek API</code></pre>
+<h2>六、待确认事项</h2>
+<p>正式申报前需要填写或核对：</p>
+<ol>
+<li>著作权人名称。</li>
+<li>开发起始日期和完成日期。</li>
+<li>是否已经发表及首次发表日期。</li>
+<li>软件简称是否确定为“GIS知识图谱平台”。</li>
+<li>开发方式是否填写为独立开发。</li>
+</ol>
+</section>
+
+<section class="document">
+<h1>submission-checklist.md</h1>
+<h1>软件著作权提交检查清单</h1>
+<h2>一、软件信息</h2>
+<ul>
+<li>[x] 软件名称已统一为“GIS交通路网教学知识图谱平台”。</li>
+<li>[x] 版本号已统一为“V1.0”。</li>
+<li>[ ] 著作权人待确认。</li>
+<li>[ ] 开发完成日期待确认。</li>
+<li>[ ] 是否已发表待确认。</li>
+<li>[ ] 首次发表日期待确认。</li>
+</ul>
+<h2>二、源代码材料</h2>
+<ul>
+<li>[x] 已生成完整源码整理件。</li>
+<li>[x] 已生成前30页和后30页送审件。</li>
+<li>[x] 每页正文最多50行。</li>
+<li>[x] 页眉包含软件名称和版本号。</li>
+<li>[x] 已生成源码 SHA-256 清单。</li>
+<li>[x] 源码包不包含 <code>.env</code> 和真实密钥。</li>
+<li>[x] 源码包不包含虚拟环境、依赖目录和构建产物。</li>
+</ul>
+<h2>三、说明文档</h2>
+<ul>
+<li>[x] 版本基线。</li>
+<li>[x] 系统设计说明书。</li>
+<li>[x] 数据库设计说明。</li>
+<li>[x] 接口设计说明。</li>
+<li>[x] 操作手册。</li>
+<li>[x] 部署说明。</li>
+<li>[x] 测试报告。</li>
+<li>[x] 第三方许可证说明。</li>
+<li>[x] 媒体导入说明。</li>
+<li>[x] DeepSeek 配置说明。</li>
+</ul>
+<h2>四、截图材料</h2>
+<ul>
+<li>[x] 系统首页。</li>
+<li>[x] 目录和模块展开。</li>
+<li>[x] 知识点详情。</li>
+<li>[x] DeepSeek 智能问答。</li>
+<li>[x] 移动端界面。</li>
+</ul>
+<h2>五、发布前检查</h2>
+<ul>
+<li>[x] 前端生产构建通过。</li>
+<li>[x] 后端测试通过。</li>
+<li>[x] 数据库快照完整性测试通过。</li>
+<li>[x] DeepSeek 真实调用联调通过。</li>
+<li>[x] npm 依赖无已知漏洞。</li>
+<li>[x] Python 依赖无冲突。</li>
+<li>[ ] 将 Markdown 文档转换为最终 Word 或 PDF。</li>
+<li>[ ] 核对申请人身份证明和权属材料。</li>
+<li>[ ] 确认课程文本、媒体和截图版权。</li>
+</ul>
+</section>
+
+<section class="document">
+<h1>source-code-print-guide.md</h1>
+<h1>源码打印与提交说明</h1>
+<h2>一、分页结果</h2>
+<p>当前项目自有源码统计：</p>
+<pre><code class="language-text">源文件：24 个
+代码行：6,349 行
+整理页数：127 页
+每页行数：50 行</code></pre>
+<h2>二、提交文件</h2>
+<p>由于总页数超过60页，提交：</p>
+<pre><code class="language-text">source-code-submission.txt</code></pre>
+<p>该文件由前30页和后30页组成，共60页。</p>
+<p>同时保留：</p>
+<pre><code class="language-text">source-code-full.txt
+source-code-first-30-pages.txt
+source-code-last-30-pages.txt
+source-code-manifest.json</code></pre>
+<h2>三、转换建议</h2>
+<ol>
+<li>使用支持固定宽度的等宽字体，例如 Consolas 或 Courier New。</li>
+<li>页面设置为 A4。</li>
+<li>每页50行。</li>
+<li>保持页眉中的软件名称和版本号。</li>
+<li>转换为 PDF 前检查是否出现自动换行过多。</li>
+<li>不加入第三方依赖源码。</li>
+</ol>
+<h2>四、提交前检查</h2>
+<ol>
+<li>第一页和最后一页完整。</li>
+<li>页码连续或保留原始页码。</li>
+<li>不含 API Key 和数据库密码。</li>
+<li>不含本机绝对路径敏感信息。</li>
+<li>文件名称中包含软件名称和版本号。</li>
+</ol>
+</section>
+
+<section class="document"><h1>界面截图</h1>
+<figure><img src="screenshots/01-overview.png" alt="系统首页和模块总览" /><figcaption>系统首页和模块总览</figcaption></figure>
+<figure><img src="screenshots/02-directory-module.png" alt="左侧目录和模块展开" /><figcaption>左侧目录和模块展开</figcaption></figure>
+<figure><img src="screenshots/03-knowledge-detail.png" alt="知识点详情" /><figcaption>知识点详情</figcaption></figure>
+<figure><img src="screenshots/04-deepseek-chat.png" alt="DeepSeek 智能问答" /><figcaption>DeepSeek 智能问答</figcaption></figure>
+<figure><img src="screenshots/05-mobile.png" alt="移动端界面" /><figcaption>移动端界面</figcaption></figure>
+</section>
+</body>
+</html>

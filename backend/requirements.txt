@@ -1,0 +1,8 @@
+# GIS交通路网教学知识图谱平台 - 后端依赖清单
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+neo4j==5.28.6
+pydantic==2.13.5
+python-dotenv==1.2.3
+openai==1.109.1
+

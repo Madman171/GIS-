@@ -1,0 +1,152 @@
+{
+  "metadata": {
+    "software_name": "GIS交通路网教学知识图谱平台",
+    "version": "V1.0",
+    "generated_at": "2026-09-21T05:59:57.064330+00:00",
+    "source_file_count": 23,
+    "source_line_count": 6349,
+    "lines_per_page": 50,
+    "total_pages": 127,
+    "submission_note": "总页数超过60页，送审版本采用前30页和后30页。"
+  },
+  "files": [
+    {
+      "path": "backend/config.py",
+      "bytes": 2436,
+      "lines": 79,
+      "sha256": "d7c9311e5458ff0914ea795515cbcb5cf7264753063ca966684cab30820828fc"
+    },
+    {
+      "path": "backend/deepseek_service.py",
+      "bytes": 4224,
+      "lines": 144,
+      "sha256": "7728f07f6464b951174ac143788b227acdad12745d0e060bfd619b8838f6e59c"
+    },
+    {
+      "path": "backend/import_snapshot.py",
+      "bytes": 6686,
+      "lines": 203,
+      "sha256": "3751c4b67f15c6b2b4c913595133eae6917a4007d8b2032a5318382bfec77bc8"
+    },
+    {
+      "path": "backend/learning_path_engine.py",
+      "bytes": 8805,
+      "lines": 264,
+      "sha256": "05d686b792c5f46abb8284a9bed4b7256ee58041f05c9296bbe0f29a859eefb2"
+    },
+    {
+      "path": "backend/main.py",
+      "bytes": 33201,
+      "lines": 1062,
+      "sha256": "cf33a2dcb16c4eb575b509540beaaf1c736ee78ca0c63014725a893623831408"
+    },
+    {
+      "path": "backend/prompt_engine.py",
+      "bytes": 8423,
+      "lines": 270,
+      "sha256": "0730589305feb607264a0209f95e5c0e1d4bdf570bddaeb057a5d3b6d90dce07"
+    },
+    {
+      "path": "backend/topology_checker.py",
+      "bytes": 11028,
+      "lines": 345,
+      "sha256": "61a62665f6df7c0d07b591727c6a306cdb8037a916c030cc0774791bee231ba2"
+    },
+    {
+      "path": "frontend/index.html",
+      "bytes": 604,
+      "lines": 16,
+      "sha256": "a851e29dd9a75658427bd09a950c9ba6ab074b0345db057b42e7ecf19d8c04e2"
+    },
+    {
+      "path": "frontend/package.json",
+      "bytes": 508,
+      "lines": 24,
+      "sha256": "ce101c4edebaff45b10c51b6f102884de4ae2d36a7ee1c5dc194a2f019582528"
+    },
+    {
+      "path": "frontend/playwright.config.js",
+      "bytes": 290,
+      "lines": 16,
+      "sha256": "7e50084b43b85e87d81a7eb72bce144b4c8fd8c3a414e43e013dc25578140d41"
+    },
+    {
+      "path": "frontend/src/api/client.js",
+      "bytes": 160,
+      "lines": 9,
+      "sha256": "147501bc1d8e878eb6cbd7e35e8e62f79d51c1a5642759a81b8f1eaf1d4e01d1"
+    },
+    {
+      "path": "frontend/src/App.vue",
+      "bytes": 16976,
+      "lines": 805,
+      "sha256": "1784ea9084956eada002467903bff425616b1345e46e8e24264d2606cd97cede"
+    },
+    {
+      "path": "frontend/src/components/ChatPanel.vue",
+      "bytes": 7327,
+      "lines": 392,
+      "sha256": "098a0e5e9ed6a2ca97cd139bbd8e73f8cbed61bdff422aa7e9a9269e4b60bcb2"
+    },
+    {
+      "path": "frontend/src/components/DirectoryPanel.vue",
+      "bytes": 7069,
+      "lines": 348,
+      "sha256": "5d415e0d0296205f6a252f60ca057dceea69c3eeaf3d5e53b1b914b4ba6353db"
+    },
+    {
+      "path": "frontend/src/components/KnowledgeDetail.vue",
+      "bytes": 11102,
+      "lines": 545,
+      "sha256": "6fb4bec2372e0b9267c060a12f2295ac8fdc65f76f18e08780654005311ec44f"
+    },
+    {
+      "path": "frontend/src/components/KnowledgeGraph.vue",
+      "bytes": 11899,
+      "lines": 538,
+      "sha256": "31df819f0e3db42c17e507a8df25f4703fb4cb04637d80207557311646ee12bc"
+    },
+    {
+      "path": "frontend/src/constants/graph.js",
+      "bytes": 806,
+      "lines": 34,
+      "sha256": "d422e89adeef96bed0c422bee35466f17e0ed42fc7592b5e7042dd946a04fe39"
+    },
+    {
+      "path": "frontend/src/main.js",
+      "bytes": 111,
+      "lines": 5,
+      "sha256": "ae6eb9de53e72b97ee4c88fe88d2e982bf060266b2b82a0aa29ec859fa342019"
+    },
+    {
+      "path": "frontend/src/style.css",
+      "bytes": 528,
+      "lines": 38,
+      "sha256": "d918e12b57133d3454e24cddf2fcdf34b15db493b944120b3f6d3e04167c150e"
+    },
+    {
+      "path": "frontend/vite.config.js",
+      "bytes": 462,
+      "lines": 21,
+      "sha256": "a184965536cdbf6ca6f149ce7618d0737789e84756a4fdd943e15d5061045c82"
+    },
+    {
+      "path": "scripts/build_copyright_source.py",
+      "bytes": 7093,
+      "lines": 243,
+      "sha256": "807a2244d7880e37e6cf310deb8c7ed9329926c31b15411b17a6c5b3cd33c5e2"
+    },
+    {
+      "path": "scripts/export_graph.py",
+      "bytes": 18103,
+      "lines": 577,
+      "sha256": "5b96ffd58c8eb0ff0ebea4de1e095772eb8607adc2cc82cc320b43c2ad6da1ef"
+    },
+    {
+      "path": "scripts/import_media.py",
+      "bytes": 7727,
+      "lines": 264,
+      "sha256": "378dd8bbb09e31dab600c0790443b42b03567734a1a39a0f8714f33f33469cb0"
+    }
+  ]
+}
