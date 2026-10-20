@@ -606,7 +606,8 @@ function handleWindowFocus() {
   }
 }
 
-function navigateFromDetail({ type, id, moduleId }) {
+function navigateFromDetail({ type, id, moduleId, viewMode: requestedViewMode }) {
+  if (requestedViewMode) viewMode.value = requestedViewMode
   if (type === 'Module') {
     selectModule(id)
   } else if (type === 'KnowledgePoint') {

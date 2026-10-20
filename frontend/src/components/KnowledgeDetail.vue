@@ -93,7 +93,7 @@
                 :key="`${item.id}-${item.depth}`"
                 type="button"
                 class="path-item"
-                @click="navigateToNode(item)"
+                @click="navigateToNode(item, { path: true })"
               >
                 <span class="path-index">{{ index + 1 }}</span>
                 <span class="path-copy">
@@ -311,15 +311,20 @@ const relationGroups = computed(() => {
   return Array.from(groups.values())
 })
 
-function navigateToNode(node) {
+function navigateToNode(node, options = {}) {
   const type = node.labels ? getNodeType(node.labels) : 'KnowledgePoint'
   if (type === 'Module') {
-    emit('navigate', { type, id: node.id })
+    emit('navigate', {
+      type,
+      id: node.id,
+      viewMode: options.path ? 'path' : null,
+    })
   } else if (type === 'KnowledgePoint') {
     emit('navigate', {
       type,
       id: node.id,
       moduleId: node.properties?.module_id || node.moduleId,
+      viewMode: options.path ? 'path' : null,
     })
   }
 }
