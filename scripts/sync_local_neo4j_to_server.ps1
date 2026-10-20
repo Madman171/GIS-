@@ -6,6 +6,7 @@ param(
     [string]$RemoteDatabase = "neo4j",
     [string]$RemotePassword = "",
     [switch]$SkipExport,
+    [switch]$PruneRelationships,
     [switch]$SkipHealthCheck
 )
 
@@ -136,7 +137,12 @@ try {
     $env:NEO4J_DATABASE = $RemoteDatabase
 
     Write-Host "3/3 Importing the local snapshot directly into remote Neo4j..."
-    & $Python $ImportScript --apply
+    $importArguments = @("--apply")
+    if ($PruneRelationships) {
+        Write-Warning "PruneRelationships is enabled: stale relationships in the snapshot node scope will be deleted."
+        $importArguments += "--prune-relationships"
+    }
+    & $Python $ImportScript @importArguments
     if ($LASTEXITCODE -ne 0) {
         throw "Remote Neo4j synchronization failed."
     }

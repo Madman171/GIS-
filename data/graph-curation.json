@@ -1,0 +1,3992 @@
+{
+  "metadata": {
+    "source": "data/graph-snapshot.json",
+    "generated_at": "2026-10-20T04:27:03.499336+00:00",
+    "purpose": "审阅后再应用，不直接修改图谱快照",
+    "proposal_count": 289,
+    "confidence_counts": {
+      "medium": 95,
+      "high": 163,
+      "low": 31
+    }
+  },
+  "subcategory_proposals": [
+    {
+      "kp_id": "M1-001",
+      "name": "GIS交通路网的专业定义与核心研究范畴",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "medium",
+      "matched_keywords": [
+        "拓扑"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-002",
+      "name": "GIS交通路网与普通地理矢量数据的核心区别",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "连通"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-003",
+      "name": "交通路网GIS的服务对象与行业应用边界",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "基础概念",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-004",
+      "name": "路网空间数据的两大核心载体：矢量模型、栅格模型",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据模型",
+      "confidence": "high",
+      "matched_keywords": [
+        "矢量",
+        "栅格",
+        "空间数据"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-005",
+      "name": "矢量路网模型的优势与适用场景",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "medium",
+      "matched_keywords": [
+        "拓扑"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-006",
+      "name": "栅格路网模型的优势与适用场景",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据模型",
+      "confidence": "medium",
+      "matched_keywords": [
+        "栅格"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-007",
+      "name": "交通路网Node-Edge节点边基础模型定义",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "交叉口"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-008",
+      "name": "路网节点的定义、分类与核心作用",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "交叉口",
+        "匝道"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-009",
+      "name": "路网边的定义、分类与核心作用",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "匝道",
+        "桥梁",
+        "隧道"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-010",
+      "name": "无向路网图模型的结构与适用场景",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "连通",
+        "单向",
+        "双向"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-011",
+      "name": "有向路网图模型的结构与适用场景",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "单向",
+        "双向"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-012",
+      "name": "加权路网图模型的权重定义逻辑",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "图论与网络模型",
+      "confidence": "medium",
+      "matched_keywords": [
+        "加权"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-013",
+      "name": "交通路网拓扑关系的核心定义",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "连通"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-014",
+      "name": "路网连通性拓扑规则",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "连通"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-015",
+      "name": "路网几何相邻与拓扑连通的区别",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "连通"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-016",
+      "name": "路网方向性拓扑约束规则",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "单向",
+        "双向"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-017",
+      "name": "路网转向拓扑约束规则",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "交叉口"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-018",
+      "name": "路网节点重合拓扑规范",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "连通",
+        "节点重合",
+        "伪节点"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-019",
+      "name": "路网线段无缝衔接拓扑规范",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "连通"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-020",
+      "name": "伪节点的拓扑定义与产生原因",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "伪节点",
+        "交叉口"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-021",
+      "name": "断头路的拓扑定义与路网缺陷特征",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "连通",
+        "悬挂节点",
+        "断头路"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-022",
+      "name": "重复路网线段的拓扑特征",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "medium",
+      "matched_keywords": [
+        "拓扑"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-023",
+      "name": "路网悬挂节点的定义与判定标准",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "悬挂节点",
+        "断头路"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-024",
+      "name": "交叉口拓扑建模核心规则",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "交叉口"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-025",
+      "name": "匝道与主路拓扑衔接规则",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "连通",
+        "匝道",
+        "单向"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-026",
+      "name": "桥梁路网拓扑独立建模逻辑",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "桥梁"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-027",
+      "name": "隧道路网拓扑独立建模逻辑",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "隧道"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-028",
+      "name": "地面、高架、地下多层路网拓扑分层规则",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "连通",
+        "匝道"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-029",
+      "name": "单向通行路网拓扑构建要点",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "单向"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-030",
+      "name": "双向通行路网拓扑构建要点",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "单向",
+        "双向"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-031",
+      "name": "路网拓扑完整性评价基础标准",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "high",
+      "matched_keywords": [
+        "拓扑",
+        "连通",
+        "断头路",
+        "伪节点"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-032",
+      "name": "路网拓扑一致性检查核心维度",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "medium",
+      "matched_keywords": [
+        "拓扑"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-033",
+      "name": "路网图论中度值的定义与计算逻辑",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "图论与网络模型",
+      "confidence": "high",
+      "matched_keywords": [
+        "图论",
+        "度值",
+        "有向",
+        "无向"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-034",
+      "name": "路网邻接矩阵的构建原理",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "图论与网络模型",
+      "confidence": "high",
+      "matched_keywords": [
+        "邻接矩阵",
+        "加权"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-035",
+      "name": "路网关联矩阵的构建原理",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "图论与网络模型",
+      "confidence": "high",
+      "matched_keywords": [
+        "图论",
+        "关联矩阵"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-036",
+      "name": "路网聚类系数计算与网络结构特性",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "基础概念",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-037",
+      "name": "路网平均路径长度与小世界特性",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "基础概念",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M1-038",
+      "name": "复杂交通场景下路网模型的拓展需求",
+      "module_id": "M1",
+      "module_name": "基础理论与拓扑建模",
+      "current_subcategory": "",
+      "suggested_subcategory": "拓扑规则",
+      "confidence": "medium",
+      "matched_keywords": [
+        "拓扑"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-001",
+      "name": "线性参考系统（LRS）的定义与核心价值",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "high",
+      "matched_keywords": [
+        "里程",
+        "定位"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-002",
+      "name": "LRS三大组成：交通网络、参照基准、线性参照方法",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "high",
+      "matched_keywords": [
+        "里程",
+        "定位"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-003",
+      "name": "里程桩/桩号定位原理与中国公路桩号体系",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "high",
+      "matched_keywords": [
+        "里程",
+        "定位"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-004",
+      "name": "M值（Measure值）路线要素建模方法",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "线性参考",
+      "confidence": "high",
+      "matched_keywords": [
+        "路线",
+        "桩号"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-005",
+      "name": "点事件数据模型：事故、标志、检测器等离散事件",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "事件数据模型",
+      "confidence": "high",
+      "matched_keywords": [
+        "事件",
+        "事故"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-006",
+      "name": "线事件数据模型：路面状况、限速区间、拥堵段等线性事件",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "事件数据模型",
+      "confidence": "high",
+      "matched_keywords": [
+        "事件",
+        "拥堵",
+        "施工"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-007",
+      "name": "事件表结构设计：路线ID + 测量值 + 属性值",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "事件数据模型",
+      "confidence": "high",
+      "matched_keywords": [
+        "事件",
+        "事故"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-008",
+      "name": "动态分段技术原理：从测量值到几何位置的映射",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态分段",
+        "分段",
+        "里程"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-009",
+      "name": "动态分段在路面管理中的应用",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态分段",
+        "分段",
+        "里程",
+        "定位"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-010",
+      "name": "动态分段在交通事故分析中的应用",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态分段",
+        "分段",
+        "里程",
+        "定位"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-011",
+      "name": "动态分段在限速管理中的应用",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态分段",
+        "分段",
+        "里程"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-012",
+      "name": "线性参考中的偏移量（Offset）建模",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "high",
+      "matched_keywords": [
+        "里程",
+        "定位"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-013",
+      "name": "路线重合与分叉的线性参考处理",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "线性参考",
+      "confidence": "high",
+      "matched_keywords": [
+        "线性参考",
+        "路线",
+        "桩号"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-014",
+      "name": "路线改线与桩号传递的线性参考维护",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "线性参考",
+      "confidence": "high",
+      "matched_keywords": [
+        "线性参考",
+        "路线",
+        "桩号"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-015",
+      "name": "ISO 19148线性参考国际标准解读",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态分段",
+        "分段"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-016",
+      "name": "ArcGIS Roads & Highways模块LRS工作流",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态分段",
+        "分段"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-017",
+      "name": "SuperMap动态分段功能与实现",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态分段",
+        "分段",
+        "里程"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-018",
+      "name": "多基准线性参考系统：公路桩号 vs 里程 vs GPS",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "线性参考",
+      "confidence": "high",
+      "matched_keywords": [
+        "线性参考",
+        "路线",
+        "桩号"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-019",
+      "name": "线性参考数据质量校验方法",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "线性参考",
+      "confidence": "high",
+      "matched_keywords": [
+        "线性参考",
+        "路线",
+        "桩号"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-020",
+      "name": "事件数据与路网空间叠加分析",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "事件数据模型",
+      "confidence": "high",
+      "matched_keywords": [
+        "事件",
+        "事故",
+        "拥堵"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-021",
+      "name": "事故黑点的线性参考识别方法",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "线性参考",
+      "confidence": "high",
+      "matched_keywords": [
+        "线性参考",
+        "路段",
+        "桩号"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-022",
+      "name": "路面性能沿线路网分布分析",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态分段",
+        "分段",
+        "里程"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-023",
+      "name": "交通标志标线的线性参考管理",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "线性参考",
+      "confidence": "high",
+      "matched_keywords": [
+        "线性参考",
+        "路线",
+        "桩号"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-024",
+      "name": "沿线设施（加油站、服务区）线性参考定位",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "线性参考",
+      "confidence": "high",
+      "matched_keywords": [
+        "线性参考",
+        "路线",
+        "桩号"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-025",
+      "name": "公交站点的线性参考定位与里程统计",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "high",
+      "matched_keywords": [
+        "里程",
+        "定位"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-026",
+      "name": "交通拥堵事件的线性参考表达",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态分段",
+        "分段",
+        "里程"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-027",
+      "name": "施工占道事件的线性参考建模",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "事件数据模型",
+      "confidence": "high",
+      "matched_keywords": [
+        "事件",
+        "施工"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-028",
+      "name": "LRS与传统坐标定位的优劣对比",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "事件数据模型",
+      "confidence": "medium",
+      "matched_keywords": [
+        "事件"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-029",
+      "name": "动态分段性能优化：大规模事件数据处理",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态分段",
+        "分段"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-030",
+      "name": "多源事件数据的线性参考融合",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "线性参考",
+      "confidence": "high",
+      "matched_keywords": [
+        "线性参考",
+        "路线",
+        "桩号"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-031",
+      "name": "铁路线路的线性参考与里程管理",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "high",
+      "matched_keywords": [
+        "里程",
+        "定位"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-032",
+      "name": "航道航段的线性参考定位方法",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "high",
+      "matched_keywords": [
+        "里程",
+        "定位"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-033",
+      "name": "线性参考在资产管理中的应用",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态分段",
+      "confidence": "medium",
+      "matched_keywords": [
+        "里程"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-034",
+      "name": "历史事件的时空线性参考表达",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "事件数据模型",
+      "confidence": "medium",
+      "matched_keywords": [
+        "事件"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-035",
+      "name": "LRS数据模型的标准化与互操作",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "事件数据模型",
+      "confidence": "medium",
+      "matched_keywords": [
+        "事件"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M2-036",
+      "name": "线性参考与知识图谱的事件实体关联",
+      "module_id": "M2",
+      "module_name": "线性参考与事件数据模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "线性参考",
+      "confidence": "high",
+      "matched_keywords": [
+        "线性参考",
+        "路线"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-001",
+      "name": "官方测绘路网数据的来源与权威属性",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据源与采集",
+      "confidence": "high",
+      "matched_keywords": [
+        "数据源",
+        "采集"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-002",
+      "name": "交通运输部门路网普查数据特征",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "high",
+      "matched_keywords": [
+        "属性",
+        "字段",
+        "道路等级",
+        "路面"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-003",
+      "name": "自然资源局国土路网矢量数据特征",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "high",
+      "matched_keywords": [
+        "属性",
+        "限速"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-004",
+      "name": "基础地形图路网数据提取规则",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "high",
+      "matched_keywords": [
+        "属性",
+        "字段",
+        "道路等级"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-005",
+      "name": "OSM开源路网数据的来源与优缺点",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据源与采集",
+      "confidence": "high",
+      "matched_keywords": [
+        "数据源",
+        "OSM",
+        "众源"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-006",
+      "name": "高德地图路网数据的字段与精度特征",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "high",
+      "matched_keywords": [
+        "属性",
+        "字段",
+        "道路等级",
+        "限速"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-007",
+      "name": "百度地图路网数据的字段与精度特征",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据源与采集",
+      "confidence": "high",
+      "matched_keywords": [
+        "高德",
+        "百度"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-008",
+      "name": "腾讯地图路网数据的差异化特征",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "路网数据体系",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-009",
+      "name": "车载GPS浮动车轨迹数据的路网适配价值",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据源与采集",
+      "confidence": "high",
+      "matched_keywords": [
+        "数据源",
+        "采集"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-010",
+      "name": "无人机航拍影像路网提取数据特征",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据源与采集",
+      "confidence": "medium",
+      "matched_keywords": [
+        "采集"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-011",
+      "name": "车载激光点云路网采集数据特征",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据源与采集",
+      "confidence": "high",
+      "matched_keywords": [
+        "数据源",
+        "采集"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-012",
+      "name": "交通卡口监测路网配套数据特征",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "路网数据体系",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-013",
+      "name": "铁路路网数据：线路、车站、枢纽数据特征",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "medium",
+      "matched_keywords": [
+        "属性"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-014",
+      "name": "城市轨道交通数据：地铁、轻轨线路与站点",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "medium",
+      "matched_keywords": [
+        "属性"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-015",
+      "name": "水运航道与港口数据特征",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "medium",
+      "matched_keywords": [
+        "属性"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-016",
+      "name": "路网空间几何属性核心字段",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "high",
+      "matched_keywords": [
+        "属性",
+        "字段"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-017",
+      "name": "路网坐标属性与空间定位规则",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据质量与清洗",
+      "confidence": "medium",
+      "matched_keywords": [
+        "一致性"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-018",
+      "name": "路网长度、曲率、坡度几何属性定义",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "high",
+      "matched_keywords": [
+        "属性",
+        "限速"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-019",
+      "name": "道路等级属性分类标准（高速/国道/省道/县道/城市道路）",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "high",
+      "matched_keywords": [
+        "属性",
+        "道路等级"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-020",
+      "name": "道路车道数字段规范与录入标准",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "medium",
+      "matched_keywords": [
+        "字段"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-021",
+      "name": "道路设计限速、实际限速字段区分",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "high",
+      "matched_keywords": [
+        "字段",
+        "道路等级",
+        "限速"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-022",
+      "name": "道路通行方向属性标注规则",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据质量与清洗",
+      "confidence": "medium",
+      "matched_keywords": [
+        "质量"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-023",
+      "name": "路面材质属性分类与数据规范",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "high",
+      "matched_keywords": [
+        "属性",
+        "路面"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-024",
+      "name": "道路通行时间阻抗属性定义",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "high",
+      "matched_keywords": [
+        "属性",
+        "限速"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-025",
+      "name": "道路通行费用阻抗属性定义",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "medium",
+      "matched_keywords": [
+        "属性"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-026",
+      "name": "路网转向限制属性录入规则",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "medium",
+      "matched_keywords": [
+        "属性"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-027",
+      "name": "路网限行规则（时段/车型）属性存储方式",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "high",
+      "matched_keywords": [
+        "属性",
+        "字段"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-028",
+      "name": "GDF地理数据文件标准格式解读",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据格式与转换",
+      "confidence": "medium",
+      "matched_keywords": [
+        "格式"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-029",
+      "name": "OpenDRIVE高精地图数据格式",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据格式与转换",
+      "confidence": "medium",
+      "matched_keywords": [
+        "格式"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-030",
+      "name": "CGCS2000坐标系路网适配规则",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据格式与转换",
+      "confidence": "medium",
+      "matched_keywords": [
+        "坐标系"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-031",
+      "name": "WGS84坐标系路网适配规则",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据格式与转换",
+      "confidence": "medium",
+      "matched_keywords": [
+        "坐标系"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-032",
+      "name": "北京54、西安80老旧路网坐标转换方法",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据格式与转换",
+      "confidence": "high",
+      "matched_keywords": [
+        "转换",
+        "坐标系"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-033",
+      "name": "路网数据批量纠偏处理流程",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据格式与转换",
+      "confidence": "medium",
+      "matched_keywords": [
+        "转换"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-034",
+      "name": "路网数据格式转换（shp/geojson/gdb/GPX）",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据格式与转换",
+      "confidence": "high",
+      "matched_keywords": [
+        "格式",
+        "转换",
+        "Shapefile",
+        "GeoJSON",
+        "FileGDB",
+        "GPX",
+        "坐标系"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-035",
+      "name": "路网数据裁剪、拼接、融合处理方法",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据质量与清洗",
+      "confidence": "medium",
+      "matched_keywords": [
+        "一致性"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-036",
+      "name": "路网数据完整性质量评价指标",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据质量与清洗",
+      "confidence": "high",
+      "matched_keywords": [
+        "质量",
+        "缺失"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-037",
+      "name": "路网数据精度质量评价指标",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "属性与编码规范",
+      "confidence": "high",
+      "matched_keywords": [
+        "属性",
+        "字段"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-038",
+      "name": "路网数据时效性质量评价指标",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据质量与清洗",
+      "confidence": "medium",
+      "matched_keywords": [
+        "质量"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-039",
+      "name": "路网数据一致性质量评价指标",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据质量与清洗",
+      "confidence": "high",
+      "matched_keywords": [
+        "质量",
+        "一致性"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M3-040",
+      "name": "多源路网数据质量综合评价体系",
+      "module_id": "M3",
+      "module_name": "全量数据体系",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据质量与清洗",
+      "confidence": "high",
+      "matched_keywords": [
+        "质量",
+        "一致性"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-001",
+      "name": "路网网络分析的核心逻辑：阻抗成本模型",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "算法基础",
+      "confidence": "high",
+      "matched_keywords": [
+        "算法",
+        "模型"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-002",
+      "name": "距离阻抗模型的构建与计算规则",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "路径与可达性",
+      "confidence": "medium",
+      "matched_keywords": [
+        "最短路径"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-003",
+      "name": "时间阻抗模型的构建与计算规则",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "路径与可达性",
+      "confidence": "medium",
+      "matched_keywords": [
+        "路径规划"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-004",
+      "name": "经济费用阻抗模型的构建与计算规则",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "流量与分配",
+      "confidence": "medium",
+      "matched_keywords": [
+        "阻抗"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-005",
+      "name": "多阻抗耦合路网模型的权重配比逻辑",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "流量与分配",
+      "confidence": "medium",
+      "matched_keywords": [
+        "阻抗"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-006",
+      "name": "Dijkstra最短路径算法原理与路网适配",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "算法基础",
+      "confidence": "high",
+      "matched_keywords": [
+        "算法",
+        "Dijkstra"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-007",
+      "name": "Dijkstra算法在大规模路网的优化要点",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "算法基础",
+      "confidence": "high",
+      "matched_keywords": [
+        "算法",
+        "Dijkstra"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-008",
+      "name": "A*启发式路径算法原理与路网优势",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "算法基础",
+      "confidence": "high",
+      "matched_keywords": [
+        "算法",
+        "Dijkstra",
+        "A*"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-009",
+      "name": "双向A*算法的路网路径优化逻辑",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "算法基础",
+      "confidence": "high",
+      "matched_keywords": [
+        "算法",
+        "A*"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-010",
+      "name": "路网OD成本矩阵的定义与构建场景",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "流量与分配",
+      "confidence": "high",
+      "matched_keywords": [
+        "交通分配",
+        "OD",
+        "阻抗"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-011",
+      "name": "多点对多点OD矩阵批量计算方法",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "算法基础",
+      "confidence": "high",
+      "matched_keywords": [
+        "算法",
+        "Dijkstra",
+        "A*"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-012",
+      "name": "路网几何缓冲区分析的原理与缺陷",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "路径与可达性",
+      "confidence": "medium",
+      "matched_keywords": [
+        "可达"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-013",
+      "name": "路网网络缓冲区（可达范围）分析原理",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "路径与可达性",
+      "confidence": "high",
+      "matched_keywords": [
+        "可达",
+        "服务区"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-014",
+      "name": "等时圈可达性分析模型构建方法",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "路径与可达性",
+      "confidence": "medium",
+      "matched_keywords": [
+        "可达"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-015",
+      "name": "等距圈路网覆盖范围计算方法",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "流量与分配",
+      "confidence": "medium",
+      "matched_keywords": [
+        "阻抗"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-016",
+      "name": "公共设施路网服务区划分算法",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "路径与可达性",
+      "confidence": "medium",
+      "matched_keywords": [
+        "服务区"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-017",
+      "name": "路网设施点空间分配模型原理（位置分配）",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "算法基础",
+      "confidence": "high",
+      "matched_keywords": [
+        "算法",
+        "模型"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-018",
+      "name": "路网转向延迟成本的算法嵌入逻辑",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "流量与分配",
+      "confidence": "medium",
+      "matched_keywords": [
+        "阻抗"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-019",
+      "name": "路网禁行约束的路径筛选算法",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "算法基础",
+      "confidence": "medium",
+      "matched_keywords": [
+        "算法"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-020",
+      "name": "时间依赖型动态路网算法原理",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "流量与分配",
+      "confidence": "high",
+      "matched_keywords": [
+        "阻抗",
+        "拥堵"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-021",
+      "name": "早晚高峰路网阻抗动态更新机制",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "流量与分配",
+      "confidence": "medium",
+      "matched_keywords": [
+        "阻抗"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-022",
+      "name": "路网密度单点计算与格网密度统计方法",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "空间分析算法",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-023",
+      "name": "路网连接度β指数计算原理",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "空间分析算法",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-024",
+      "name": "路网连通性γ指数计算原理",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "空间分析算法",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-025",
+      "name": "路网环度α指数计算原理",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "空间分析算法",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-026",
+      "name": "路网节点度中心性计算方法",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "网络指标",
+      "confidence": "high",
+      "matched_keywords": [
+        "中心性",
+        "度中心性"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-027",
+      "name": "路网介数中心性计算方法",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "网络指标",
+      "confidence": "high",
+      "matched_keywords": [
+        "中心性",
+        "介数"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-028",
+      "name": "路网接近中心性计算方法",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "路径与可达性",
+      "confidence": "high",
+      "matched_keywords": [
+        "最短路径",
+        "可达"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-029",
+      "name": "交通分配模型：全有全无分配",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "流量与分配",
+      "confidence": "high",
+      "matched_keywords": [
+        "交通分配",
+        "OD",
+        "拥堵"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-030",
+      "name": "交通分配模型：容量限制分配",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "流量与分配",
+      "confidence": "high",
+      "matched_keywords": [
+        "交通分配",
+        "流量",
+        "阻抗"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-031",
+      "name": "交通分配模型：用户平衡（UE）分配",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "流量与分配",
+      "confidence": "high",
+      "matched_keywords": [
+        "交通分配",
+        "OD"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-032",
+      "name": "交通分配模型：系统最优（SO）分配",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "流量与分配",
+      "confidence": "medium",
+      "matched_keywords": [
+        "交通分配"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-033",
+      "name": "OD矩阵反推与估计技术",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "流量与分配",
+      "confidence": "high",
+      "matched_keywords": [
+        "流量",
+        "OD"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-034",
+      "name": "路网拥堵热点空间识别算法",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "流量与分配",
+      "confidence": "high",
+      "matched_keywords": [
+        "流量",
+        "拥堵"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-035",
+      "name": "路网薄弱节点空间识别算法",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "网络指标",
+      "confidence": "medium",
+      "matched_keywords": [
+        "中心性"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-036",
+      "name": "多路径择优分析算法（规避拥堵/最短时间）",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "流量与分配",
+      "confidence": "medium",
+      "matched_keywords": [
+        "拥堵"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-037",
+      "name": "慢行路网（步行/骑行）专属分析算法",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "算法基础",
+      "confidence": "high",
+      "matched_keywords": [
+        "算法",
+        "模型"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M4-038",
+      "name": "大规模路网并行计算优化算法",
+      "module_id": "M4",
+      "module_name": "核心空间分析算法",
+      "current_subcategory": "",
+      "suggested_subcategory": "路径与可达性",
+      "confidence": "medium",
+      "matched_keywords": [
+        "最短路径"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-001",
+      "name": "静态GIS交通路网的定义与核心特征",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态路网",
+        "实时",
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-002",
+      "name": "静态路网的核心构成要素与固定属性",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "medium",
+      "matched_keywords": [
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-003",
+      "name": "静态路网的适用分析场景",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "medium",
+      "matched_keywords": [
+        "实时"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-004",
+      "name": "静态路网模型的局限性",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "high",
+      "matched_keywords": [
+        "实时",
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-005",
+      "name": "动态GIS交通路网的定义与核心特征",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "medium",
+      "matched_keywords": [
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-006",
+      "name": "动态路网与静态路网的核心差异对比",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态路网",
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-007",
+      "name": "实时路况数据的接入格式与解析规则",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "medium",
+      "matched_keywords": [
+        "实时"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-008",
+      "name": "浮动车轨迹数据反演路网车速的方法",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态路网",
+        "实时",
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-009",
+      "name": "卡口流量数据更新路网通行状态的逻辑",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态路网",
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-010",
+      "name": "节假日路网通行规则动态适配机制",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态路网",
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-011",
+      "name": "恶劣天气路网阻抗动态修正模型",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态路网",
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-012",
+      "name": "施工占道路网动态拓扑修改规则",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "medium",
+      "matched_keywords": [
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-013",
+      "name": "交通管制场景下动态路网建模方法",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态路网",
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-014",
+      "name": "时空路网数据模型的核心架构",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态路网",
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-015",
+      "name": "时空立方体路网存储结构原理",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "时间建模",
+      "confidence": "high",
+      "matched_keywords": [
+        "时间",
+        "时序"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-016",
+      "name": "路网时间序列数据的组织方式",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "时间建模",
+      "confidence": "medium",
+      "matched_keywords": [
+        "时间"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-017",
+      "name": "路网小时级时空变化特征提取",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "时间建模",
+      "confidence": "medium",
+      "matched_keywords": [
+        "时间"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-018",
+      "name": "路网日度、月度时空演变规律分析",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "时间建模",
+      "confidence": "medium",
+      "matched_keywords": [
+        "时序"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-019",
+      "name": "动态路网阻抗实时更新流程",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态路网",
+        "实时",
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-020",
+      "name": "动态路网拓扑临时变更记录方法",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态路网",
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-021",
+      "name": "宏观交通模型与GIS路网的耦合逻辑",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "时空数据模型",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-022",
+      "name": "中观交通仿真模型的路网数据对接方式",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "时空数据模型",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-023",
+      "name": "微观交通仿真的精细路网适配要求",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "时空数据模型",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-024",
+      "name": "VISSIM仿真与GIS路网数据交互方法",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "时空数据模型",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-025",
+      "name": "TransCAD交通软件路网兼容规则",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "时空数据模型",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-026",
+      "name": "动态路网拥堵时空演化建模",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态路网",
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-027",
+      "name": "路网高峰时段时空特征聚类分析",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "时间建模",
+      "confidence": "high",
+      "matched_keywords": [
+        "时序",
+        "持续"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-028",
+      "name": "静态路网批量更新动态数据的流程",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "medium",
+      "matched_keywords": [
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-029",
+      "name": "时空路网数据的版本管理机制",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "时间建模",
+      "confidence": "medium",
+      "matched_keywords": [
+        "时间"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-030",
+      "name": "实时路网数据的降噪与纠错处理",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态路网",
+        "实时",
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-031",
+      "name": "动态路网路径规划的实时响应机制",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态路网",
+        "实时",
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-032",
+      "name": "突发事件下路网动态推演模型",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "medium",
+      "matched_keywords": [
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-033",
+      "name": "城市路网时空活力评价模型",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "时空分析",
+      "confidence": "medium",
+      "matched_keywords": [
+        "时空"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-034",
+      "name": "动态路网数据可视化表达规则",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态路网",
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-035",
+      "name": "时空路网分析结果的落地应用逻辑",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "时空分析",
+      "confidence": "medium",
+      "matched_keywords": [
+        "时空"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M5-036",
+      "name": "动静结合路网模型的搭建方法",
+      "module_id": "M5",
+      "module_name": "静态与动态时空模型",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态路网",
+      "confidence": "medium",
+      "matched_keywords": [
+        "动态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-001",
+      "name": "综合立体交通网的概念与构成",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "交通方式建模",
+      "confidence": "high",
+      "matched_keywords": [
+        "轨道",
+        "多模式"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-002",
+      "name": "铁路路网GIS建模：线路、车站、枢纽、道岔",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "换乘与枢纽",
+      "confidence": "high",
+      "matched_keywords": [
+        "换乘",
+        "枢纽"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-003",
+      "name": "铁路线路等级与技术标准属性",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "多模态网络",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-004",
+      "name": "城市轨道交通路网建模：地铁、轻轨、有轨电车",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "交通方式建模",
+      "confidence": "high",
+      "matched_keywords": [
+        "地铁",
+        "轨道",
+        "步行"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-005",
+      "name": "公交线网GIS建模：线路、站点、场站",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "交通方式建模",
+      "confidence": "medium",
+      "matched_keywords": [
+        "公交"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-006",
+      "name": "水运航道网络建模：航道、港口、船闸、锚地",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "多模态网络",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-007",
+      "name": "航空航路与机场净空GIS分析",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "多模态网络",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-008",
+      "name": "管道运输网络GIS建模：油气管道、泵站",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "多模态网络",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-009",
+      "name": "邮政快递网络建模：网点、分拣中心、投递路线",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "多模态网络",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-010",
+      "name": "多模式交通网络（Multimodal Network）融合架构",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "换乘与枢纽",
+      "confidence": "high",
+      "matched_keywords": [
+        "换乘",
+        "枢纽"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-011",
+      "name": "多式联运枢纽的拓扑衔接建模",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "换乘与枢纽",
+      "confidence": "high",
+      "matched_keywords": [
+        "换乘",
+        "枢纽",
+        "步行"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-012",
+      "name": "铁水联运网络阻抗模型",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "综合交通分析",
+      "confidence": "medium",
+      "matched_keywords": [
+        "联运"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-013",
+      "name": "公铁联运网络路径规划",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "换乘与枢纽",
+      "confidence": "medium",
+      "matched_keywords": [
+        "枢纽"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-014",
+      "name": "空铁联运网络可达性分析",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "交通方式建模",
+      "confidence": "medium",
+      "matched_keywords": [
+        "轨道"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-015",
+      "name": "多模式换乘节点建模与换乘时间计算",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "换乘与枢纽",
+      "confidence": "high",
+      "matched_keywords": [
+        "换乘",
+        "枢纽",
+        "步行"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-016",
+      "name": "综合交通枢纽客流集散GIS分析",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "交通方式建模",
+      "confidence": "high",
+      "matched_keywords": [
+        "公交",
+        "轨道"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-017",
+      "name": "多模态网络数据标准与交换格式",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "交通方式建模",
+      "confidence": "medium",
+      "matched_keywords": [
+        "轨道"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-018",
+      "name": "GTFS公共交通数据格式与GIS转换",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "交通方式建模",
+      "confidence": "medium",
+      "matched_keywords": [
+        "公交"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-019",
+      "name": "铁路时刻表数据与路网空间匹配",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "多模态网络",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-020",
+      "name": "航班数据与航路网络空间分析",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "多模态网络",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-021",
+      "name": "内河航运水位与通行能力GIS分析",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "多模态网络",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-022",
+      "name": "综合交通网连通性评价指标体系",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "综合交通分析",
+      "confidence": "high",
+      "matched_keywords": [
+        "综合交通",
+        "多模态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-023",
+      "name": "多式联运路径优化算法",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "综合交通分析",
+      "confidence": "medium",
+      "matched_keywords": [
+        "联运"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-024",
+      "name": "综合交通枢纽选址GIS模型",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "综合交通分析",
+      "confidence": "high",
+      "matched_keywords": [
+        "综合交通",
+        "多模态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-025",
+      "name": "区域交通一体化路网协同分析",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "交通方式建模",
+      "confidence": "medium",
+      "matched_keywords": [
+        "轨道"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-026",
+      "name": "城乡交通网络通达性对比分析",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "多模态网络",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-027",
+      "name": "边境口岸与国际通道GIS分析",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "综合交通分析",
+      "confidence": "medium",
+      "matched_keywords": [
+        "多模态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-028",
+      "name": "综合交通网与国土空间规划耦合",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "综合交通分析",
+      "confidence": "high",
+      "matched_keywords": [
+        "综合交通",
+        "多模态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-029",
+      "name": "多模态交通网络韧性评估",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "交通方式建模",
+      "confidence": "medium",
+      "matched_keywords": [
+        "多模式"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-030",
+      "name": "综合交通信息平台数据集成架构",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "交通方式建模",
+      "confidence": "medium",
+      "matched_keywords": [
+        "轨道"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-031",
+      "name": "多源交通网络数据融合方法",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "综合交通分析",
+      "confidence": "medium",
+      "matched_keywords": [
+        "多模态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-032",
+      "name": "综合交通一张图数据规范",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "综合交通分析",
+      "confidence": "high",
+      "matched_keywords": [
+        "综合交通",
+        "多模态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-033",
+      "name": "跨运输方式数据共享与互操作",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "多模态网络",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-034",
+      "name": "综合交通网络仿真模型对接",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "综合交通分析",
+      "confidence": "high",
+      "matched_keywords": [
+        "综合交通",
+        "多模态"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M6-035",
+      "name": "多模态交通网络知识图谱实体关系设计",
+      "module_id": "M6",
+      "module_name": "多模态综合交通网络",
+      "current_subcategory": "",
+      "suggested_subcategory": "换乘与枢纽",
+      "confidence": "high",
+      "matched_keywords": [
+        "换乘",
+        "枢纽"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-001",
+      "name": "ArcGIS路网基础数据导入与图层配置",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "桌面GIS操作",
+      "confidence": "high",
+      "matched_keywords": [
+        "ArcGIS",
+        "图层"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-002",
+      "name": "ArcGIS网络数据集创建完整流程",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "桌面GIS操作",
+      "confidence": "medium",
+      "matched_keywords": [
+        "ArcGIS"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-003",
+      "name": "ArcGIS路网阻抗属性赋值操作",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "桌面GIS操作",
+      "confidence": "medium",
+      "matched_keywords": [
+        "ArcGIS"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-004",
+      "name": "ArcGIS路网转向规则编辑配置",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "桌面GIS操作",
+      "confidence": "medium",
+      "matched_keywords": [
+        "ArcGIS"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-005",
+      "name": "ArcGIS最短路径分析工具实操",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "桌面GIS操作",
+      "confidence": "medium",
+      "matched_keywords": [
+        "ArcGIS"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-006",
+      "name": "ArcGIS服务区与可达性分析实操",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "桌面GIS操作",
+      "confidence": "high",
+      "matched_keywords": [
+        "ArcGIS",
+        "图层"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-007",
+      "name": "ArcGIS OD成本矩阵生成方法",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "桌面GIS操作",
+      "confidence": "medium",
+      "matched_keywords": [
+        "ArcGIS"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-008",
+      "name": "ArcGIS路网拓扑检查与修复工具使用",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "桌面GIS操作",
+      "confidence": "medium",
+      "matched_keywords": [
+        "ArcGIS"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-009",
+      "name": "ArcGIS线性参考与动态分段实操",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "桌面GIS操作",
+      "confidence": "medium",
+      "matched_keywords": [
+        "ArcGIS"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-010",
+      "name": "QGIS路网数据加载与坐标系配置",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "桌面GIS操作",
+      "confidence": "high",
+      "matched_keywords": [
+        "QGIS",
+        "图层"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-011",
+      "name": "QGIS开源路网分析插件安装与使用",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "桌面GIS操作",
+      "confidence": "high",
+      "matched_keywords": [
+        "QGIS",
+        "插件"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-012",
+      "name": "QGIS OSM路网数据下载与解析方法",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "桌面GIS操作",
+      "confidence": "high",
+      "matched_keywords": [
+        "QGIS",
+        "插件"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-013",
+      "name": "QGIS Graph模型路网构建实操",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "桌面GIS操作",
+      "confidence": "high",
+      "matched_keywords": [
+        "QGIS",
+        "图层",
+        "插件"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-014",
+      "name": "QGIS路网拓扑清洗批量操作",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "桌面GIS操作",
+      "confidence": "medium",
+      "matched_keywords": [
+        "QGIS"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-015",
+      "name": "GeoPandas路网数据读取与预处理代码实现",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "自动化与脚本",
+      "confidence": "high",
+      "matched_keywords": [
+        "GeoPandas",
+        "批量"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-016",
+      "name": "GeoPandas路网几何修改与属性更新",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "自动化与脚本",
+      "confidence": "high",
+      "matched_keywords": [
+        "GeoPandas",
+        "批量"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-017",
+      "name": "NetworkX路网图模型构建代码逻辑",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "网络分析工具",
+      "confidence": "medium",
+      "matched_keywords": [
+        "NetworkX"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-018",
+      "name": "NetworkX路网中心性指标计算代码实现",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "网络分析工具",
+      "confidence": "medium",
+      "matched_keywords": [
+        "NetworkX"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-019",
+      "name": "PyQGIS批量处理路网数据脚本开发",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "自动化与脚本",
+      "confidence": "high",
+      "matched_keywords": [
+        "脚本",
+        "自动化",
+        "PyQGIS",
+        "批量"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-020",
+      "name": "PostGIS空间数据库路网数据表创建",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据库与存储",
+      "confidence": "high",
+      "matched_keywords": [
+        "PostGIS",
+        "数据库",
+        "存储",
+        "SQL"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-021",
+      "name": "PostGIS路网空间索引搭建方法",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据库与存储",
+      "confidence": "high",
+      "matched_keywords": [
+        "PostGIS",
+        "数据库",
+        "索引"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-022",
+      "name": "PostGIS路网拓扑查询SQL语句编写",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据库与存储",
+      "confidence": "high",
+      "matched_keywords": [
+        "PostGIS",
+        "SQL"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-023",
+      "name": "pgRouting插件安装与路网适配配置",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据库与存储",
+      "confidence": "medium",
+      "matched_keywords": [
+        "数据库"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-024",
+      "name": "pgRouting最短路径SQL查询实现",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据库与存储",
+      "confidence": "high",
+      "matched_keywords": [
+        "数据库",
+        "SQL"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-025",
+      "name": "超图SuperMap路网分析功能实操",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "桌面GIS操作",
+      "confidence": "medium",
+      "matched_keywords": [
+        "SuperMap"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-026",
+      "name": "国产GIS平台（MapGIS）路网功能",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "桌面GIS操作",
+      "confidence": "medium",
+      "matched_keywords": [
+        "MapGIS"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-027",
+      "name": "开源路网批量分析自动化流程搭建",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "自动化与脚本",
+      "confidence": "high",
+      "matched_keywords": [
+        "脚本",
+        "自动化",
+        "GeoPandas",
+        "批量"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-028",
+      "name": "路网大数据量存储优化方案",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "数据库与存储",
+      "confidence": "high",
+      "matched_keywords": [
+        "存储",
+        "索引"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-029",
+      "name": "WebGIS路网矢量数据渲染规则",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "WebGIS与发布",
+      "confidence": "high",
+      "matched_keywords": [
+        "WebGIS",
+        "渲染",
+        "前端"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-030",
+      "name": "WebGIS路网分级显示配置",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "WebGIS与发布",
+      "confidence": "high",
+      "matched_keywords": [
+        "WebGIS",
+        "渲染"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-031",
+      "name": "前端在线路网路径查询功能实现逻辑",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "WebGIS与发布",
+      "confidence": "high",
+      "matched_keywords": [
+        "渲染",
+        "前端"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-032",
+      "name": "路网数据切片处理与发布方法",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "WebGIS与发布",
+      "confidence": "high",
+      "matched_keywords": [
+        "切片",
+        "发布",
+        "前端"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-033",
+      "name": "移动端GIS路网数据适配优化",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "WebGIS与发布",
+      "confidence": "medium",
+      "matched_keywords": [
+        "移动端"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-034",
+      "name": "多源路网数据在GIS平台的融合方法",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "GIS平台实操",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-035",
+      "name": "三维GIS平台路网基础加载配置",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "GIS平台实操",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M7-036",
+      "name": "GIS平台路网分析模板自定义搭建",
+      "module_id": "M7",
+      "module_name": "主流GIS平台实操",
+      "current_subcategory": "",
+      "suggested_subcategory": "GIS平台实操",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-001",
+      "name": "知识图谱基本概念：本体、实体、关系、属性",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "本体与模式设计",
+      "confidence": "high",
+      "matched_keywords": [
+        "本体",
+        "模式层",
+        "Schema"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-002",
+      "name": "交通路网知识图谱的定位与价值",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "知识抽取与融合",
+      "confidence": "high",
+      "matched_keywords": [
+        "多源",
+        "融合"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-003",
+      "name": "交通本体（Ontology）设计方法",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "本体与模式设计",
+      "confidence": "high",
+      "matched_keywords": [
+        "本体",
+        "Ontology",
+        "关系类型",
+        "模式层"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-004",
+      "name": "道路实体类型设计：道路、路段、车道、交叉口",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "本体与模式设计",
+      "confidence": "medium",
+      "matched_keywords": [
+        "实体类型"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-005",
+      "name": "交通设施实体设计：标志、信号灯、护栏、路灯",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "知识图谱方法",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-006",
+      "name": "交通事件实体设计：事故、拥堵、施工、管制",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "知识图谱方法",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-007",
+      "name": "管理实体设计：行政区、交通小区、管理部门",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "知识图谱方法",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-008",
+      "name": "拓扑关系类型设计：连通、相邻、上下游、相交",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "本体与模式设计",
+      "confidence": "medium",
+      "matched_keywords": [
+        "关系类型"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-009",
+      "name": "语义关系类型设计：属于、包含、导致、影响",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "本体与模式设计",
+      "confidence": "medium",
+      "matched_keywords": [
+        "关系类型"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-010",
+      "name": "空间关系类型设计：距离、方位、覆盖、邻近",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "本体与模式设计",
+      "confidence": "medium",
+      "matched_keywords": [
+        "关系类型"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-011",
+      "name": "时间关系类型设计：发生于、持续、先后、同步",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "本体与模式设计",
+      "confidence": "medium",
+      "matched_keywords": [
+        "关系类型"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-012",
+      "name": "知识图谱三元组与五元组建模方法",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "知识图谱方法",
+      "confidence": "low",
+      "matched_keywords": [],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-013",
+      "name": "模式层（Schema）与数据层（Instance）分层设计",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "本体与模式设计",
+      "confidence": "high",
+      "matched_keywords": [
+        "本体",
+        "模式层",
+        "Schema"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-014",
+      "name": "结构化路网数据的知识抽取与直接映射",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "知识抽取与融合",
+      "confidence": "medium",
+      "matched_keywords": [
+        "抽取"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-015",
+      "name": "半结构化数据（CSV/JSON/XML）知识抽取",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "知识抽取与融合",
+      "confidence": "medium",
+      "matched_keywords": [
+        "抽取"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-016",
+      "name": "非结构化文本的交通实体与关系抽取",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "知识抽取与融合",
+      "confidence": "medium",
+      "matched_keywords": [
+        "抽取"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-017",
+      "name": "路网实体对齐与消歧方法",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "知识抽取与融合",
+      "confidence": "high",
+      "matched_keywords": [
+        "实体对齐",
+        "消歧",
+        "多源"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-018",
+      "name": "多源路网知识融合与冲突检测",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "知识抽取与融合",
+      "confidence": "high",
+      "matched_keywords": [
+        "多源",
+        "融合",
+        "冲突"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-019",
+      "name": "基于规则的路网知识推理：连通性推理、路径推理",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "推理与可视化",
+      "confidence": "medium",
+      "matched_keywords": [
+        "推理"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-020",
+      "name": "基于嵌入表示的知识推理：TransE/RotatE",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "推理与可视化",
+      "confidence": "high",
+      "matched_keywords": [
+        "推理",
+        "嵌入",
+        "TransE",
+        "RotatE"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-021",
+      "name": "Neo4j图数据库路网数据存储设计",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "图数据库与查询",
+      "confidence": "high",
+      "matched_keywords": [
+        "Neo4j",
+        "图数据库",
+        "存储"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-022",
+      "name": "Neo4j路网节点与关系建模最佳实践",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "图数据库与查询",
+      "confidence": "medium",
+      "matched_keywords": [
+        "Neo4j"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-023",
+      "name": "Cypher查询语言：路网连通性查询",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "图数据库与查询",
+      "confidence": "high",
+      "matched_keywords": [
+        "Cypher",
+        "查询"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-024",
+      "name": "Cypher查询语言：最短路径与可达性查询",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "图数据库与查询",
+      "confidence": "high",
+      "matched_keywords": [
+        "图数据库",
+        "Cypher",
+        "查询"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-025",
+      "name": "大规模路网图数据库性能优化",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "图数据库与查询",
+      "confidence": "high",
+      "matched_keywords": [
+        "图数据库",
+        "查询"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-026",
+      "name": "路网知识图谱可视化工具与方法",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "图数据库与查询",
+      "confidence": "medium",
+      "matched_keywords": [
+        "Neo4j"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-027",
+      "name": "交通知识图谱标准：T/CITSA 68‑2025解读",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "本体与模式设计",
+      "confidence": "medium",
+      "matched_keywords": [
+        "本体"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-028",
+      "name": "高精地图知识图谱：GDF/OpenDRIVE本体映射",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "本体与模式设计",
+      "confidence": "medium",
+      "matched_keywords": [
+        "本体"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-029",
+      "name": "动态知识图谱：路网状态实时更新机制",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态与大模型融合",
+      "confidence": "high",
+      "matched_keywords": [
+        "动态知识图谱",
+        "实时更新"
+      ],
+      "review_status": "pending"
+    },
+    {
+      "kp_id": "M8-030",
+      "name": "交通大模型与知识图谱的融合应用",
+      "module_id": "M8",
+      "module_name": "知识图谱构建方法论",
+      "current_subcategory": "",
+      "suggested_subcategory": "动态与大模型融合",
+      "confidence": "high",
+      "matched_keywords": [
+        "大模型",
+        "融合应用"
+      ],
+      "review_status": "pending"
+    }
+  ],
+  "relationship_proposals": [
+    {
+      "id": "rel-001",
+      "status": "pending",
+      "operation": "add",
+      "type": "IMPLEMENTED_IN",
+      "source": "M7-020",
+      "target": "T003",
+      "reason": "PostGIS空间数据库路网数据表创建应明确关联PostGIS工具。"
+    },
+    {
+      "id": "rel-002",
+      "status": "pending",
+      "operation": "replace_cycle",
+      "remove": [
+        {
+          "type": "PREREQUISITE_OF",
+          "source": "M7-020",
+          "target": "M8-021"
+        },
+        {
+          "type": "PREREQUISITE_OF",
+          "source": "M8-021",
+          "target": "M7-020"
+        }
+      ],
+      "add": [
+        {
+          "type": "RELATED_TO",
+          "source": "M7-020",
+          "target": "M8-021"
+        }
+      ],
+      "reason": "两个数据库实践主题当前互为前置，形成学习路径循环；先改为普通关联，待教学顺序确认后再决定是否保留单向前置。"
+    }
+  ]
+}

@@ -10,7 +10,7 @@ import argparse
 import json
 import re
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Set, Tuple
 
@@ -29,6 +29,18 @@ PRIMARY_ID_KEYS = {
     "KnowledgePoint": "kp_id",
     "Tool": "tool_id",
     "Media": "media_id",
+}
+
+RELATIONSHIP_ENDPOINTS = {
+    "BELONGS_TO": ("KnowledgePoint", "Module"),
+    "PREREQUISITE_OF": ("KnowledgePoint", "KnowledgePoint"),
+    "RELATED_TO": ("KnowledgePoint", "KnowledgePoint"),
+    "PART_OF": ("KnowledgePoint", "KnowledgePoint"),
+    "APPLIED_IN": ("KnowledgePoint", "KnowledgePoint"),
+    "IMPLEMENTED_IN": ("KnowledgePoint", "Tool"),
+    "SUPPORTS": ("Module", "Module"),
+    "PREREQUISITE_MODULE": ("Module", "Module"),
+    "HAS_MEDIA": ("KnowledgePoint", "Media"),
 }
 
 
@@ -134,11 +146,108 @@ def upsert_relationship(tx, relationship: Dict[str, Any]) -> None:
     )
 
 
-def import_snapshot(snapshot: Dict[str, Any], apply_changes: bool) -> Dict[str, Any]:
+def build_relationship_prune_plan(
+    snapshot: Dict[str, Any],
+) -> List[Dict[str, Any]]:
+    """Group snapshot relationships for an explicit, scoped prune operation."""
+    groups: Dict[Tuple[str, str, str], Dict[str, Any]] = {}
+    for relationship in snapshot["relationships"]:
+        relationship_type = str(relationship["type"])
+        endpoint = RELATIONSHIP_ENDPOINTS.get(relationship_type)
+        if endpoint is None:
+            continue
+        source_label, target_label = endpoint
+        key = (relationship_type, source_label, target_label)
+        group = groups.setdefault(
+            key,
+            {
+                "type": relationship_type,
+                "sourceLabel": source_label,
+                "targetLabel": target_label,
+                "sourceKey": PRIMARY_ID_KEYS[source_label],
+                "targetKey": PRIMARY_ID_KEYS[target_label],
+                "keep": set(),
+            },
+        )
+        group["keep"].add(
+            "{0}\x1f{1}".format(
+                str(relationship["sourceBusinessId"]),
+                str(relationship["targetBusinessId"]),
+            )
+        )
+    return list(groups.values())
+
+
+def delete_extra_relationships(
+    tx,
+    relationship_type: str,
+    source_label: str,
+    target_label: str,
+    source_key: str,
+    target_key: str,
+    source_ids: List[str],
+    target_ids: List[str],
+    keep_signatures: List[str],
+) -> int:
+    if not source_ids or not target_ids:
+        return 0
+    result = tx.run(
+        (
+            "MATCH (source:{0})-[relationship:{1}]->(target:{2}) "
+            "WHERE source.{3} IN $source_ids "
+            "AND target.{4} IN $target_ids "
+            "AND NOT (source.{3} + $separator + target.{4} IN $keep_signatures) "
+            "DELETE relationship "
+            "RETURN count(relationship) AS deleted"
+        ).format(
+            source_label,
+            relationship_type,
+            target_label,
+            source_key,
+            target_key,
+        ),
+        source_ids=source_ids,
+        target_ids=target_ids,
+        separator="\x1f",
+        keep_signatures=keep_signatures,
+        timeout=30.0,
+    ).single()
+    return int(result["deleted"]) if result else 0
+
+
+def prune_snapshot_relationships(tx, snapshot: Dict[str, Any]) -> int:
+    nodes_by_label: Dict[str, Set[str]] = defaultdict(set)
+    for node in snapshot["nodes"]:
+        label = str(node["primaryLabel"])
+        nodes_by_label[label].add(node_business_id(node))
+
+    deleted = 0
+    for group in build_relationship_prune_plan(snapshot):
+        deleted += delete_extra_relationships(
+            tx,
+            relationship_type=group["type"],
+            source_label=group["sourceLabel"],
+            target_label=group["targetLabel"],
+            source_key=group["sourceKey"],
+            target_key=group["targetKey"],
+            source_ids=sorted(nodes_by_label[group["sourceLabel"]]),
+            target_ids=sorted(nodes_by_label[group["targetLabel"]]),
+            keep_signatures=sorted(group["keep"]),
+        )
+    return deleted
+
+
+def import_snapshot(
+    snapshot: Dict[str, Any],
+    apply_changes: bool,
+    prune_relationships: bool = False,
+) -> Dict[str, Any]:
     validate_snapshot(snapshot)
     summary = {
         "nodeCount": len(snapshot["nodes"]),
         "relationshipCount": len(snapshot["relationships"]),
+        "pruneRelationships": prune_relationships,
+        "deletedRelationshipCount": 0,
         "labels": dict(
             Counter(
                 str(node["primaryLabel"])
@@ -168,6 +277,11 @@ def import_snapshot(snapshot: Dict[str, Any], apply_changes: bool) -> Dict[str, 
                 session.execute_write(upsert_node, node)
             for relationship in snapshot["relationships"]:
                 session.execute_write(upsert_relationship, relationship)
+            if prune_relationships:
+                summary["deletedRelationshipCount"] = session.execute_write(
+                    prune_snapshot_relationships,
+                    snapshot,
+                )
     finally:
         driver.close()
     return summary
@@ -190,10 +304,24 @@ def main() -> None:
         action="store_true",
         help="确认后将快照写入Neo4j",
     )
+    parser.add_argument(
+        "--prune-relationships",
+        action="store_true",
+        help=(
+            "删除快照节点范围内、快照中不存在的同类型关系；"
+            "默认关闭，必须与 --apply 一起使用"
+        ),
+    )
     args = parser.parse_args()
 
     snapshot = load_snapshot(Path(args.path))
-    summary = import_snapshot(snapshot, apply_changes=args.apply)
+    if args.prune_relationships and not args.apply:
+        raise SystemExit("--prune-relationships 必须与 --apply 一起使用")
+    summary = import_snapshot(
+        snapshot,
+        apply_changes=args.apply,
+        prune_relationships=args.prune_relationships,
+    )
     mode = "已导入" if args.apply else "校验通过"
     print("{0}: {1}".format(mode, json.dumps(summary, ensure_ascii=False)))
 

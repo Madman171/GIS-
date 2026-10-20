@@ -57,3 +57,12 @@ def test_snapshot_duplicate_business_id_is_rejected():
     }
     with pytest.raises(ValueError):
         import_snapshot.validate_snapshot(data)
+
+
+def test_relationship_prune_plan_keeps_snapshot_signatures():
+    plan = import_snapshot.build_relationship_prune_plan(snapshot())
+    assert len(plan) == 1
+    assert plan[0]["type"] == "BELONGS_TO"
+    assert plan[0]["sourceLabel"] == "KnowledgePoint"
+    assert plan[0]["targetLabel"] == "Module"
+    assert "M1-001\x1fM1" in plan[0]["keep"]

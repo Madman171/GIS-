@@ -175,8 +175,17 @@ Neo4j Browser: http://localhost:17474
 ```
 
 远程 Neo4j 密码优先读取环境变量 `NEO4J_REMOTE_PASSWORD`，否则读取本机
-`deploy/.env` 中的 `NEO4J_PASSWORD`。同步只更新快照中已有的节点和关系，
+`deploy/.env` 中的 `NEO4J_PASSWORD`。默认只更新快照中已有的节点和关系，
 不会删除服务器上额外存在的数据。远程数据库名默认是 `neo4j`，可以通过
 `-RemoteDatabase` 修改。
+
+如果已经确认本地快照是唯一数据源，并且需要清理快照节点范围内的远程旧关系，
+显式加上：
+
+```powershell
+.\scripts\sync_local_neo4j_to_server.ps1 -SkipExport -PruneRelationships
+```
+
+该开关默认关闭，避免误删远程仍在使用的关系。
 
 网页工具栏提供“刷新数据”按钮，浏览器窗口重新获得焦点时也会自动刷新当前模块和知识点详情。

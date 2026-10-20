@@ -151,10 +151,36 @@ cd E:\gis-knowledge-platform
 
 脚本从 `deploy/.env` 的 `NEO4J_PASSWORD` 读取远程数据库密码；也可以在当前
 PowerShell 会话中设置 `NEO4J_REMOTE_PASSWORD`。同步采用 `MERGE`，会更新和
-新增快照中的数据，不会删除远程数据库中额外存在的节点或关系。
+新增快照中的数据，默认不会删除远程数据库中额外存在的节点或关系。
+
+如果已确认本地快照是唯一数据源，并要清除快照节点范围内的旧关系，可显式执行：
+
+```powershell
+.\scripts\sync_local_neo4j_to_server.ps1 -SkipExport -PruneRelationships
+```
+
+此选项会删除同类型但不在本地快照中的关系，默认关闭。
 
 同步完成后刷新网页，或点击页面顶部的“刷新数据”按钮即可看到变更。只需改
 Neo4j 数据时不需要重启后端。
+
+### 本地数据整理草案
+
+如需批量整理知识点分类或关系，先生成草案：
+
+```powershell
+backend\.venv\Scripts\python.exe scripts\build_graph_curation_draft.py
+```
+
+人工审核 `data/graph-curation.json`，只把确认项的状态改为 `approved`，然后
+先预览再应用：
+
+```powershell
+backend\.venv\Scripts\python.exe scripts\apply_graph_curation.py
+backend\.venv\Scripts\python.exe scripts\apply_graph_curation.py --apply
+```
+
+应用后再执行审计和同步。草案默认不会改写本地快照。
 
 ## 五、导入视频和 PPT
 
