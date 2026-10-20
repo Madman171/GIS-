@@ -883,12 +883,29 @@ def _prerequisite_chain_query(
     knowledge_point_id: str,
     max_depth: int,
 ) -> List[Dict[str, Any]]:
+    return _learning_path_query(
+        driver,
+        knowledge_point_id,
+        max_depth,
+    )["path"]
+
+
+def _learning_path_query(
+    driver,
+    knowledge_point_id: str,
+    max_depth: int,
+) -> Dict[str, Any]:
     engine = learning_path_engine.load_learning_graph(
         driver,
         NEO4J_DATABASE,
         max_depth,
     )
-    return engine.prerequisite_chain(knowledge_point_id, max_depth)
+    path = engine.prerequisite_chain(knowledge_point_id, max_depth)
+    return {
+        "path": path,
+        "hasCycle": engine.has_prerequisite_cycle(knowledge_point_id),
+        "pathCount": len(path),
+    }
 
 
 def _module_difficulty_query(
@@ -924,7 +941,7 @@ def get_learning_path(
     request: Request,
     max_depth: int = Query(default=8, ge=1, le=20),
 ) -> Dict[str, Any]:
-    path = _prerequisite_chain_query(
+    path_data = _learning_path_query(
         _get_driver(request),
         knowledge_point_id,
         max_depth,
@@ -934,7 +951,7 @@ def get_learning_path(
         "message": "{0}知识点前置学习链加载成功".format(MESSAGE_PREFIX),
         "data": {
             "knowledgePointId": knowledge_point_id,
-            "path": path,
+            **path_data,
         },
     }
 

@@ -68,6 +68,51 @@
           <p>{{ properties.description || '暂无详细说明。' }}</p>
         </section>
 
+        <section class="content-section learning-path-section">
+          <h3><Route :size="15" />前置学习路径</h3>
+
+          <div v-if="learningPathLoading" class="path-state">
+            <LoaderCircle class="spin" :size="17" />
+            <span>正在整理学习顺序</span>
+          </div>
+
+          <div v-else-if="learningPathError" class="path-empty">
+            <strong>学习路径暂时不可用</strong>
+            <span>{{ learningPathError }}</span>
+          </div>
+
+          <template v-else>
+            <div v-if="hasCycle" class="path-warning">
+              <AlertTriangle :size="16" />
+              <span>检测到前置关系循环，以下路径仅供参考。</span>
+            </div>
+
+            <div v-if="pathItems.length" class="learning-path-list">
+              <button
+                v-for="(item, index) in pathItems"
+                :key="`${item.id}-${item.depth}`"
+                type="button"
+                class="path-item"
+                @click="navigateToNode(item)"
+              >
+                <span class="path-index">{{ index + 1 }}</span>
+                <span class="path-copy">
+                  <strong>{{ item.name }}</strong>
+                  <small>
+                    前置知识 · {{ item.difficulty || '未标注' }}
+                  </small>
+                </span>
+                <ChevronRight :size="14" />
+              </button>
+            </div>
+
+            <div v-else class="path-empty">
+              <strong>暂无已配置的前置知识</strong>
+              <span>当前知识点可以直接开始学习。</span>
+            </div>
+          </template>
+        </section>
+
         <section
           v-if="relationGroups.length"
           class="content-section"
@@ -201,6 +246,8 @@ import {
   Network,
   PlayCircle,
   Presentation,
+  AlertTriangle,
+  Route,
   Star,
   Tags,
   X,
@@ -214,6 +261,10 @@ import {
 const props = defineProps({
   detail: { type: Object, default: null },
   loading: { type: Boolean, default: false },
+  learningPath: { type: Array, default: () => [] },
+  learningPathCycle: { type: Boolean, default: false },
+  learningPathLoading: { type: Boolean, default: false },
+  learningPathError: { type: String, default: '' },
   docked: { type: Boolean, default: false },
   canGoBack: { type: Boolean, default: false },
   previous: { type: Object, default: null },
@@ -235,6 +286,15 @@ const moduleName = computed(() =>
 )
 const videos = computed(() => props.detail?.materials?.videos || [])
 const slides = computed(() => props.detail?.materials?.slides || [])
+const pathItems = computed(() =>
+  props.learningPath.filter(
+    (item) => item.id !== props.detail?.node?.id,
+  ),
+)
+const hasCycle = computed(() =>
+  props.learningPathCycle ||
+  props.learningPath.some((item) => item.id === props.detail?.node?.id),
+)
 
 const relationGroups = computed(() => {
   const groups = new Map()
@@ -252,14 +312,14 @@ const relationGroups = computed(() => {
 })
 
 function navigateToNode(node) {
-  const type = getNodeType(node.labels)
+  const type = node.labels ? getNodeType(node.labels) : 'KnowledgePoint'
   if (type === 'Module') {
     emit('navigate', { type, id: node.id })
   } else if (type === 'KnowledgePoint') {
     emit('navigate', {
       type,
       id: node.id,
-      moduleId: node.properties.module_id,
+      moduleId: node.properties?.module_id || node.moduleId,
     })
   }
 }
@@ -430,6 +490,107 @@ h2 {
   color: #475569;
   font-size: 13px;
   line-height: 1.75;
+}
+
+.learning-path-list {
+  display: grid;
+  gap: 5px;
+}
+
+.path-item {
+  width: 100%;
+  padding: 8px 9px;
+  border: 1px solid #dbe4ef;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #334155;
+  background: #f8fafc;
+  cursor: pointer;
+  text-align: left;
+}
+
+.path-item:hover {
+  border-color: #93c5fd;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.path-index {
+  width: 21px;
+  height: 21px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #1d4ed8;
+  background: #dbeafe;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.path-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.path-copy strong,
+.path-copy small {
+  display: block;
+}
+
+.path-copy strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.path-copy small {
+  margin-top: 2px;
+  color: #64748b;
+  font-size: 10px;
+}
+
+.path-state,
+.path-empty,
+.path-warning {
+  padding: 10px;
+  border-radius: 6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.path-state {
+  justify-content: center;
+  color: #64748b;
+  background: #f8fafc;
+}
+
+.path-empty {
+  flex-direction: column;
+  color: #64748b;
+  background: #f8fafc;
+}
+
+.path-empty strong {
+  color: #334155;
+  font-size: 12px;
+}
+
+.path-warning {
+  margin-bottom: 7px;
+  color: #92400e;
+  background: #fffbeb;
+}
+
+.path-warning svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
 }
 
 .relation-group + .relation-group {

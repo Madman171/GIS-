@@ -58,3 +58,20 @@ def test_recommendation_and_difficulty_filter():
     advanced = engine.filter_by_difficulty("进阶")
     assert [item["id"] for item in advanced] == ["C"]
 
+
+def test_prerequisite_cycle_is_detected_from_selected_point():
+    nodes = [
+        node("A", "基础概念", "入门", 1),
+        node("B", "路网建模", "中等", 2),
+        node("C", "拓扑分析", "进阶", 3),
+    ]
+    links = [
+        {"type": "PREREQUISITE_OF", "source": "A", "target": "B"},
+        {"type": "PREREQUISITE_OF", "source": "B", "target": "C"},
+        {"type": "PREREQUISITE_OF", "source": "C", "target": "B"},
+    ]
+    engine = LearningPathEngine(nodes, links)
+
+    assert engine.has_prerequisite_cycle("B") is True
+    assert engine.has_prerequisite_cycle("A") is False
+

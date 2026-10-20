@@ -169,6 +169,10 @@
             v-if="detailLoading || detail"
             :detail="detail"
             :loading="detailLoading"
+            :learning-path="learningPath"
+            :learning-path-cycle="learningPathCycle"
+            :learning-path-loading="learningPathLoading"
+            :learning-path-error="learningPathError"
             :docked="true"
             :can-go-back="knowledgeHistory.length > 0"
             :previous="previousKnowledge"
@@ -249,6 +253,10 @@ const selectedKnowledgePointId = ref('')
 const loadingModuleId = ref('')
 const detail = ref(null)
 const detailLoading = ref(false)
+const learningPath = ref([])
+const learningPathCycle = ref(false)
+const learningPathLoading = ref(false)
+const learningPathError = ref('')
 const knowledgeHistory = ref([])
 
 const chatMessages = ref([
@@ -265,6 +273,8 @@ const chatOpen = ref(false)
 
 const moduleGraphCache = new Map()
 const detailCache = new Map()
+const learningPathCache = new Map()
+let learningPathRequestToken = 0
 
 const selectedModule = computed(() =>
   directoryModules.value.find((module) => module.id === selectedModuleId.value),
@@ -377,6 +387,11 @@ async function selectModule(moduleId) {
 
   selectedKnowledgePointId.value = ''
   detail.value = null
+  learningPath.value = []
+  learningPathCycle.value = false
+  learningPathLoading.value = false
+  learningPathError.value = ''
+  learningPathRequestToken += 1
   selectedModuleId.value = moduleId
   loadingModuleId.value = moduleId
   graphLoading.value = true
@@ -422,8 +437,12 @@ async function loadKnowledgePoint(
 
   selectedKnowledgePointId.value = knowledgePointId
   detailLoading.value = true
+  learningPath.value = []
+  learningPathCycle.value = false
+  learningPathError.value = ''
   errorMessage.value = ''
   leftOpen.value = false
+  loadLearningPath(knowledgePointId)
 
   try {
     if (!detailCache.has(knowledgePointId)) {
@@ -438,6 +457,51 @@ async function loadKnowledgePoint(
     errorMessage.value = getErrorMessage(error, '知识点详情加载失败')
   } finally {
     detailLoading.value = false
+  }
+}
+
+async function loadLearningPath(knowledgePointId) {
+  if (!knowledgePointId) {
+    learningPath.value = []
+    learningPathCycle.value = false
+    learningPathLoading.value = false
+    return
+  }
+
+  const requestToken = ++learningPathRequestToken
+  learningPathLoading.value = true
+  learningPathError.value = ''
+
+  if (learningPathCache.has(knowledgePointId)) {
+    const cached = learningPathCache.get(knowledgePointId)
+    learningPath.value = cached.path
+    learningPathCycle.value = cached.hasCycle
+    learningPathLoading.value = false
+    return
+  }
+
+  try {
+    const response = await apiClient.get(
+      `/api/knowledge-points/${knowledgePointId}/learning-path`,
+    )
+    if (requestToken !== learningPathRequestToken) return
+    const path = response.data.data.path || []
+    const hasCycle = Boolean(response.data.data.hasCycle)
+    learningPathCache.set(knowledgePointId, { path, hasCycle })
+    learningPath.value = path
+    learningPathCycle.value = hasCycle
+  } catch (error) {
+    if (requestToken !== learningPathRequestToken) return
+    learningPath.value = []
+    learningPathCycle.value = false
+    learningPathError.value = getErrorMessage(
+      error,
+      '学习路径暂时无法加载',
+    )
+  } finally {
+    if (requestToken === learningPathRequestToken) {
+      learningPathLoading.value = false
+    }
   }
 }
 
@@ -457,6 +521,11 @@ function handleGraphNode(node) {
 function closeDetail() {
   detail.value = null
   selectedKnowledgePointId.value = ''
+  learningPath.value = []
+  learningPathCycle.value = false
+  learningPathLoading.value = false
+  learningPathError.value = ''
+  learningPathRequestToken += 1
 }
 
 function goBackKnowledge() {
@@ -478,6 +547,11 @@ function backToOverview() {
   selectedModuleId.value = ''
   selectedKnowledgePointId.value = ''
   detail.value = null
+  learningPath.value = []
+  learningPathCycle.value = false
+  learningPathLoading.value = false
+  learningPathError.value = ''
+  learningPathRequestToken += 1
   graphData.value = overviewGraph.value
   graphLoading.value = false
   leftOpen.value = false
@@ -514,6 +588,8 @@ async function refreshCurrentData(options = {}) {
         detailResponse.data.data,
       )
       detail.value = detailResponse.data.data
+      learningPathCache.delete(selectedKnowledgePointId.value)
+      loadLearningPath(selectedKnowledgePointId.value)
     }
   } catch (error) {
     if (!silent) {

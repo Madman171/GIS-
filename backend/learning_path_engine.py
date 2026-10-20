@@ -120,6 +120,27 @@ class LearningPathEngine:
             for depth, node_id in collected
         ]
 
+    def has_prerequisite_cycle(self, knowledge_point_id: str) -> bool:
+        """Return whether the selected point reaches a prerequisite cycle."""
+        root = str(knowledge_point_id)
+        state: Dict[str, int] = {}
+
+        def visit(node_id: str) -> bool:
+            current_state = state.get(node_id, 0)
+            if current_state == 1:
+                return True
+            if current_state == 2:
+                return False
+
+            state[node_id] = 1
+            for predecessor in self.prerequisites.get(node_id, []):
+                if visit(predecessor):
+                    return True
+            state[node_id] = 2
+            return False
+
+        return visit(root)
+
     def build_learning_path(
         self,
         target_knowledge_point_id: str,
