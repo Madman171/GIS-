@@ -130,6 +130,23 @@ test('directory, graph, detail and chat flow', async ({ page }) => {
       json: { code: 200, message: 'ok', data: detail },
     })
   })
+  await page.route(
+    '**/api/knowledge-points/M1-001/learning-path',
+    async (route) => {
+      await route.fulfill({
+        json: {
+          code: 200,
+          message: 'ok',
+          data: {
+            knowledgePointId: 'M1-001',
+            path: [],
+            pathCount: 0,
+            hasCycle: false,
+          },
+        },
+      })
+    },
+  )
   await page.route('**/api/chat', async (route) => {
     await route.fulfill({
       json: {
@@ -172,6 +189,9 @@ test('directory, graph, detail and chat flow', async ({ page }) => {
   await page.locator('.knowledge-row').first().click()
   await expect(page.locator('.detail-panel h2')).toHaveText(
     'GIS交通路网的专业定义',
+  )
+  await expect(page.locator('.learning-path-section')).toContainText(
+    '暂无已配置的前置知识',
   )
 
   await page.locator('.refresh-button').click()
