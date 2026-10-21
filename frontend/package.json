@@ -2,7 +2,7 @@
   "name": "gis-knowledge-platform",
   "private": true,
   "version": "1.0.0",
-  "releaseVersion": "v1.0",
+  "releaseVersion": "v1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

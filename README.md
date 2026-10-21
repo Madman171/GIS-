@@ -1,6 +1,6 @@
 # GIS交通路网教学知识图谱平台
 
-版本：V1.0
+版本：V1.0.0
 
 面向大学生创新创业训练计划项目与软件著作权申报的教学知识图谱平台。目标形态是三栏式网页：
 
@@ -129,6 +129,28 @@ npm run test:e2e
 5. 实现知识点详情面板及视频/PPT 扩展位。
 6. 接入受控的 DeepSeek 智能问答。
 7. 完成部署、测试、截图、说明书和软著材料。
+
+## GitHub 自动测试、版本与发布
+
+项目使用 GitHub Actions 自动执行前端构建、Playwright E2E、后端测试和
+Docker 镜像构建。`main` 合并后，Release 工作流按 Conventional Commits
+计算语义化版本并创建 `v1.0.0` 形式的 Git tag 和 GitHub Release。
+
+生产部署由 `production` Environment 控制，需要审批后才会通过 SSH 更新
+腾讯云服务器。服务器上的 `deploy/.env` 不进入 Git，Neo4j 数据卷也不会
+因为代码发布而被覆盖。
+
+首次接入 GitHub 时需要完成：
+
+1. 创建私有仓库并设置 `origin`。
+2. 将当前 `main` 推送到 GitHub，并推送初始 tag `v1.0.0`。
+3. 设置 `main` 分支保护：必须 Pull Request、CI 通过、至少一名审核者，禁止强推。
+4. 创建 `production` Environment，并配置部署审批者。
+5. 配置 `DEPLOY_HOST`、`DEPLOY_PORT`、`DEPLOY_USER`、`DEPLOY_SSH_KEY`、
+   `DEPLOY_KNOWN_HOSTS` 和 `DEPLOY_PATH` Secrets。
+
+部署目标默认使用 `/opt/gis-knowledge-platform`。部署失败时会自动恢复到
+上一个 commit 并重新执行健康检查。
 
 ## 腾讯云部署
 

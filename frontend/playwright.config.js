@@ -9,7 +9,7 @@ export default defineConfig({
   },
   use: {
     baseURL: 'http://127.0.0.1:5180',
-    channel: 'msedge',
+    channel: process.env.PLAYWRIGHT_CHANNEL || 'msedge',
     headless: true,
     trace: 'retain-on-failure',
   },

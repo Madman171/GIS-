@@ -103,6 +103,35 @@ http://服务器公网IP:8080
 http://服务器公网IP:8080/api/health
 ```
 
+## GitHub 自动发布
+
+代码发布由 GitHub Actions 完成。工作流会在 Pull Request 和 `main` 更新时
+执行构建、测试和 Docker 构建；`main` 合并后按 Conventional Commits 创建
+语义化版本和 GitHub Release。生产发布需要通过 GitHub `production`
+Environment 审批，然后 SSH 调用 `remote-deploy.sh`。
+
+GitHub Actions Secrets：
+
+```text
+DEPLOY_HOST
+DEPLOY_PORT
+DEPLOY_USER
+DEPLOY_SSH_KEY
+DEPLOY_KNOWN_HOSTS
+DEPLOY_PATH=/opt/gis-knowledge-platform
+```
+
+服务器只需要提前完成一次 Git checkout、GitHub Deploy Key/只读 Deploy
+Key 配置，以及 `deploy/.env` 配置。后续发布不会上传 `.env`，也不会重建
+或覆盖 Neo4j 数据卷。
+
+手工验证远程部署逻辑：
+
+```bash
+DEPLOY_PATH=/opt/gis-knowledge-platform \
+  sh /opt/gis-knowledge-platform/deploy/remote-deploy.sh v1.0.0
+```
+
 ## 六、常用命令
 
 ### 从本机 Neo4j 同步数据
