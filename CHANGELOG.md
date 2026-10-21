@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here.
 
+## [1.0.2] - 2026-10-21
+
+- fix: push release tag explicitly
+
 ## [1.0.1] - 2026-10-21
 
 - fix: release ai pet assistant to production
