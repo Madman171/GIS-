@@ -89,6 +89,9 @@ class TeachingQaRequest(BaseModel):
     question: str = Field(min_length=1, max_length=500)
     module_id: Optional[str] = Field(default=None, max_length=50)
     knowledge_point_id: Optional[str] = Field(default=None, max_length=50)
+    source: Optional[str] = Field(default=None, max_length=30)
+    event_type: Optional[str] = Field(default=None, max_length=40)
+    view_mode: Optional[str] = Field(default=None, max_length=20)
 
 
 class TopologyCheckRequest(BaseModel):
@@ -1062,6 +1065,7 @@ def chat(
         "message": "{0}教学问答成功".format(MESSAGE_PREFIX),
         "answer": qa_result["answer"],
         "scene": qa_result.get("scene"),
+        "source": query.source or "chat",
         "references": qa_result.get("references", [])[
             : QA_CONFIG["max_references"]
         ],

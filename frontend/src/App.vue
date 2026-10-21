@@ -30,15 +30,6 @@
         >
           <PanelLeft :size="18" />
         </button>
-        <button
-          type="button"
-          class="mobile-button"
-          title="打开智能问答"
-          aria-label="打开智能问答"
-          @click="openChatPanel"
-        >
-          <MessageSquare :size="18" />
-        </button>
       </div>
     </header>
 
@@ -186,22 +177,20 @@
         </div>
       </section>
 
-      <div
-        class="column chat-column"
-        :class="{ 'mobile-open': chatOpen }"
-      >
-        <ChatPanel
-          :messages="chatMessages"
-          :loading="chatLoading"
-          :configured="chatConfigured"
-          @send="sendChat"
-          @select-reference="selectChatReference"
-        />
-      </div>
+      <AIPet
+        :messages="chatMessages"
+        :loading="chatLoading"
+        :configured="chatConfigured"
+        :suggestion="petSuggestion"
+        @send="sendChat"
+        @select-reference="selectChatReference"
+        @dismiss-suggestion="dismissPetSuggestion"
+        @suggestion-action="handlePetSuggestionAction"
+      />
     </main>
 
     <button
-      v-if="leftOpen || chatOpen"
+      v-if="leftOpen"
       type="button"
       class="drawer-backdrop"
       title="关闭面板"
@@ -223,7 +212,6 @@ import {
   BookOpen,
   Focus,
   Home,
-  MessageSquare,
   Network,
   PanelLeft,
   RefreshCw,
@@ -232,7 +220,7 @@ import {
   X,
 } from '@lucide/vue'
 import apiClient from './api/client'
-import ChatPanel from './components/ChatPanel.vue'
+import AIPet from './components/AIPet.vue'
 import DirectoryPanel from './components/DirectoryPanel.vue'
 import KnowledgeDetail from './components/KnowledgeDetail.vue'
 import KnowledgeGraph from './components/KnowledgeGraphRich.vue'
@@ -269,7 +257,9 @@ const chatMessages = ref([
 const chatLoading = ref(false)
 const chatConfigured = ref(false)
 const leftOpen = ref(false)
-const chatOpen = ref(false)
+const petSuggestion = ref(null)
+const lastPetSuggestionAt = ref(0)
+const PET_SUGGESTION_COOLDOWN = 45000
 
 const moduleGraphCache = new Map()
 const detailCache = new Map()
@@ -409,6 +399,10 @@ async function selectModule(moduleId) {
   } finally {
     graphLoading.value = false
     loadingModuleId.value = ''
+    offerPetSuggestion({
+      id: `module-${moduleId}`,
+      text: '先点一个知识点吧，我可以帮你整理它的前置学习顺序。',
+    })
   }
 }
 
@@ -477,6 +471,7 @@ async function loadLearningPath(knowledgePointId) {
     learningPath.value = cached.path
     learningPathCycle.value = cached.hasCycle
     learningPathLoading.value = false
+    offerKnowledgePathSuggestion(cached.path.length)
     return
   }
 
@@ -490,6 +485,7 @@ async function loadLearningPath(knowledgePointId) {
     learningPathCache.set(knowledgePointId, { path, hasCycle })
     learningPath.value = path
     learningPathCycle.value = hasCycle
+    offerKnowledgePathSuggestion(path.length)
   } catch (error) {
     if (requestToken !== learningPathRequestToken) return
     learningPath.value = []
@@ -624,6 +620,9 @@ async function sendChat(question) {
       question,
       module_id: selectedModuleId.value || null,
       knowledge_point_id: selectedKnowledgePointId.value || null,
+      source: 'ai_pet',
+      event_type: 'pet_chat',
+      view_mode: viewMode.value,
     })
     chatMessages.value.push({
       role: 'assistant',
@@ -653,19 +652,44 @@ function selectChatReference(reference) {
   }
 }
 
-function openLeftPanel() {
-  chatOpen.value = false
-  leftOpen.value = true
+function offerKnowledgePathSuggestion(pathLength) {
+  if (pathLength > 0) {
+    offerPetSuggestion({
+      id: `path-${selectedKnowledgePointId.value}`,
+      text: `我发现这个知识点有 ${pathLength} 个前置内容，要打开学习路径吗？`,
+      action: 'path',
+      actionLabel: '查看学习路径',
+    })
+  } else {
+    offerPetSuggestion({
+      id: `direct-${selectedKnowledgePointId.value}`,
+      text: '这个知识点暂时没有前置关系，可以直接开始学习。',
+    })
+  }
 }
 
-function openChatPanel() {
-  leftOpen.value = false
-  chatOpen.value = true
+function offerPetSuggestion(suggestion) {
+  const now = Date.now()
+  if (now - lastPetSuggestionAt.value < PET_SUGGESTION_COOLDOWN) return
+  lastPetSuggestionAt.value = now
+  petSuggestion.value = suggestion
+}
+
+function dismissPetSuggestion() {
+  petSuggestion.value = null
+}
+
+function handlePetSuggestionAction(action) {
+  if (action === 'path') viewMode.value = 'path'
+  petSuggestion.value = null
+}
+
+function openLeftPanel() {
+  leftOpen.value = true
 }
 
 function closeDrawers() {
   leftOpen.value = false
-  chatOpen.value = false
 }
 
 onMounted(() => {
@@ -842,7 +866,7 @@ onBeforeUnmount(() => {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 292px minmax(0, 1fr) 366px;
+  grid-template-columns: 292px minmax(0, 1fr);
   overflow: hidden;
 }
 
@@ -1023,7 +1047,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 1320px) {
   .workspace {
-    grid-template-columns: 260px minmax(0, 1fr) 332px;
+    grid-template-columns: 260px minmax(0, 1fr);
   }
 
   .brand-copy span {
@@ -1067,21 +1091,6 @@ onBeforeUnmount(() => {
     grid-template-columns: 250px minmax(0, 1fr);
   }
 
-  .chat-column {
-    position: fixed;
-    z-index: 40;
-    top: 64px;
-    right: 0;
-    bottom: 0;
-    width: min(92vw, 360px);
-    box-shadow: -18px 0 40px rgba(15, 23, 42, 0.16);
-    transform: translateX(105%);
-    transition: transform 0.22s ease;
-  }
-
-  .chat-column.mobile-open {
-    transform: translateX(0);
-  }
 }
 
 @media (max-width: 760px) {
@@ -1164,8 +1173,5 @@ onBeforeUnmount(() => {
     inset: 58px 0 0;
   }
 
-  .chat-column {
-    top: 58px;
-  }
 }
 </style>

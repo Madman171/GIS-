@@ -1,5 +1,5 @@
 <template>
-  <aside class="chat-panel">
+  <aside class="chat-panel" :class="{ compact }">
     <header class="chat-header">
       <div class="chat-heading">
         <div class="bot-icon">
@@ -99,6 +99,7 @@ const props = defineProps({
   messages: { type: Array, default: () => [] },
   loading: { type: Boolean, default: false },
   configured: { type: Boolean, default: false },
+  compact: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['send', 'select-reference'])

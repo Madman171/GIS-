@@ -168,7 +168,10 @@ test('directory, graph, detail and chat flow', async ({ page }) => {
 
   await page.goto('/')
 
+  await expect(page.locator('.ai-pet-button')).toBeVisible()
+  await page.locator('.ai-pet-button').click()
   await expect(page.locator('.status-dot')).toHaveText('已连接')
+  await page.locator('.pet-chat-toolbar button').click()
   await expect(page.locator('.module-row')).toHaveCount(2)
   await expect(page.locator('.view-switch button')).toHaveCount(3)
 
@@ -199,10 +202,12 @@ test('directory, graph, detail and chat flow', async ({ page }) => {
     'GIS交通路网的专业定义',
   )
 
-  await page.locator('.chat-composer textarea').fill(
+  await page.locator('.ai-pet-button').click()
+  await expect(page.locator('.pet-chat-popover')).toBeVisible()
+  await page.locator('.pet-chat-popover .chat-composer textarea').fill(
     '什么是GIS交通路网的专业定义？',
   )
-  await page.locator('.send-button').click()
+  await page.locator('.pet-chat-popover .send-button').click()
 
   await expect(page.locator('.message-row.assistant')).toHaveCount(2)
   await expect(page.locator('.message-bubble').last()).toContainText(
