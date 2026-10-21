@@ -57,7 +57,7 @@ jobs:
           git add VERSION CHANGELOG.md frontend/package.json backend/main.py
           git commit -m "chore(release): v${VERSION} [skip ci]"
           git tag "v${VERSION}"
-          git push origin HEAD:main --follow-tags
+          git push origin HEAD:main "v${VERSION}"
 
       - name: Create GitHub Release
         if: steps.version.outputs.release == 'true'
