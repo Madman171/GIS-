@@ -166,7 +166,11 @@ test('directory, graph, detail and chat flow', async ({ page }) => {
     })
   })
 
+  const modelResponse = page.waitForResponse((response) =>
+    response.url().endsWith('/assets/ai-pet/spirit_pix.glb'),
+  )
   await page.goto('/')
+  await expect((await modelResponse).status()).toBe(200)
 
   await expect(page.locator('.ai-pet-button')).toBeVisible()
   await page.locator('.ai-pet-button').click()
