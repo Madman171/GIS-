@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [1.1.0] - 2026-10-22
+
+- chore(ci): trigger deployment after release workflow
+- ci: allow manual production deployment
+- feat: integrate 3D AI pet model
+
 ## [1.0.2] - 2026-10-21
 
 - fix: push release tag explicitly
