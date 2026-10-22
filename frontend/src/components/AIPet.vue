@@ -52,7 +52,12 @@
       @pointerdown="startDrag"
       @click="toggleChat"
     >
-      <Bot :size="25" />
+      <canvas
+        ref="petCanvas"
+        class="pet-model-canvas"
+        aria-hidden="true"
+      ></canvas>
+      <Bot v-if="!modelReady" class="pet-fallback-icon" :size="25" />
       <span class="pet-sparkle"><Sparkles :size="12" /></span>
     </button>
     <button
@@ -94,7 +99,116 @@ const dragging = ref(false)
 const dragMoved = ref(false)
 const dragOffset = ref({ x: 0, y: 0 })
 const petButton = ref(null)
+const petCanvas = ref(null)
+const modelReady = ref(false)
 const STORAGE_KEY = 'gis-knowledge-ai-pet-position'
+
+let renderer = null
+let scene = null
+let camera = null
+let petModel = null
+let modelClock = null
+let animationFrame = 0
+let dracoLoader = null
+let THREE = null
+
+function disposeMaterial(material) {
+  if (!material) return
+  for (const value of Object.values(material)) {
+    if (value && typeof value === 'object' && 'isTexture' in value) value.dispose()
+  }
+  material.dispose?.()
+}
+
+function disposePetModel() {
+  if (animationFrame) cancelAnimationFrame(animationFrame)
+  animationFrame = 0
+  scene?.traverse((object) => {
+    if (!object.isMesh) return
+    object.geometry?.dispose()
+    if (Array.isArray(object.material)) object.material.forEach(disposeMaterial)
+    else disposeMaterial(object.material)
+  })
+  dracoLoader?.dispose()
+  renderer?.dispose()
+  renderer = null
+  scene = null
+  camera = null
+  petModel = null
+  modelClock = null
+}
+
+function renderPet() {
+  if (!renderer || !scene || !camera) return
+  const elapsed = modelClock.getElapsedTime()
+  if (petModel) {
+    petModel.rotation.y = Math.sin(elapsed * 0.8) * 0.06
+    petModel.position.y = Math.sin(elapsed * 1.8) * 0.018
+  }
+  renderer.render(scene, camera)
+  animationFrame = requestAnimationFrame(renderPet)
+}
+
+async function initPetModel() {
+  const canvas = petCanvas.value
+  if (!canvas) return
+  try {
+    const [threeModule, dracoModule, gltfModule] = await Promise.all([
+      import('three'),
+      import('three/examples/jsm/loaders/DRACOLoader.js'),
+      import('three/examples/jsm/loaders/GLTFLoader.js'),
+    ])
+    THREE = threeModule
+    const { DRACOLoader } = dracoModule
+    const { GLTFLoader } = gltfModule
+    renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: true,
+      powerPreference: 'low-power',
+    })
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
+    renderer.setSize(58, 58, false)
+    renderer.outputColorSpace = THREE.SRGBColorSpace
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 1.12
+
+    scene = new THREE.Scene()
+    camera = new THREE.PerspectiveCamera(32, 1, 0.01, 100)
+    camera.position.set(0, 0, 3.15)
+    camera.lookAt(0, 0, 0)
+
+    scene.add(new THREE.HemisphereLight(0xe0f2fe, 0x312e81, 2.1))
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.4)
+    keyLight.position.set(2, 3, 4)
+    scene.add(keyLight)
+    const rimLight = new THREE.DirectionalLight(0x67e8f9, 1.1)
+    rimLight.position.set(-2, 1, -2)
+    scene.add(rimLight)
+
+    dracoLoader = new DRACOLoader()
+    dracoLoader.setDecoderPath('/draco/')
+    const loader = new GLTFLoader()
+    loader.setDRACOLoader(dracoLoader)
+    const gltf = await loader.loadAsync('/assets/ai-pet/spirit_pix.glb')
+    petModel = gltf.scene
+
+    const bounds = new THREE.Box3().setFromObject(petModel)
+    const size = bounds.getSize(new THREE.Vector3())
+    const center = bounds.getCenter(new THREE.Vector3())
+    const scale = 1.58 / Math.max(size.y, 0.01)
+    petModel.scale.setScalar(scale)
+    petModel.position.set(-center.x * scale, -center.y * scale, -center.z * scale)
+    scene.add(petModel)
+
+    modelClock = new THREE.Clock()
+    modelReady.value = true
+    renderPet()
+  } catch (error) {
+    console.warn('AI pet 3D model failed to load; using fallback icon.', error)
+    disposePetModel()
+  }
+}
 
 function clampPosition(x, y) {
   const size = 58
@@ -176,12 +290,14 @@ onMounted(() => {
     position.value = clampPosition(window.innerWidth - 82, window.innerHeight - 100)
   }
   window.addEventListener('resize', handleResize)
+  initPetModel()
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('pointermove', moveDrag)
   window.removeEventListener('pointerup', stopDrag)
   window.removeEventListener('resize', handleResize)
+  disposePetModel()
 })
 </script>
 
@@ -209,6 +325,15 @@ onBeforeUnmount(() => {
   cursor: grab;
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
+
+.pet-model-canvas {
+  width: 58px;
+  height: 58px;
+  display: block;
+  pointer-events: none;
+}
+
+.pet-fallback-icon { position: absolute; inset: 0; margin: auto; }
 
 .ai-pet-button:hover,
 .ai-pet-button.active {
