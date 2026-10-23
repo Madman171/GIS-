@@ -173,6 +173,8 @@ test('directory, graph, detail and chat flow', async ({ page }) => {
   await expect((await modelResponse).status()).toBe(200)
 
   await expect(page.locator('.ai-pet-button')).toBeVisible()
+  await expect(page.locator('.pet-model-canvas')).toBeVisible()
+  await expect(page.locator('.ai-pet-button')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
   await page.locator('.ai-pet-button').click()
   await expect(page.locator('.status-dot')).toHaveText('已连接')
   await page.locator('.pet-chat-toolbar button').click()
