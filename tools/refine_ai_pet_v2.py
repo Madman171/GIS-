@@ -51,12 +51,12 @@ def add_smile(mat):
     curve = bpy.data.curves.new("gentle smiling mouth", "CURVE")
     curve.dimensions = "3D"
     curve.resolution_u = 12
-    curve.bevel_depth = 0.0011
+    curve.bevel_depth = 0.00075
     curve.bevel_resolution = 4
     spline = curve.splines.new("BEZIER")
-    points = [(-0.0068, -0.0630, 0.0085), (-0.0032, -0.0635, 0.0060),
-              (0.0, -0.0636, 0.0053), (0.0032, -0.0635, 0.0060),
-              (0.0068, -0.0630, 0.0085)]
+    points = [(-0.0048, -0.0630, 0.0080), (-0.0023, -0.0635, 0.0062),
+              (0.0, -0.0636, 0.0057), (0.0023, -0.0635, 0.0062),
+              (0.0048, -0.0630, 0.0080)]
     spline.bezier_points.add(len(points) - 1)
     for point, co in zip(spline.bezier_points, points):
         point.co = co
@@ -72,13 +72,13 @@ def add_finger_details(skin):
     # Small rounded finger pads are intentionally subtle and remain separate
     # objects so they can be adjusted later without sculpting the source mesh.
     for side in (-1, 1):
-        for index, (dx, dz) in enumerate(((0.0, 0.0), (0.0022, -0.0012), (-0.0022, -0.0012))):
+        for index, (dx, dz) in enumerate(((0.0, 0.0), (0.0017, -0.0009), (-0.0017, -0.0009))):
             x = side * (0.0285 + dx * side)
             z = -0.0375 + dz
             pad = add_uv_sphere(
                 f"hand {side:+d} finger pad {index + 1}",
                 (x, -0.0577, z),
-                (0.0020, 0.0008, 0.0030),
+                (0.00135, 0.00055, 0.00225),
                 skin,
                 segments=16,
                 rings=8,
@@ -93,33 +93,29 @@ def main():
     if character is None or character.type != "MESH":
         raise RuntimeError("Lux3D scene does not contain geometry_0 mesh")
 
+    # Preserve the soft toy-like shading on the base mesh while keeping its
+    # original geometry and materials intact.
+    for polygon in character.data.polygons:
+        polygon.use_smooth = True
+
     # Round and slightly soften the head silhouette. The body and wings are
     # below this band, so the operation only affects the head/hair region.
     for vertex in character.data.vertices:
         if vertex.co.z > 0.014:
-            vertex.co.x *= 1.075
-            vertex.co.y *= 1.035
+            vertex.co.x *= 1.050
+            vertex.co.y *= 1.020
 
     skin = material("refinement skin", (0.98, 0.60, 0.60), roughness=0.28)
     mouth = material("warm smile", (0.30, 0.06, 0.10), roughness=0.30)
     white = material("eye catchlight", (1.0, 0.98, 0.96), roughness=0.12)
-    cyan = material("eye aqua glint", (0.18, 0.85, 1.0), metallic=0.05, roughness=0.16)
-
-    # Add layered catchlights to make the eyes read as more awake and lively.
+    # The Lux3D eye material already contains the blue gradient and base
+    # reflections. Keep only one restrained catchlight per eye for a clean face.
     for side in (-1, 1):
         add_uv_sphere(
             f"eye {side:+d} large catchlight",
             (side * 0.0182, -0.0630, 0.0205),
-            (0.0027, 0.0007, 0.0027),
+            (0.0018, 0.00055, 0.0018),
             white,
-        )
-        add_uv_sphere(
-            f"eye {side:+d} aqua glint",
-            (side * 0.0117, -0.0633, 0.0145),
-            (0.0014, 0.0005, 0.0014),
-            cyan,
-            segments=20,
-            rings=10,
         )
 
     add_smile(mouth)

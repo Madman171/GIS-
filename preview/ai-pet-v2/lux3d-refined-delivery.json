@@ -1,6 +1,6 @@
 {
   "schema": "lux3d.delivery/v2",
-  "createdAt": "2026-10-24T15:07:36+00:00",
+  "createdAt": "2026-10-24T15:22:03+00:00",
   "workflow": {
     "operation": "image-to-3d",
     "region": "cn",
@@ -14,16 +14,16 @@
     {
       "path": "lux3d_spirit_pix_v2-refined.glb",
       "format": "glb",
-      "size": 9037956,
-      "sha256": "357e0d174d6bd06a1a3e9bf0f3cc42601b11b91b430a977947f9f1918d0fe187",
+      "size": 9018440,
+      "sha256": "337902a649f19f61283d39db62b20ba5782684dcac1aa73f56337f1fbcc02188",
       "validation": {
         "valid": true,
         "glbVersion": 2,
         "assetVersion": "2.0",
         "scenes": 1,
-        "nodes": 12,
-        "meshes": 12,
-        "materials": 5
+        "nodes": 10,
+        "meshes": 10,
+        "materials": 4
       },
       "artifactId": "spirit-pix-v2-lux3d-refined-glb",
       "sourceStepId": "spirit-pix-v2-lux3d-refinement",

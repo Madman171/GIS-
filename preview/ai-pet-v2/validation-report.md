@@ -44,8 +44,8 @@ Generated locally with Blender 5.2.3 after importing the Lux3D result for task
 
 - The face silhouette was widened slightly in the head band to make it more
   rounded while keeping the body and wings unchanged.
-- A small upturned mouth curve was added, together with layered white/aqua eye
-  catchlights for a livelier expression.
+- A smaller upturned mouth curve was added, together with one restrained white
+  catchlight per eye so the face stays clean and readable.
 - Three subtle rounded finger pads were added to each hand as editable Blender
   objects.
 - Refined GLB validation passed: 9,037,956 bytes, 12 meshes, 5 materials,
