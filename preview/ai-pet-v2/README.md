@@ -11,6 +11,13 @@ Files:
 - `lux3d_spirit_pix_v2-blender.blend` — Blender 5.2.3 scene after GLB import.
 - `lux3d_spirit_pix_v2-render.png` — local Blender approval render.
 - `preview.html` — self-contained offline Lux3D viewer.
+- `lux3d_spirit_pix_v2-refined.glb` — local refinement pass with a rounder face,
+  smile, eye catchlights, and finger-pad details.
+- `lux3d_spirit_pix_v2-refined-blender.blend` — Blender scene for the refined
+  asset.
+- `lux3d_spirit_pix_v2-refined-render.png` — refined approval render.
+- `preview-refined.html` — offline viewer for the refined asset.
+- `lux3d-refined-delivery.json` — refined asset validation manifest.
 - `lux3d-delivery.json` — secret-free artifact manifest and SHA-256 digest.
 - `lux3d-attempt.json` — local generation record (no API key).
 - `spirit_pix_v2.blend` / `spirit_pix_v2.glb` — earlier procedural fallback,

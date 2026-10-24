@@ -39,3 +39,14 @@ Generated locally with Blender 5.2.3 after importing the Lux3D result for task
   successfully. The current Lux3D result shows one prominent aqua mote; the
   remaining decorative motes can be added in a later Blender refinement pass
   if exact reference parity is required.
+
+## Local refinement pass
+
+- The face silhouette was widened slightly in the head band to make it more
+  rounded while keeping the body and wings unchanged.
+- A small upturned mouth curve was added, together with layered white/aqua eye
+  catchlights for a livelier expression.
+- Three subtle rounded finger pads were added to each hand as editable Blender
+  objects.
+- Refined GLB validation passed: 9,037,956 bytes, 12 meshes, 5 materials,
+  SHA-256 `357e0d174d6bd06a1a3e9bf0f3cc42601b11b91b430a977947f9f1918d0fe187`.

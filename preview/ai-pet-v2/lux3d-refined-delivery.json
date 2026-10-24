@@ -1,0 +1,53 @@
+{
+  "schema": "lux3d.delivery/v2",
+  "createdAt": "2026-10-24T15:07:36+00:00",
+  "workflow": {
+    "operation": "image-to-3d",
+    "region": "cn",
+    "version": null,
+    "taskId": "4342477",
+    "stepId": "spirit-pix-v2-lux3d-refinement",
+    "attemptId": "spirit-pix-v2-lux3d-refinement-1"
+  },
+  "inputs": {},
+  "artifacts": [
+    {
+      "path": "lux3d_spirit_pix_v2-refined.glb",
+      "format": "glb",
+      "size": 9037956,
+      "sha256": "357e0d174d6bd06a1a3e9bf0f3cc42601b11b91b430a977947f9f1918d0fe187",
+      "validation": {
+        "valid": true,
+        "glbVersion": 2,
+        "assetVersion": "2.0",
+        "scenes": 1,
+        "nodes": 12,
+        "meshes": 12,
+        "materials": 5
+      },
+      "artifactId": "spirit-pix-v2-lux3d-refined-glb",
+      "sourceStepId": "spirit-pix-v2-lux3d-refinement",
+      "version": "refinement-1",
+      "id": "spirit-pix-v2-lux3d-refined-glb"
+    }
+  ],
+  "target": {
+    "kind": "dcc",
+    "application": "Blender",
+    "version": "5.2.3"
+  },
+  "integration": {
+    "targetKind": "dcc",
+    "preferredAvailableFormats": [
+      "glb"
+    ],
+    "requiresTargetProjectVerification": true,
+    "note": "Inspect and follow the target project's existing asset and loader conventions before integration."
+  },
+  "title": "Spirit Pix V2 — refined local approval preview",
+  "preview": {
+    "status": "generated",
+    "path": "preview.html",
+    "locale": "zh-CN"
+  }
+}
