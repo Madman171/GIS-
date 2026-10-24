@@ -1,13 +1,13 @@
-"""Build the production AI pet GLB used by the GIS knowledge platform.
+"""Build the Spirit Pix V2 preview model used by the GIS knowledge platform.
 
 This is intentionally procedural so the model can be rebuilt after a Blender
-upgrade without relying on an opaque source file.  The target is a small,
-stylised blue-haired fairy: rounded proportions, expressive eyes, translucent
-wings and a light blue outfit.  The script also exports named NLA clips for the
-web state machine (Idle, Hover, Wave, Think, Talk and Happy).
+upgrade without relying on an opaque source file.  The target is the supplied
+reference: a compact pastel-blue fairy mascot with a large layered bob, huge
+navy-blue eyes, short rounded limbs and four translucent wings.  The script
+also exports named NLA clips for the web state machine.
 
 Run with:
-  blender -b --python tools/build_ai_pet.py -- --output frontend/public/assets/ai-pet/spirit_pix.glb
+  blender -b --python tools/build_ai_pet.py -- --output preview/spirit_pix_v2.glb --blend-output preview/spirit_pix_v2.blend
 """
 
 from __future__ import annotations
@@ -26,6 +26,7 @@ def parse_args() -> argparse.Namespace:
     argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True)
+    parser.add_argument("--blend-output")
     return parser.parse_args(argv)
 
 
@@ -280,7 +281,7 @@ def create_animations(armature):
     make_action(armature, "Happy", 40, happy)
 
 
-def build(output_path: Path) -> None:
+def build(output_path: Path, blend_output: Path | None = None) -> None:
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
     for datablocks in (bpy.data.meshes, bpy.data.curves, bpy.data.materials, bpy.data.cameras, bpy.data.lights):
@@ -288,51 +289,77 @@ def build(output_path: Path) -> None:
             if datablock.users == 0:
                 datablocks.remove(datablock)
 
-    skin = material("skin", (0.98, 0.66, 0.62), roughness=0.58)
-    hair = material("blue hair", (0.12, 0.38, 0.88), roughness=0.42)
-    hair_light = material("hair highlights", (0.30, 0.66, 1.0), roughness=0.34, emission=(0.04, 0.14, 0.38))
-    cloth = material("sky blue outfit", (0.30, 0.62, 0.98), roughness=0.68)
-    boot = material("blue boots", (0.10, 0.30, 0.76), roughness=0.45)
-    eye_white = material("eye white", (1.0, 1.0, 1.0), roughness=0.18)
-    iris = material("ocean iris", (0.04, 0.24, 0.72), roughness=0.18, emission=(0.01, 0.06, 0.20))
-    highlight = material("eye highlight", (1.0, 1.0, 1.0), roughness=0.05, emission=(0.6, 0.8, 1.0))
-    blush = material("soft blush", (1.0, 0.38, 0.48), roughness=0.75, alpha=0.78)
-    mouth_mat = material("smile", (0.64, 0.16, 0.25), roughness=0.6)
-    wing = material("translucent wings", (0.38, 0.86, 1.0), roughness=0.2, alpha=0.34, transmission=0.25, emission=(0.05, 0.18, 0.35))
+    skin = material("peach skin", (1.0, 0.84, 0.78), roughness=0.62, emission=(0.08, 0.025, 0.018))
+    ear_inner = material("ear inner pink", (1.0, 0.48, 0.52), roughness=0.72)
+    hair = material("periwinkle blue hair", (0.11, 0.34, 0.86), roughness=0.40, emission=(0.02, 0.06, 0.18))
+    hair_light = material("soft blue hair highlights", (0.16, 0.42, 0.92), roughness=0.30, emission=(0.015, 0.045, 0.16))
+    cloth = material("powder blue romper", (0.34, 0.66, 0.96), roughness=0.70)
+    collar = material("collar blue", (0.26, 0.55, 0.90), roughness=0.48)
+    boot = material("pale blue boots", (0.24, 0.55, 0.92), roughness=0.42)
+    boot_sole = material("white boot soles", (0.92, 0.97, 1.0), roughness=0.28)
+    eye_outer = material("deep navy eye", (0.015, 0.045, 0.18), roughness=0.16, emission=(0.01, 0.02, 0.10))
+    iris = material("cobalt iris", (0.03, 0.28, 0.86), roughness=0.14, emission=(0.02, 0.10, 0.32))
+    iris_glow = material("iris aqua glow", (0.18, 0.65, 1.0), roughness=0.12, emission=(0.10, 0.40, 0.78))
+    highlight = material("eye highlight", (1.0, 1.0, 1.0), roughness=0.04, emission=(0.8, 0.9, 1.0))
+    blush = material("soft cheek blush", (1.0, 0.34, 0.43), roughness=0.74, alpha=0.68)
+    mouth_mat = material("warm smile", (0.70, 0.22, 0.28), roughness=0.58)
+    wing = material("milky translucent wings", (0.55, 0.90, 1.0), roughness=0.18, alpha=0.31, transmission=0.30, emission=(0.08, 0.28, 0.56))
+    orb_mat = material("magic aqua orbs", (0.25, 0.84, 1.0), roughness=0.08, alpha=0.78, emission=(0.15, 0.62, 1.0))
 
     objects_by_bone = {"root": [], "spine": [], "head": [], "arm.L": [], "arm.R": [], "leg.L": [], "leg.R": [], "wing.L": [], "wing.R": []}
 
-    # Body and clothing.
-    objects_by_bone["spine"].append(sphere("body", (0, 0, 0.78), (0.48, 0.35, 0.62), cloth))
-    objects_by_bone["spine"].append(sphere("neck", (0, -0.01, 1.24), (0.16, 0.14, 0.13), skin))
+    # Compact mascot body: one soft oval romper, short limbs, and chunky boots.
+    objects_by_bone["spine"].append(sphere("body", (0, 0, 0.76), (0.52, 0.38, 0.64), cloth, segments=32, rings=20))
+    objects_by_bone["spine"].append(sphere("neck", (0, -0.01, 1.28), (0.17, 0.15, 0.12), skin))
+    bpy.ops.mesh.primitive_torus_add(major_radius=0.18, minor_radius=0.045, major_segments=28, minor_segments=10, location=(0, -0.015, 1.31), rotation=(0, 0, 0))
+    collar_obj = bpy.context.object
+    collar_obj.name = "round collar"
+    assign(collar_obj, collar)
+    smooth(collar_obj)
     for side in (-1, 1):
         suffix = "L" if side < 0 else "R"
-        objects_by_bone[f"arm.{suffix}"].append(cylinder(f"sleeve.{suffix}", (side * 0.47, 0, 0.89), 0.105, 0.50, cloth, rotation=(0, side * -0.22, side * 0.10)))
-        objects_by_bone[f"arm.{suffix}"].append(sphere(f"hand.{suffix}", (side * 0.58, -0.01, 0.58), (0.12, 0.12, 0.16), skin))
-        objects_by_bone[f"leg.{suffix}"].append(cylinder(f"leg.{suffix}", (side * 0.18, 0, 0.30), 0.115, 0.45, skin))
-        objects_by_bone[f"leg.{suffix}"].append(rounded_cube(f"boot.{suffix}", (side * 0.18, -0.07, -0.02), (0.18, 0.22, 0.12), boot, bevel=0.08))
+        objects_by_bone[f"arm.{suffix}"].append(sphere(f"arm.{suffix}", (side * 0.50, -0.01, 0.82), (0.12, 0.13, 0.32), skin, segments=20, rings=14))
+        objects_by_bone[f"arm.{suffix}"].append(sphere(f"hand.{suffix}", (side * 0.54, -0.02, 0.57), (0.13, 0.13, 0.15), skin, segments=20, rings=14))
+        objects_by_bone[f"leg.{suffix}"].append(cylinder(f"leg.{suffix}", (side * 0.18, 0, 0.27), 0.115, 0.40, skin))
+        objects_by_bone[f"leg.{suffix}"].append(rounded_cube(f"boot.{suffix}", (side * 0.18, -0.10, -0.02), (0.20, 0.25, 0.15), boot, bevel=0.10))
+        objects_by_bone[f"leg.{suffix}"].append(rounded_cube(f"sole.{suffix}", (side * 0.18, -0.13, -0.16), (0.20, 0.25, 0.035), boot_sole, bevel=0.025))
 
-    # Head, face and hair.
-    objects_by_bone["head"].append(sphere("head", (0, 0, 1.55), (0.73, 0.60, 0.69), skin))
-    objects_by_bone["head"].append(sphere("hair cap", (0, 0.03, 1.69), (0.78, 0.64, 0.73), hair))
-    bangs = [(-0.46, 1.63, 0.24, 0.36), (-0.20, 1.74, 0.25, 0.43), (0.10, 1.75, 0.26, 0.46), (0.40, 1.64, 0.24, 0.36)]
+    # Large face and layered blue bob. The overlapping soft lobes match the
+    # supplied illustration's silhouette much more closely than a single cap.
+    objects_by_bone["head"].append(sphere("head", (0, 0, 1.62), (0.78, 0.62, 0.72), skin, segments=32, rings=22))
+    objects_by_bone["head"].append(sphere("hair cap", (0, 0.04, 1.79), (0.86, 0.66, 0.82), hair, segments=32, rings=22))
+    back_locks = [(-0.64, 1.56, 0.25, 0.53), (0.64, 1.56, 0.25, 0.53), (-0.70, 1.30, 0.20, 0.38), (0.70, 1.30, 0.20, 0.38)]
+    for index, (x, z, sx, sz) in enumerate(back_locks):
+        lock = sphere(f"back hair lock.{index}", (x, 0.04, z), (sx, 0.56, sz), hair_light if index in (2, 3) else hair, segments=24, rings=16)
+        lock.rotation_euler.y = (-0.18 if x < 0 else 0.18)
+        objects_by_bone["head"].append(lock)
+    bangs = [(-0.52, 1.66, 0.25, 0.40), (-0.29, 1.76, 0.27, 0.50), (0.0, 1.80, 0.29, 0.55), (0.29, 1.76, 0.27, 0.50), (0.52, 1.66, 0.25, 0.40)]
     for index, (x, z, sx, sz) in enumerate(bangs):
-        objects_by_bone["head"].append(sphere(f"bang.{index}", (x, -0.56, z), (sx, 0.15, sz), hair_light if index == 1 else hair, segments=20, rings=12))
+        bang = sphere(f"front bang.{index}", (x, -0.59, z), (sx, 0.17, sz), hair_light if index in (1, 2, 3) else hair, segments=24, rings=16)
+        bang.rotation_euler.y = (-0.14 if x < 0 else 0.14) if x else 0
+        objects_by_bone["head"].append(bang)
     for side in (-1, 1):
         suffix = "L" if side < 0 else "R"
-        objects_by_bone["head"].append(polygon(f"ear.{suffix}", [(side * 0.55, 1.54), (side * 0.88, 1.72), (side * 0.68, 1.34)], 0.08, skin))
-        x = side * 0.285
-        objects_by_bone["head"].append(sphere(f"eye.{suffix}", (x, -0.66, 1.56), (0.205, 0.10, 0.245), eye_white))
-        objects_by_bone["head"].append(sphere(f"iris.{suffix}", (x, -0.755, 1.54), (0.145, 0.045, 0.18), iris))
-        objects_by_bone["head"].append(sphere(f"highlight.{suffix}", (x - side * 0.045, -0.805, 1.62), (0.042, 0.025, 0.055), highlight))
-        objects_by_bone["head"].append(sphere(f"blush.{suffix}", (side * 0.39, -0.68, 1.29), (0.11, 0.03, 0.06), blush, segments=16, rings=10))
-    objects_by_bone["head"].append(sphere("nose", (0, -0.76, 1.36), (0.055, 0.035, 0.042), skin, segments=16, rings=10))
+        outer_ear = polygon(f"ear.{suffix}", [(side * 0.62, 1.57), (side * 0.98, 1.76), (side * 0.73, 1.37)], 0.09, skin)
+        outer_ear.location.y = 0.01
+        objects_by_bone["head"].append(outer_ear)
+        inner = polygon(f"ear inner.{suffix}", [(side * 0.69, 1.57), (side * 0.87, 1.69), (side * 0.75, 1.48)], 0.095, ear_inner)
+        inner.location.y = -0.055
+        objects_by_bone["head"].append(inner)
+        x = side * 0.30
+        objects_by_bone["head"].append(sphere(f"eye outer.{suffix}", (x, -0.69, 1.59), (0.235, 0.105, 0.285), eye_outer, segments=24, rings=18))
+        objects_by_bone["head"].append(sphere(f"iris.{suffix}", (x, -0.785, 1.55), (0.17, 0.045, 0.215), iris, segments=24, rings=18))
+        objects_by_bone["head"].append(sphere(f"iris glow.{suffix}", (x, -0.825, 1.47), (0.13, 0.025, 0.10), iris_glow, segments=20, rings=14))
+        objects_by_bone["head"].append(sphere(f"highlight big.{suffix}", (x - side * 0.065, -0.85, 1.68), (0.055, 0.025, 0.07), highlight, segments=16, rings=12))
+        objects_by_bone["head"].append(sphere(f"highlight small.{suffix}", (x + side * 0.055, -0.85, 1.60), (0.025, 0.018, 0.032), highlight, segments=12, rings=8))
+        objects_by_bone["head"].append(sphere(f"blush.{suffix}", (side * 0.47, -0.70, 1.32), (0.13, 0.035, 0.065), blush, segments=18, rings=12))
+    objects_by_bone["head"].append(sphere("small nose", (0, -0.80, 1.39), (0.065, 0.040, 0.045), skin, segments=16, rings=10))
     objects_by_bone["head"].append(smile("smile", mouth_mat))
 
     # Four soft wings behind the body, each with a distinct silhouette.
     wing_shapes = [
-        [(-0.48, 1.08), (-0.86, 1.42), (-1.26, 1.30), (-0.98, 0.88), (-0.58, 0.78)],
-        [(-0.45, 0.98), (-0.83, 0.88), (-1.17, 0.48), (-0.72, 0.52), (-0.45, 0.76)],
+        [(-0.48, 1.12), (-0.88, 1.48), (-1.28, 1.32), (-1.02, 0.90), (-0.60, 0.82)],
+        [(-0.46, 0.96), (-0.84, 0.84), (-1.20, 0.45), (-0.72, 0.56), (-0.44, 0.76)],
     ]
     for side in (-1, 1):
         suffix = "L" if side < 0 else "R"
@@ -341,6 +368,10 @@ def build(output_path: Path) -> None:
             obj = polygon(f"wing.{suffix}.{index}", mirrored, 0.035, wing)
             obj.location.y = 0.18
             objects_by_bone[f"wing.{suffix}"].append(obj)
+
+    # Small glowing motes are part of the supplied illustrated character plate.
+    for index, (x, z, radius) in enumerate([(-1.16, 1.38, 0.075), (1.18, 1.70, 0.09), (0.98, 0.12, 0.045), (-1.02, 0.08, 0.055)]):
+        objects_by_bone["root"].append(sphere(f"magic mote.{index}", (x, 0.05, z), (radius, radius, radius), orb_mat, segments=16, rings=10))
 
     armature = create_rig()
     # Keep render meshes in world space.  Bone-parented rigid meshes export
@@ -386,9 +417,14 @@ def build(output_path: Path) -> None:
             export_animations=True,
             export_nla_strips=True,
         )
+    if blend_output:
+        blend_path = blend_output.resolve()
+        blend_path.parent.mkdir(parents=True, exist_ok=True)
+        bpy.ops.wm.save_as_mainfile(filepath=str(blend_path))
+        print(f"Saved Blender source {blend_path}")
     print(f"Exported {output_path} ({output_path.stat().st_size / 1024:.1f} KB)")
 
 
 if __name__ == "__main__":
     args = parse_args()
-    build(Path(args.output).resolve())
+    build(Path(args.output).resolve(), Path(args.blend_output).resolve() if args.blend_output else None)
