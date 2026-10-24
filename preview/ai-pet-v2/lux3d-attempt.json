@@ -1,0 +1,26 @@
+{
+  "schema": "lux3d.preview-attempt/v1",
+  "itemId": "spirit-pix-v2",
+  "attemptId": "spirit-pix-v2-lux3d-1",
+  "region": "cn",
+  "operation": "image-to-3d",
+  "version": "G1-Turbo",
+  "outputFormat": [
+    "glb"
+  ],
+  "faceCount": 30000,
+  "quoteId": "quote_329dae83f2a0414c8bf29f51d654ea65",
+  "estimatedCredits": 1,
+  "quoteExpiresAt": "2026-10-24T22:52:18.062188477+08:00",
+  "status": "succeeded",
+  "createdAt": "2026-10-24T14:47:18.539485+00:00",
+  "taskId": "4342477",
+  "downloadedArtifacts": [
+    {
+      "path": "E:\\gis-knowledge-platform\\preview\\ai-pet-v2\\lux3d_spirit_pix_v2.glb",
+      "bytes": 9096088,
+      "format": "glb"
+    }
+  ],
+  "updatedAt": "2026-10-24T14:48:06.399874+00:00"
+}

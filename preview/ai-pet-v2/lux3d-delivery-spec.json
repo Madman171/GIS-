@@ -1,0 +1,20 @@
+{
+  "operation": "image-to-3d",
+  "region": "cn",
+  "taskId": "4342477",
+  "stepId": "spirit-pix-v2-lux3d",
+  "attemptId": "spirit-pix-v2-lux3d-1",
+  "target": {
+    "kind": "dcc",
+    "application": "Blender",
+    "version": "5.2.3"
+  },
+  "artifacts": [
+    {
+      "artifactId": "spirit-pix-v2-lux3d-glb",
+      "path": "lux3d_spirit_pix_v2.glb",
+      "format": "glb",
+      "version": "spirit-pix-v2-lux3d-1"
+    }
+  ]
+}

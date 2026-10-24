@@ -1,0 +1,53 @@
+{
+  "schema": "lux3d.delivery/v2",
+  "createdAt": "2026-10-24T14:57:22+00:00",
+  "workflow": {
+    "operation": "image-to-3d",
+    "region": "cn",
+    "version": null,
+    "taskId": "4342477",
+    "stepId": "spirit-pix-v2-lux3d",
+    "attemptId": "spirit-pix-v2-lux3d-1"
+  },
+  "inputs": {},
+  "artifacts": [
+    {
+      "path": "lux3d_spirit_pix_v2.glb",
+      "format": "glb",
+      "size": 9096088,
+      "sha256": "0b9272503efed9e5b53fa27bdbcc3ebdcf50854ea69a3655231b42cf92eff733",
+      "validation": {
+        "valid": true,
+        "glbVersion": 2,
+        "assetVersion": "2.0",
+        "scenes": 1,
+        "nodes": 2,
+        "meshes": 1,
+        "materials": 1
+      },
+      "artifactId": "spirit-pix-v2-lux3d-glb",
+      "sourceStepId": "spirit-pix-v2-lux3d",
+      "version": "spirit-pix-v2-lux3d-1",
+      "id": "spirit-pix-v2-lux3d-glb"
+    }
+  ],
+  "target": {
+    "kind": "dcc",
+    "application": "Blender",
+    "version": "5.2.3"
+  },
+  "integration": {
+    "targetKind": "dcc",
+    "preferredAvailableFormats": [
+      "glb"
+    ],
+    "requiresTargetProjectVerification": true,
+    "note": "Inspect and follow the target project's existing asset and loader conventions before integration."
+  },
+  "title": "Spirit Pix V2 — Lux3D Blender Preview",
+  "preview": {
+    "status": "generated",
+    "path": "preview.html",
+    "locale": "zh-CN"
+  }
+}

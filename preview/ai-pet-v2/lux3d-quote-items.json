@@ -1,0 +1,20 @@
+{
+  "1": {
+    "endpoint": {
+      "method": "POST",
+      "path": "/lux3d/v1/generate/img-to-3d/task/create"
+    },
+    "parameters": {
+      "pathParameters": {},
+      "queryParameters": {},
+      "body": {
+        "img": "https://holo-cos.aholo3d.cn/resource/platform/temp/2026/10/24/NLOBKDYKTLGAMAABAAAAACA8.png",
+        "version": "G1-Turbo",
+        "faceCount": 30000,
+        "outputFormat": ["glb"],
+        "enablePbr": true,
+        "aiPredictSize": true
+      }
+    }
+  }
+}
