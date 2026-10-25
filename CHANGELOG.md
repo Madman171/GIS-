@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here.
 
+## [1.3.1] - 2026-10-25
+
+- perf: optimize AI pet web asset
+
 ## [1.3.0] - 2026-10-25
 
 - feat: create Spirit Pix V2 preview model
