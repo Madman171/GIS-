@@ -121,6 +121,15 @@ def main():
     add_smile(mouth)
     add_finger_details(skin)
 
+    # The source textures are 2048px PNGs. The pet is rendered at roughly
+    # 140px on screen, so 1024px JPEG textures retain the visible detail while
+    # reducing first-load time substantially.
+    for image in bpy.data.images:
+        if image.source != "GENERATED" and image.size[0] > 1024:
+            image.scale(1024, 1024)
+        if image.packed_file is not None:
+            image.file_format = "JPEG"
+
     # Preserve the editable refinement scene with the studio camera/lights.
     bpy.ops.wm.save_as_mainfile(filepath=args.blend_output)
 
@@ -137,6 +146,8 @@ def main():
         export_cameras=False,
         export_lights=False,
         export_apply=True,
+        export_image_format="JPEG",
+        export_jpeg_quality=78,
     )
 
 

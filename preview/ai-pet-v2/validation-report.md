@@ -48,5 +48,7 @@ Generated locally with Blender 5.2.3 after importing the Lux3D result for task
   catchlight per eye so the face stays clean and readable.
 - Three subtle rounded finger pads were added to each hand as editable Blender
   objects.
-- Refined GLB validation passed: 9,037,956 bytes, 12 meshes, 5 materials,
-  SHA-256 `357e0d174d6bd06a1a3e9bf0f3cc42601b11b91b430a977947f9f1918d0fe187`.
+- Refined GLB validation passed: 1,346,236 bytes, 10 meshes, 4 materials,
+  SHA-256 `7888c7d002176bf88dc35d94b12e676266c740e2ae84ca427426157a1cbc289b`.
+- The embedded textures were reduced to 1024px JPEGs for the small web canvas;
+  the visible character remains unchanged while first load is much faster.

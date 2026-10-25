@@ -29,6 +29,8 @@ node_modules/
 dist/
 dist-ssr/
 *.local
+.vite/
+*.blend1
 playwright-report/
 test-results/
 
