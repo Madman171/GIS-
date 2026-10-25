@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here.
 
+## [1.3.0] - 2026-10-25
+
+- feat: create Spirit Pix V2 preview model
+- feat: add Lux3D Spirit Pix Blender preview
+- feat: refine Spirit Pix facial and hand details
+- refine: simplify Spirit Pix face details
+- feat: publish refined AI pet model
+
 ## [1.2.0] - 2026-10-23
 
 - feat: redesign AI pet companion
