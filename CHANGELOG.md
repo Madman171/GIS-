@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [1.4.0] - 2026-10-31
+
+- feat: refresh course atlas and integrate 2D Xiaodi
+- Merge remote-tracking branch 'origin/main' into codex/ai-pet-v2-preview
+- Merge pull request #3: refresh course atlas and integrate 2D Xiaodi
+
 ## [1.3.1] - 2026-10-25
 
 - perf: optimize AI pet web asset
