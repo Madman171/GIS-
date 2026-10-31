@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "preview:design": "npm run build && node scripts/design-preview.mjs",
     "test:e2e": "node scripts/run-e2e.mjs"
   },
   "dependencies": {

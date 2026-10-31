@@ -17,7 +17,7 @@
     </div>
 
     <div v-else-if="nodes.length === 0" class="graph-state">
-      <Network :size="28" />
+
       <strong>暂无可展示内容</strong>
       <span>请从左侧目录选择模块</span>
     </div>
@@ -29,7 +29,7 @@
         aria-label="放大图谱"
         @click="zoomBy(1.25)"
       >
-        <ZoomIn :size="16" />
+        <span class="zoom-symbol" aria-hidden="true">+</span>
       </button>
       <button
         type="button"
@@ -37,7 +37,7 @@
         aria-label="缩小图谱"
         @click="zoomBy(0.8)"
       >
-        <ZoomOut :size="16" />
+        <span class="zoom-symbol" aria-hidden="true">−</span>
       </button>
       <button
         type="button"
@@ -45,7 +45,7 @@
         aria-label="适应画布"
         @click="fitGraph(true)"
       >
-        <Maximize2 :size="16" />
+        适配
       </button>
     </div>
 
@@ -66,7 +66,6 @@
           <i :style="{ background: item.color }"></i>
           {{ item.difficulty }}
         </span>
-        <span class="size-hint">圆点越大，重要性越高</span>
       </div>
       <div class="legend-items">
         <button
@@ -79,7 +78,6 @@
         >
           <i :style="{ background: relation.color }"></i>
           <span>{{ relation.label }}</span>
-          <em>{{ relation.count }}</em>
         </button>
       </div>
     </div>
@@ -104,16 +102,8 @@
           {{ hoveredNode.properties.importance }}
         </b>
       </div>
-      <small>{{ hoveredRelationCount }} 条直接关系</small>
     </div>
 
-    <div class="graph-metrics">
-      <span><b>{{ nodes.length }}</b>节点</span>
-      <span><b>{{ links.length }}</b>关系</span>
-      <span v-if="knowledgePointCount">
-        <b>{{ knowledgePointCount }}</b>知识点
-      </span>
-    </div>
 
     <div
       v-if="nodes.length > 4 && !loading"
@@ -138,16 +128,10 @@ import {
   watch,
 } from 'vue'
 import * as d3 from 'd3'
-import {
-  LoaderCircle,
-  Maximize2,
-  Network,
-  ZoomIn,
-  ZoomOut,
-} from '@lucide/vue'
+import { arrangeLearningGraph, arrangeCourseGraph, nodeBoundary, setLabelGeometry } from '../graph/layout'
+import { LoaderCircle } from '@lucide/vue'
 import {
   DIFFICULTY_COLORS,
-  getImportanceScale,
   getNodeColor,
   getNodeName,
   getNodeType,
@@ -162,6 +146,7 @@ const props = defineProps({
   selectedId: { type: String, default: '' },
   loading: { type: Boolean, default: false },
   viewMode: { type: String, default: 'all' },
+  courseOverview: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['node-click'])
@@ -230,7 +215,7 @@ const difficultyLegend = computed(() => {
 })
 
 const layoutLabel = computed(() =>
-  knowledgePointCount.value > 0 ? '路网式知识轨道' : '课程模块网络',
+  props.courseOverview ? '全课程知识网络 · 放大查看细节' : knowledgePointCount.value > 0 ? '模块知识网络' : '课程模块网络',
 )
 
 const tooltipStyle = computed(() => ({
@@ -247,19 +232,6 @@ const hoveredRelationCount = computed(() => {
   ).length
 })
 
-function nodeRadius(node) {
-  if (getNodeType(node.labels) === 'Module') return 27
-  const base = getNodeType(node.labels) === 'Tool' ? 13 : 11
-  return base * getImportanceScale(node)
-}
-
-function truncateLabel(value, maxLength = 14) {
-  const text = String(value || '')
-  return text.length > maxLength
-    ? `${text.slice(0, maxLength)}...`
-    : text
-}
-
 function relationColor(type) {
   return RELATION_COLORS[type] || '#94a3b8'
 }
@@ -270,11 +242,13 @@ function relationDash(type) {
 
 function relationOpacity(type) {
   if (hiddenRelationTypes.value.has(type)) return 0.04
+  if (props.courseOverview) return type === 'RELATED_TO' || type === 'BELONGS_TO' ? .09 : .3
   if (type === 'BELONGS_TO') return 0.16
   return 0.68
 }
 
 function relationStrokeWidth(type) {
+  if (props.courseOverview) return type === 'BELONGS_TO' || type === 'RELATED_TO' ? .5 : .8
   if (type === 'BELONGS_TO') return 0.8
   if (type === 'PREREQUISITE_OF') return 1.8
   if (type === 'RELATED_TO') return 1.35
@@ -423,126 +397,45 @@ function applyVisualState(nodes, links) {
     }
     return 1
   })
+  updateCourseLabels()
 }
 
-function buildCurvedPath(link, index) {
-  const source = link.source
-  const target = link.target
-  if (
-    !Number.isFinite(source?.x) ||
-    !Number.isFinite(source?.y) ||
-    !Number.isFinite(target?.x) ||
-    !Number.isFinite(target?.y)
-  ) {
-    return ''
+function updateCourseLabels() {
+  if (!props.courseOverview || !labelSelection || !svgSelection?.node()) return
+  const transform = d3.zoomTransform(svgSelection.node())
+  const occupied = []
+  const visible = new Set()
+  const texts = labelSelection.nodes()
+  // Keep module names readable in the whole-course view. At closer zoom levels,
+  // reveal only labels that fit on screen without covering another label.
+  for (const node of renderedNodes.filter(n => getNodeType(n.labels) === 'Module')) {
+    const font = Math.min(96, Math.max(18, 12 / transform.k))
+    setLabelGeometry(node, 'middle', 0, node.radius + font * 1.25, font, font * 1.22)
+    const text = d3.select(texts.find(el => el.__data__ === node))
+    text.attr('font-size', font).selectAll('tspan').attr('y', (_, i) => node.labelY + i * node.labelStep)
+    occupied.push(node.labelBounds)
+    visible.add(node.id)
   }
-  const dx = target.x - source.x
-  const dy = target.y - source.y
-  const distance = Math.sqrt(dx * dx + dy * dy) || 1
-  const curveBase =
-    link.type === 'BELONGS_TO'
-      ? 0
-      : link.type === 'RELATED_TO'
-        ? 0.17
-        : 0.1
-  const direction = index % 2 === 0 ? 1 : -1
-  const offset = distance * curveBase * direction
-  const midX = (source.x + target.x) / 2 - (dy / distance) * offset
-  const midY = (source.y + target.y) / 2 + (dx / distance) * offset
-  return `M${source.x},${source.y} Q${midX},${midY} ${target.x},${target.y}`
+  if (transform.k >= .65) {
+    for (const node of renderedNodes.filter(n => getNodeType(n.labels) === 'KnowledgePoint')) {
+      const box = node.labelBounds
+      const x = box.left * transform.k + transform.x, y = box.top * transform.k + transform.y
+      if (x > renderSize.width || y > renderSize.height || box.right * transform.k + transform.x < 0 || box.bottom * transform.k + transform.y < 0) continue
+      if (occupied.some(other => box.left < other.right + 8 && box.right + 8 > other.left && box.top < other.bottom + 8 && box.bottom + 8 > other.top)) continue
+      occupied.push(box)
+      visible.add(node.id)
+    }
+  }
+  labelSelection.style('display', n => visible.has(n.id) ? null : 'none')
 }
 
-function radialPosition(index, count, radius, offset = -Math.PI / 2) {
-  const angle = offset + (Math.PI * 2 * index) / Math.max(1, count)
-  return {
-    angle,
-    x: Math.cos(angle) * radius,
-    y: Math.sin(angle) * radius,
-  }
-}
-
-function buildRadialLayout(nodes, width, height) {
-  const moduleNode = nodes.find(
-    (node) => getNodeType(node.labels) === 'Module',
-  )
-  const knowledgeNodes = nodes.filter(
-    (node) => getNodeType(node.labels) === 'KnowledgePoint',
-  )
-  const toolNodes = nodes.filter(
-    (node) => getNodeType(node.labels) === 'Tool',
-  )
-  if (!moduleNode || knowledgeNodes.length < 4) return null
-
-  const centerX = width / 2
-  const centerY = height / 2 + 8
-  moduleNode.x = centerX
-  moduleNode.y = centerY
-  moduleNode.fx = null
-  moduleNode.fy = null
-
-  const rank = (node) => {
-    const value = node.properties?.difficulty
-    if (['入门', '基础', '简单'].includes(value)) return 0
-    if (['中等', '进阶', 'intermediate'].includes(value)) return 1
-    return 2
-  }
-  const grouped = [[], [], []]
-  knowledgeNodes
-    .slice()
-    .sort(
-      (left, right) =>
-        (left.properties?.sort_order || 9999) -
-        (right.properties?.sort_order || 9999),
-    )
-    .forEach((node) => grouped[rank(node)].push(node))
-
-  const activeGroups = grouped.filter((group) => group.length)
-  const baseRadius = Math.min(width, height) * 0.18
-  const radiusStep = Math.min(width, height) * 0.135
-  activeGroups.forEach((group, ringIndex) => {
-    const radius =
-      baseRadius + ringIndex * radiusStep * (activeGroups.length / 3 + 0.35)
-    group.forEach((node, index) => {
-      const position = radialPosition(
-        index,
-        group.length,
-        radius,
-        -Math.PI / 2 + ringIndex * 0.16,
-      )
-      node.x = centerX + position.x
-      node.y = centerY + position.y
-      node.angle = position.angle
-      node.ringIndex = ringIndex
-      node.fx = node.x
-      node.fy = node.y
-    })
-  })
-
-  toolNodes.forEach((node, index) => {
-    const position = radialPosition(
-      index,
-      Math.max(1, toolNodes.length),
-      baseRadius * 0.72,
-      Math.PI / 4,
-    )
-    node.x = centerX + position.x
-    node.y = centerY + position.y
-    node.angle = position.angle
-    node.ringIndex = -1
-    node.fx = node.x
-    node.fy = node.y
-  })
-
-  return {
-    type: 'radial',
-    centerX,
-    centerY,
-    radii: activeGroups.map(
-      (_, index) =>
-        baseRadius +
-        index * radiusStep * (activeGroups.length / 3 + 0.35),
-    ),
-  }
+function buildCurvedPath(link) {
+  const source = link.source, target = link.target
+  if (!Number.isFinite(source?.x) || !Number.isFinite(target?.x)) return ''
+  const dx = target.x - source.x, dy = target.y - source.y
+  const a = nodeBoundary(source, dx, dy, 2)
+  const b = nodeBoundary(target, -dx, -dy, 3)
+  return `M${a.x},${a.y} L${b.x},${b.y}`
 }
 
 function scheduleMinimapUpdate() {
@@ -619,9 +512,9 @@ function drawMinimap() {
     .append('rect')
     .attr('class', 'minimap-viewport')
     .attr('rx', 3)
-    .attr('fill', '#2563eb')
+    .attr('fill', '#2f70bb')
     .attr('fill-opacity', 0.08)
-    .attr('stroke', '#2563eb')
+    .attr('stroke', '#2f70bb')
     .attr('stroke-width', 1)
 
   updateMinimapViewport()
@@ -702,39 +595,6 @@ function handleMinimapClick(event) {
     .call(zoomBehavior.transform, target)
 }
 
-function centerSelectedNode(animate = true) {
-  if (
-    !svgSelection?.node() ||
-    !zoomBehavior ||
-    !renderSize.width ||
-    !renderSize.height
-  ) {
-    return
-  }
-
-  const node = renderedNodes.find(
-    (item) => item.id === String(props.selectedId || ''),
-  )
-  if (
-    !node ||
-    !Number.isFinite(node.x) ||
-    !Number.isFinite(node.y)
-  ) {
-    return
-  }
-
-  const current = d3.zoomTransform(svgSelection.node())
-  const scale = Math.max(current.k, 0.82)
-  const target = d3.zoomIdentity
-    .translate(renderSize.width / 2, renderSize.height / 2)
-    .scale(scale)
-    .translate(-node.x, -node.y)
-  const selection = animate
-    ? svgSelection.transition().duration(420)
-    : svgSelection
-  selection.call(zoomBehavior.transform, target)
-}
-
 function renderGraph() {
   clearTimers()
   stopSimulation()
@@ -777,15 +637,20 @@ function renderGraph() {
   renderedLinks = links
   renderSize = { width, height }
 
-  nodes.forEach((node, index) => {
-    if (Number.isFinite(node.x) && Number.isFinite(node.y)) return
-    const angle = (Math.PI * 2 * index) / Math.max(1, nodes.length)
-    const radius = Math.min(width, height) * 0.34
-    node.x = width / 2 + Math.cos(angle) * radius
-    node.y = height / 2 + Math.sin(angle) * radius
-  })
-
   const definitions = svgSelection.append('defs')
+  const sphereColors = [...new Set(nodes.map(getNodeColor))]
+  for (const color of sphereColors) {
+    const gradient = definitions.append('radialGradient')
+      .attr('id', `node-sphere-${color.slice(1)}`)
+      .attr('cx', '32%').attr('cy', '27%').attr('r', '76%')
+      .attr('fx', '28%').attr('fy', '23%')
+    for (const [offset, tint] of [
+      ['0%', d3.interpolateRgb(color, '#ffffff')(.9)],
+      ['24%', d3.interpolateRgb(color, '#ffffff')(.48)],
+      ['58%', color],
+      ['100%', d3.color(color).darker(.45).formatHex()],
+    ]) gradient.append('stop').attr('offset', offset).attr('stop-color', tint)
+  }
   for (const [type, color] of Object.entries(RELATION_COLORS)) {
     definitions
       .append('marker')
@@ -793,8 +658,9 @@ function renderGraph() {
       .attr('viewBox', '0 -5 10 10')
       .attr('refX', 10)
       .attr('refY', 0)
-      .attr('markerWidth', 6)
-      .attr('markerHeight', 6)
+      .attr('markerUnits', 'userSpaceOnUse')
+      .attr('markerWidth', 4.5)
+      .attr('markerHeight', 4.5)
       .attr('orient', 'auto')
       .append('path')
       .attr('d', 'M0,-5L10,0L0,5')
@@ -803,44 +669,20 @@ function renderGraph() {
 
   zoomBehavior = d3
     .zoom()
-    .scaleExtent([0.22, 5])
+    .scaleExtent([props.courseOverview ? .025 : .22, props.courseOverview ? 12 : 5])
     .on('zoom', (event) => {
       graphSelection.attr('transform', event.transform)
+      updateCourseLabels()
       scheduleMinimapUpdate()
     })
 
   svgSelection.call(zoomBehavior)
   graphSelection = svgSelection.append('g')
 
-  const radialLayout = buildRadialLayout(nodes, width, height)
-  if (radialLayout) {
-    graphSelection
-      .append('g')
-      .attr('class', 'module-fields')
-      .selectAll('circle')
-      .data(radialLayout.radii)
-      .enter()
-      .append('circle')
-      .attr('cx', radialLayout.centerX)
-      .attr('cy', radialLayout.centerY)
-      .attr('r', (radius) => radius)
-      .attr('fill', 'none')
-      .attr('stroke', '#cbd5e1')
-      .attr('stroke-opacity', 0.52)
-      .attr('stroke-width', 1)
-      .attr('stroke-dasharray', '2 7')
-
-    graphSelection
-      .append('circle')
-      .attr('class', 'module-core-field')
-      .attr('cx', radialLayout.centerX)
-      .attr('cy', radialLayout.centerY)
-      .attr('r', Math.min(width, height) * 0.105)
-      .attr('fill', '#f5f3ff')
-      .attr('fill-opacity', 0.72)
-      .attr('stroke', '#c4b5fd')
-      .attr('stroke-width', 1.2)
-  }
+  if (props.courseOverview) arrangeCourseGraph(nodes, links)
+  else arrangeLearningGraph(nodes, width, height)
+  const nodesById = new Map(nodes.map(node => [node.id, node]))
+  links.forEach(link => { link.source = nodesById.get(link.source); link.target = nodesById.get(link.target) })
 
   linkSelection = graphSelection
     .append('g')
@@ -853,6 +695,7 @@ function renderGraph() {
     .attr('fill', 'none')
     .attr('stroke', (link) => relationColor(link.type))
     .attr('stroke-width', (link) => relationStrokeWidth(link.type))
+    .attr('vector-effect', props.courseOverview ? 'non-scaling-stroke' : null)
     .attr('stroke-linecap', 'round')
     .attr('stroke-dasharray', (link) => relationDash(link.type))
     .attr('marker-end', (link) =>
@@ -885,6 +728,15 @@ function renderGraph() {
           .join(' '),
     )
     .attr('cursor', 'pointer')
+    .attr('tabindex', 0)
+    .attr('role', 'button')
+    .attr('aria-label', (node) => getNodeName(node))
+    .on('keydown', (event, node) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        emit('node-click', node)
+      }
+    })
     .on('mouseenter', (event, node) => {
       hoveredNode.value = node
       updateTooltipPosition(event)
@@ -905,46 +757,12 @@ function renderGraph() {
 
   nodeGroups
     .append('circle')
-    .attr('class', 'node-focus-ring')
-    .attr('r', (node) => nodeRadius(node) + 8)
-    .attr('fill', 'none')
-    .attr('stroke', (node) => getNodeColor(node))
-    .attr('stroke-width', 1.2)
-    .attr('stroke-opacity', 0.2)
-
-  nodeGroups
-    .append('circle')
-    .attr('class', 'node-pulse')
-    .attr('r', (node) => nodeRadius(node) + 5)
-    .attr('fill', 'none')
-    .attr('stroke', (node) => getNodeColor(node))
-    .attr('stroke-width', 2)
-
-  nodeGroups
-    .append('circle')
     .attr('class', 'node-body')
-    .attr('r', nodeRadius)
-    .attr('fill', (node) => getNodeColor(node))
-    .attr('stroke', '#ffffff')
-    .attr(
-      'stroke-width',
-      (node) => (getNodeType(node.labels) === 'Module' ? 3 : 2),
-    )
-    .style('filter', (node) =>
-      node.properties?.importance === '核心'
-        ? 'drop-shadow(0 0 7px rgba(124, 58, 237, 0.42))'
-        : 'drop-shadow(0 3px 5px rgba(15, 23, 42, 0.14))',
-    )
-
-  nodeGroups
-    .append('circle')
-    .attr('class', 'node-importance-dot')
-    .attr(
-      'r',
-      (node) => (getNodeType(node.labels) === 'Module' ? 4 : 2.7),
-    )
-    .attr('fill', '#ffffff')
-    .attr('fill-opacity', 0.9)
+    .attr('r', node => node.radius)
+    .attr('fill', node => `url(#node-sphere-${getNodeColor(node).slice(1)})`)
+    .attr('stroke', node => d3.color(getNodeColor(node)).darker(.4).formatHex())
+    .attr('stroke-width', node => props.courseOverview && getNodeType(node.labels) === 'KnowledgePoint' ? .65 : 1.3)
+    .attr('vector-effect', node => props.courseOverview && getNodeType(node.labels) === 'KnowledgePoint' ? 'non-scaling-stroke' : null)
 
   nodeGroups
     .append('title')
@@ -960,105 +778,28 @@ function renderGraph() {
 
   nodeSelection = nodeGroups
 
-  labelSelection = graphSelection
-    .append('g')
-    .attr('class', 'graph-labels')
-    .selectAll('text')
-    .data(nodes)
-    .enter()
-    .append('text')
-    .attr('class', (node) =>
-      getNodeType(node.labels) === 'Module'
-        ? 'module-label'
-        : 'knowledge-label',
-    )
-    .text((node) => truncateLabel(getNodeName(node)))
-    .attr(
-      'font-size',
-      (node) => (getNodeType(node.labels) === 'Module' ? 13 : 9.5),
-    )
-    .attr(
-      'font-weight',
-      (node) => (getNodeType(node.labels) === 'Module' ? 750 : 520),
-    )
-    .attr('text-anchor', (node) => {
-      if (getNodeType(node.labels) === 'Module') return 'middle'
-      const cosine = Math.cos(node.angle || 0)
-      if (cosine > 0.28) return 'start'
-      if (cosine < -0.28) return 'end'
-      return 'middle'
-    })
-    .attr('dx', (node) => {
-      if (getNodeType(node.labels) === 'Module') return 0
-      const cosine = Math.cos(node.angle || 0)
-      if (cosine > 0.28) return 13
-      if (cosine < -0.28) return -13
-      return 0
-    })
-    .attr('dy', (node) => {
-      if (getNodeType(node.labels) === 'Module') return -38
-      const sine = Math.sin(node.angle || 0)
-      return sine > 0.55 ? 17 : sine < -0.55 ? -14 : 3
-    })
-    .style('paint-order', 'stroke')
-    .style('stroke', '#ffffff')
-    .style('stroke-width', 3.2)
-    .style('stroke-linejoin', 'round')
+  labelSelection = nodeGroups.append('text')
+    .attr('class', node => getNodeType(node.labels) === 'Module' ? 'module-label' : 'knowledge-label')
+    .attr('font-size', node => node.fontSize)
+    .attr('font-weight', node => getNodeType(node.labels) === 'Module' || node.properties?.importance === '核心' ? 600 : 400)
+    .attr('text-anchor', node => node.labelAnchor)
+    .attr('fill', '#24373d')
+    .attr('paint-order', 'stroke')
+    .attr('stroke', '#f0f5f5')
+    .attr('stroke-width', 4)
+    .attr('stroke-linejoin', 'round')
+    .style('pointer-events', 'auto')
     .style('user-select', 'none')
-    .style('pointer-events', 'none')
-
-  if (radialLayout) {
-    const forceLinks = links.filter(
-      (link) => link.type !== 'BELONGS_TO',
-    )
-    simulation = d3
-      .forceSimulation(nodes)
-      .alpha(0.18)
-      .alphaDecay(0.35)
-      .force(
-        'link',
-        d3
-          .forceLink(forceLinks)
-          .id((node) => node.id)
-          .distance((link) =>
-            link.type === 'PREREQUISITE_OF' ? 112 : 132,
-          )
-          .strength((link) =>
-            link.type === 'PREREQUISITE_OF' ? 0.04 : 0.02,
-          ),
-      )
-      .force(
-        'collision',
-        d3.forceCollide().radius((node) => nodeRadius(node) + 16),
-      )
-      .on('tick', () => updatePositions(links))
-  } else {
-    simulation = d3
-      .forceSimulation(nodes)
-      .force(
-        'link',
-        d3
-          .forceLink(links)
-          .id((node) => node.id)
-          .distance((link) =>
-            link.type === 'PREREQUISITE_MODULE' ? 150 : 118,
-          )
-          .strength(0.42),
-      )
-      .force('charge', d3.forceManyBody().strength(-560))
-      .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('x', d3.forceX(width / 2).strength(0.04))
-      .force('y', d3.forceY(height / 2).strength(0.05))
-      .force(
-        'collision',
-        d3.forceCollide().radius((node) => nodeRadius(node) + 42),
-      )
-      .on('tick', () => updatePositions(links))
-  }
+  labelSelection.each(function(node) {
+    d3.select(this).selectAll('tspan').data(node.displayLines).enter().append('tspan')
+      .attr('x', node.labelX).attr('y', (_, index) => node.labelY + index * node.labelStep).text(line => line)
+  })
 
   applyVisualState(nodes, links)
   scheduleMinimapUpdate()
-  fitTimer = setTimeout(() => fitGraph(false), 500)
+  fitTimer = setTimeout(() => {
+    fitGraph(false)
+  }, 500)
 
   function updatePositions(activeLinks) {
     activeLinks.forEach((link, index) => {
@@ -1069,9 +810,10 @@ function renderGraph() {
       'transform',
       (node) => `translate(${node.x},${node.y})`,
     )
-    labelSelection
-      .attr('x', (node) => node.x)
-      .attr('y', (node) => node.y)
+    if (props.courseOverview) {
+      nodes.forEach(node => setLabelGeometry(node, node.labelAnchor, node.labelX, node.labelY))
+      updateCourseLabels()
+    }
     scheduleMinimapUpdate()
   }
 
@@ -1095,10 +837,8 @@ function renderGraph() {
 
   function dragEnded(event, node) {
     if (simulation && !event.active) simulation.alphaTarget(0)
-    if (!radialLayout) {
-      node.fx = null
-      node.fy = null
-    }
+    node.fx = node.x
+    node.fy = node.y
   }
 }
 
@@ -1149,17 +889,33 @@ function fitGraph(animate = true) {
   const bounds = graphSelection.node().getBBox()
   if (!bounds.width || !bounds.height) return
 
-  const scale = Math.max(
-    0.3,
-    Math.min(
-      2,
-      Math.min(width / bounds.width, height / bounds.height) * 0.86,
-    ),
-  )
+  const usableWidth = Math.max(260, width - 64)
+  const usableHeight = Math.max(props.courseOverview ? 180 : 220, height - (props.courseOverview ? 110 : 150))
+  let scale = Math.max(props.courseOverview ? .025 : .22, Math.min(1.45, Math.min(usableWidth / bounds.width, usableHeight / bounds.height) * 0.96))
   const midX = bounds.x + bounds.width / 2
   const midY = bounds.y + bounds.height / 2
+  const centerY = (height - 90) / 2
+  if (props.courseOverview) {
+    const canvas = graphContainer.value.getBoundingClientRect()
+    const obstacles = [...graphContainer.value.querySelectorAll('.graph-legend,.graph-minimap,.graph-controls,.graph-canvas-badge')].map(el => {
+      const rect = el.getBoundingClientRect()
+      return { left: rect.left - canvas.left - 8, right: rect.right - canvas.left + 8, top: rect.top - canvas.top - 8, bottom: rect.bottom - canvas.top + 8 }
+    })
+    // Use the biggest circle that actually clears the controls, rather than
+    // reserving an entire bottom strip for a legend tucked into one corner.
+    for (let attempt = 0; attempt < 80; attempt++) {
+      const covered = renderedNodes.some(node => {
+        const x = width / 2 + (node.x - midX) * scale
+        const y = centerY + (node.y - midY) * scale
+        const r = node.radius * scale
+        return obstacles.some(box => x - r < box.right && x + r > box.left && y - r < box.bottom && y + r > box.top)
+      })
+      if (!covered || scale <= .025) break
+      scale = Math.max(.025, scale * .98)
+    }
+  }
   const transform = d3.zoomIdentity
-    .translate(width / 2, height / 2)
+    .translate(width / 2, centerY)
     .scale(scale)
     .translate(-midX, -midY)
   const target = animate
@@ -1184,7 +940,7 @@ function scheduleRender(delay = 80) {
 }
 
 watch(
-  () => [props.nodes, props.links],
+  () => [props.nodes, props.links, props.courseOverview],
   () => scheduleRender(),
   { flush: 'post' },
 )
@@ -1196,7 +952,6 @@ watch(
       nodeSelection?.data?.() || [],
       linkSelection?.data?.() || [],
     )
-    nextTick(() => centerSelectedNode(true))
     scheduleMinimapUpdate()
   },
 )
@@ -1228,409 +983,3 @@ onBeforeUnmount(() => {
   }
 })
 </script>
-
-<style scoped>
-.graph-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
-  background:
-    linear-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
-    linear-gradient(rgba(37, 99, 235, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(37, 99, 235, 0.035) 1px, transparent 1px),
-    #fbfdff;
-  background-size:
-    24px 24px,
-    24px 24px,
-    120px 120px,
-    120px 120px;
-}
-
-.graph-container svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.graph-canvas-badge {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  padding: 6px 9px;
-  border: 1px solid #dbeafe;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #1e40af;
-  background: rgba(239, 246, 255, 0.94);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.badge-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
-}
-
-.graph-state {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: #64748b;
-  background: rgba(255, 255, 255, 0.86);
-  font-size: 13px;
-  text-align: center;
-}
-
-.graph-state strong {
-  color: #334155;
-  font-size: 14px;
-}
-
-.graph-controls {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.graph-controls button {
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border: 1px solid #dbe4ef;
-  border-radius: 7px;
-  display: grid;
-  place-items: center;
-  color: #475569;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.08);
-  cursor: pointer;
-}
-
-.graph-controls button:hover {
-  color: #1d4ed8;
-  border-color: #93c5fd;
-  background: #eff6ff;
-}
-
-.graph-legend {
-  position: absolute;
-  left: 14px;
-  bottom: 14px;
-  width: min(520px, calc(100% - 28px));
-  padding: 9px 10px;
-  border: 1px solid #dbe4ef;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
-  backdrop-filter: blur(8px);
-}
-
-.legend-heading {
-  margin-bottom: 7px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: #334155;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.legend-heading button {
-  padding: 0;
-  border: 0;
-  color: #2563eb;
-  background: transparent;
-  cursor: pointer;
-  font-size: 9px;
-}
-
-.node-legend {
-  margin-bottom: 7px;
-  padding-bottom: 7px;
-  border-bottom: 1px solid #edf2f7;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 9px;
-  color: #64748b;
-  font-size: 9px;
-}
-
-.node-legend span {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.node-legend i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-}
-
-.node-legend .module-dot {
-  background: #7c3aed;
-  box-shadow: 0 0 0 2px #ede9fe;
-}
-
-.node-legend .size-hint {
-  margin-left: auto;
-}
-
-.legend-items {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-.legend-item {
-  min-height: 24px;
-  padding: 0 7px;
-  border: 1px solid #e2e8f0;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: #475569;
-  background: #ffffff;
-  cursor: pointer;
-  font-size: 9px;
-}
-
-.legend-item:hover {
-  border-color: #93c5fd;
-  color: #1d4ed8;
-}
-
-.legend-item.muted {
-  opacity: 0.35;
-}
-
-.legend-item i {
-  width: 14px;
-  height: 3px;
-  border-radius: 999px;
-}
-
-.legend-item em {
-  color: #94a3b8;
-  font-size: 8px;
-  font-style: normal;
-}
-
-.node-tooltip {
-  position: absolute;
-  z-index: 12;
-  width: min(250px, calc(100% - 24px));
-  padding: 10px 11px;
-  border: 1px solid #dbe4ef;
-  border-radius: 8px;
-  color: #334155;
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.17);
-  pointer-events: none;
-}
-
-.node-tooltip strong,
-.node-tooltip span,
-.node-tooltip small {
-  display: block;
-}
-
-.node-tooltip strong {
-  color: #0f172a;
-  font-size: 12px;
-  line-height: 1.45;
-}
-
-.node-tooltip span {
-  margin-top: 2px;
-  color: #64748b;
-  font-size: 9px;
-}
-
-.node-tooltip .tooltip-row {
-  margin-top: 8px;
-  padding-top: 7px;
-  border-top: 1px solid #edf2f7;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 10px;
-}
-
-.tooltip-row i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-}
-
-.tooltip-row b {
-  margin-left: auto;
-  color: #7c3aed;
-}
-
-.node-tooltip small {
-  margin-top: 6px;
-  color: #64748b;
-  font-size: 9px;
-}
-
-.graph-metrics {
-  position: absolute;
-  right: 14px;
-  bottom: 14px;
-  padding: 7px 9px;
-  border: 1px solid #e2e8f0;
-  border-radius: 7px;
-  display: flex;
-  gap: 12px;
-  color: #64748b;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
-  font-size: 9px;
-}
-
-.graph-metrics span {
-  display: flex;
-  align-items: baseline;
-  gap: 3px;
-}
-
-.graph-metrics b {
-  color: #1e293b;
-  font-size: 11px;
-}
-
-.graph-minimap {
-  position: absolute;
-  right: 14px;
-  bottom: 58px;
-  width: 168px;
-  height: 104px;
-  padding: 14px 6px 6px;
-  border: 1px solid #dbe4ef;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
-  cursor: crosshair;
-  backdrop-filter: blur(8px);
-}
-
-.graph-minimap svg {
-  width: 100%;
-  height: 100%;
-}
-
-.graph-minimap > span {
-  position: absolute;
-  top: 5px;
-  left: 8px;
-  color: #64748b;
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0;
-}
-
-:deep(.node-selected .node-body) {
-  stroke: #0f172a;
-  stroke-width: 3.4;
-}
-
-:deep(.node-selected .node-pulse) {
-  opacity: 0.8;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: node-pulse 1.8s ease-out infinite;
-}
-
-:deep(.node-core .node-focus-ring) {
-  stroke-opacity: 0.5;
-}
-
-:deep(.node-neighbor .node-focus-ring) {
-  stroke-opacity: 0.34;
-}
-
-:deep(.graph-link) {
-  transition: opacity 0.18s ease;
-}
-
-:deep(.module-label) {
-  fill: #4c1d95;
-}
-
-:deep(.knowledge-label) {
-  fill: #334155;
-}
-
-.spin {
-  animation: spin 0.9s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes node-pulse {
-  0% {
-    opacity: 0.85;
-    transform: scale(0.82);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.5);
-  }
-}
-
-@media (max-width: 760px) {
-  .graph-canvas-badge {
-    top: 10px;
-    right: 10px;
-  }
-
-  .graph-controls {
-    top: 10px;
-    left: 10px;
-  }
-
-  .graph-controls button {
-    width: 32px;
-    height: 32px;
-  }
-
-  .graph-legend {
-    right: 10px;
-    bottom: 10px;
-    left: 10px;
-    width: auto;
-    max-height: 112px;
-    overflow-y: auto;
-  }
-
-  .graph-metrics {
-    display: none;
-  }
-
-  .graph-minimap {
-    display: none;
-  }
-}
-</style>

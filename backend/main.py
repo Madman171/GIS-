@@ -310,6 +310,36 @@ def get_module_overview(request: Request) -> Dict[str, Any]:
     }
 
 
+@app.get("/api/graph/all")
+def get_course_graph(request: Request) -> Dict[str, Any]:
+    records = _read_query(
+        _get_driver(request),
+        """
+        MATCH (source)
+        WHERE source:Module OR source:KnowledgePoint
+        OPTIONAL MATCH (source)-[relationship]->(target)
+        WHERE (target:Module OR target:KnowledgePoint)
+          AND type(relationship) IN $relationship_types
+        RETURN source, relationship, target
+        ORDER BY coalesce(source.sort_order, source.order, 9999),
+          coalesce(source.module_id, source.kp_id)
+        """,
+        {"relationship_types": GRAPH_RELATIONSHIP_TYPES},
+    )
+    graph = TrafficGraphBuilder()
+    for record in records:
+        graph.add_node(record["source"])
+        graph.add_node(record["target"])
+        graph.add_relationship(record["relationship"])
+    data = graph.as_dict()
+    data["summary"] = {
+        "moduleCount": sum("Module" in node["labels"] for node in data["nodes"]),
+        "knowledgePointCount": sum("KnowledgePoint" in node["labels"] for node in data["nodes"]),
+        "relationCount": len(data["links"]),
+    }
+    return {"code": 200, "message": "全部课程知识图谱加载成功", "data": data}
+
+
 @app.get("/api/directory")
 def get_directory(request: Request) -> Dict[str, Any]:
     records = _read_query(
