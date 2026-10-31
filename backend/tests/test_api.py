@@ -34,6 +34,52 @@ def test_module_graph(neo4j_client):
     assert len(data["links"]) == 56
 
 
+def test_course_graph_includes_every_module_and_knowledge_point(neo4j_client):
+    response = neo4j_client.get("/api/graph/all")
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["summary"]["moduleCount"] == 9
+    assert data["summary"]["knowledgePointCount"] == 344
+    ids = {node["id"] for node in data["nodes"]}
+    assert len(ids) == 353
+    assert all(link["source"] in ids and link["target"] in ids for link in data["links"])
+    assert any(link["source"].split("-")[0] != link["target"].split("-")[0]
+               for link in data["links"] if link["type"] == "RELATED_TO")
+
+
+def test_course_graph_keeps_isolated_nodes_and_cross_module_links(client, monkeypatch):
+    class Node(dict):
+        def __init__(self, business_id, label, **properties):
+            super().__init__(properties)
+            self["module_id" if label == "Module" else "kp_id"] = business_id
+            self.labels = {label}
+            self.element_id = business_id
+
+    class Relationship(dict):
+        element_id = "cross-module"
+        type = "RELATED_TO"
+
+    a = Node("M1-001", "KnowledgePoint", name="基础知识")
+    b = Node("M2-001", "KnowledgePoint", name="关联知识")
+    isolated = Node("M9-001", "KnowledgePoint", name="独立知识")
+    relationship = Relationship()
+    relationship.start_node, relationship.end_node = a, b
+    records = [
+        {"source": a, "relationship": relationship, "target": b},
+        {"source": b, "relationship": None, "target": None},
+        {"source": isolated, "relationship": None, "target": None},
+        {"source": Node("M1", "Module", name="基础理论"), "relationship": None, "target": None},
+    ]
+    monkeypatch.setattr(main, "_read_query", lambda *args: records)
+    response = client.get("/api/graph/all")
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert {node["id"] for node in data["nodes"]} == {"M1", "M1-001", "M2-001", "M9-001"}
+    assert data["summary"] == {"moduleCount": 1, "knowledgePointCount": 3, "relationCount": 1}
+    assert data["links"][0]["source"] == "M1-001"
+    assert data["links"][0]["target"] == "M2-001"
+
+
 def test_knowledge_point_detail(neo4j_client):
     response = neo4j_client.get("/api/knowledge-points/M1-001")
     assert response.status_code == 200

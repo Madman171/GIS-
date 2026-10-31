@@ -103,6 +103,9 @@ test.beforeEach(async ({ page }) => {
       json: { code: 200, message: 'ok', data: overviewGraph },
     })
   })
+  await page.route('**/api/graph/all', async (route) => {
+    await route.fulfill({ json: { code: 200, message: 'ok', data: moduleGraph } })
+  })
   await page.route('**/api/chat/status', async (route) => {
     await route.fulfill({
       json: {
@@ -166,14 +169,16 @@ test('directory, graph, detail and chat flow', async ({ page }) => {
     })
   })
 
-  const modelResponse = page.waitForResponse((response) =>
-    response.url().endsWith('/assets/ai-pet/spirit_pix.glb'),
+  const portraitResponse = page.waitForResponse((response) =>
+    response.url().endsWith('/assets/ai-pet/xiaodi-2d-v1.png'),
   )
   await page.goto('/')
-  await expect((await modelResponse).status()).toBe(200)
+  await expect((await portraitResponse).status()).toBe(200)
 
   await expect(page.locator('.ai-pet-button')).toBeVisible()
-  await expect(page.locator('.pet-model-canvas')).toBeVisible()
+  await expect(page.locator('.pet-portrait')).toBeVisible()
+  await expect(page.locator('.pet-portrait')).toHaveJSProperty('naturalWidth', 1086)
+  await expect(page.locator('.pet-model-canvas')).toHaveCount(0)
   await expect(page.locator('.ai-pet-button')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
   await page.locator('.ai-pet-button').click()
   await expect(page.locator('.status-dot')).toHaveText('已连接')
@@ -181,13 +186,28 @@ test('directory, graph, detail and chat flow', async ({ page }) => {
   await expect(page.locator('.module-row')).toHaveCount(2)
   await expect(page.locator('.view-switch button')).toHaveCount(3)
 
+  await page.getByRole('button', { name: '全部知识点', exact: true }).click()
+  await expect(page.locator('.stage-title strong')).toHaveText('全部知识点')
+  await expect(page.locator('.course-overview-row')).toHaveAttribute('aria-current', 'page')
+  await expect(page.locator('.graph-node')).toHaveCount(3)
+  await page.locator('.node-KnowledgePoint .node-body').click()
+  await expect(page.locator('.detail-panel h2')).toHaveText('GIS交通路网的专业定义')
+  await page.keyboard.press('Escape')
+  await expect(page.locator('.stage-title strong')).toHaveText('全部知识点')
+  await expect(page.locator('.graph-node')).toHaveCount(3)
+  const refreshedCourse = page.waitForResponse(response => response.url().endsWith('/api/graph/all'))
+  await page.getByRole('button', { name: '刷新当前数据', exact: true }).click()
+  await refreshedCourse
+  await page.getByRole('button', { name: '返回总览', exact: true }).click()
+  await expect(page.locator('.graph-node')).toHaveCount(2)
+
   await page.locator('.module-row').first().click()
   await expect(page.locator('.stage-title strong')).toContainText(
     '基础理论与拓扑建模',
   )
   await expect(page.locator('.knowledge-row')).toHaveCount(1)
   await expect(page.locator('.graph-canvas-badge')).toContainText(
-    '路网式知识轨道',
+    '模块知识网络',
   )
 
   await page.locator('.view-switch button').nth(1).click()
@@ -202,11 +222,16 @@ test('directory, graph, detail and chat flow', async ({ page }) => {
   await expect(page.locator('.learning-path-section')).toContainText(
     '暂无已配置的前置知识',
   )
+  await expect(page.getByRole('dialog', { name: '知识点详情' })).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('dialog', { name: '知识点详情' })).toHaveCount(0)
 
   await page.locator('.refresh-button').click()
+  await page.locator('.knowledge-row').first().click()
   await expect(page.locator('.detail-panel h2')).toHaveText(
     'GIS交通路网的专业定义',
   )
+  await page.getByRole('button', { name: '关闭详情', exact: true }).click()
 
   await page.locator('.ai-pet-button').click()
   await expect(page.locator('.pet-chat-popover')).toBeVisible()

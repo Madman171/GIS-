@@ -2,24 +2,20 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-mark">
-          <Network :size="21" />
-        </div>
         <div class="brand-copy">
-          <h1>GIS交通路网教学知识图谱平台</h1>
+          <h1><span class="brand-initial">GIS</span><span class="brand-name">交通路网教学知识图谱平台</span></h1>
           <span>V1.0 · 课程知识组织与图谱可视化</span>
         </div>
       </div>
 
-      <div class="breadcrumb">
-        <Home :size="14" />
+      <div class="breadcrumb" aria-label="当前位置">
         <span>{{ stageTitle }}</span>
       </div>
 
       <div class="topbar-actions">
         <span class="connection-state" :class="{ error: Boolean(errorMessage) }">
           <i></i>
-          {{ graphLoading ? '同步中' : errorMessage ? '连接异常' : 'Neo4j 在线' }}
+          {{ graphLoading ? '同步中' : errorMessage ? '连接异常' : isDesignPreview ? '本地快照预览' : 'Neo4j 在线' }}
         </span>
         <button
           type="button"
@@ -28,13 +24,13 @@
           aria-label="打开知识目录"
           @click="openLeftPanel"
         >
-          <PanelLeft :size="18" />
+          目录
         </button>
       </div>
     </header>
 
     <div v-if="errorMessage" class="error-banner">
-      <AlertCircle :size="16" />
+
       <span>{{ errorMessage }}</span>
       <button
         type="button"
@@ -42,7 +38,7 @@
         aria-label="关闭提示"
         @click="errorMessage = ''"
       >
-        <X :size="15" />
+        <span aria-hidden="true">×</span>
       </button>
     </div>
 
@@ -50,6 +46,7 @@
       <div
         class="column directory-column"
         :class="{ 'mobile-open': leftOpen }"
+        :inert="isCompact && !leftOpen"
       >
         <DirectoryPanel
           :modules="directoryModules"
@@ -57,6 +54,8 @@
           :selected-knowledge-point-id="selectedKnowledgePointId"
           :loading="directoryLoading"
           :loading-module-id="loadingModuleId"
+          :course-overview="graphScope === 'course'"
+          @select-course="selectCourseOverview"
           @select-module="selectModule"
           @select-knowledge="selectKnowledgePoint"
         />
@@ -65,12 +64,9 @@
       <section class="stage">
         <div class="stage-toolbar">
           <div class="stage-title">
-            <div class="stage-icon">
-              <BookOpen :size="17" />
-            </div>
             <div>
-              <strong>{{ stageTitle }}</strong>
-              <span>{{ stageSubtitle }}</span>
+              <strong>{{ detail && selectedModule ? selectedModule.name : stageTitle }}</strong>
+              <span v-if="!selectedModuleId">{{ stageSubtitle }}</span>
             </div>
           </div>
 
@@ -86,7 +82,6 @@
                 :class="{ active: viewMode === 'all' }"
                 @click="viewMode = 'all'"
               >
-                <Network :size="13" />
                 <span>全景</span>
               </button>
               <button
@@ -95,7 +90,6 @@
                 :class="{ active: viewMode === 'focus' }"
                 @click="viewMode = 'focus'"
               >
-                <Focus :size="13" />
                 <span>重点</span>
               </button>
               <button
@@ -104,19 +98,8 @@
                 :class="{ active: viewMode === 'path' }"
                 @click="viewMode = 'path'"
               >
-                <Route :size="13" />
                 <span>路径</span>
               </button>
-            </div>
-            <div class="graph-count">
-              <span>{{ graphData.nodes.length }} 节点</span>
-              <span>{{ graphData.links.length }} 关系</span>
-              <span v-if="graphStats.coreCount">
-                {{ graphStats.coreCount }} 核心
-              </span>
-              <span v-if="graphStats.advancedCount">
-                {{ graphStats.advancedCount }} 进阶
-              </span>
             </div>
             <button
               type="button"
@@ -126,25 +109,20 @@
               aria-label="刷新当前数据"
               @click="refreshCurrentData"
             >
-              <RefreshCw :size="14" />
               刷新数据
             </button>
             <button
-              v-if="selectedModuleId"
+              v-if="selectedModuleId || graphScope === 'course'"
               type="button"
               class="back-button"
               @click="backToOverview"
             >
-              <RotateCcw :size="14" />
               返回总览
             </button>
           </div>
         </div>
 
-        <div
-          class="canvas-shell"
-          :class="{ 'detail-open': detailLoading || detail }"
-        >
+        <div class="canvas-shell">
           <div class="graph-view">
             <KnowledgeGraph
               :nodes="graphData.nodes"
@@ -152,10 +130,12 @@
               :selected-id="selectedKnowledgePointId || selectedModuleId"
               :loading="graphLoading"
               :view-mode="viewMode"
+              :course-overview="graphScope === 'course'"
               @node-click="handleGraphNode"
             />
           </div>
 
+          <Teleport to="body">
           <KnowledgeDetail
             v-if="detailLoading || detail"
             :detail="detail"
@@ -164,7 +144,6 @@
             :learning-path-cycle="learningPathCycle"
             :learning-path-loading="learningPathLoading"
             :learning-path-error="learningPathError"
-            :docked="true"
             :can-go-back="knowledgeHistory.length > 0"
             :previous="previousKnowledge"
             :next="nextKnowledge"
@@ -174,6 +153,7 @@
             @previous="navigateRelativeKnowledge('previous')"
             @next="navigateRelativeKnowledge('next')"
           />
+          </Teleport>
         </div>
       </section>
 
@@ -207,30 +187,23 @@ import {
   onMounted,
   ref,
 } from 'vue'
-import {
-  AlertCircle,
-  BookOpen,
-  Focus,
-  Home,
-  Network,
-  PanelLeft,
-  RefreshCw,
-  Route,
-  RotateCcw,
-  X,
-} from '@lucide/vue'
+
 import apiClient from './api/client'
 import AIPet from './components/AIPet.vue'
 import DirectoryPanel from './components/DirectoryPanel.vue'
 import KnowledgeDetail from './components/KnowledgeDetail.vue'
 import KnowledgeGraph from './components/KnowledgeGraphRich.vue'
 import { getNodeType } from './constants/graph'
+import { ASSISTANT_NAME } from './constants/assistant'
 
 const emptyGraph = () => ({ nodes: [], links: [], summary: {} })
+const isDesignPreview = Boolean(window.__GIS_DESIGN_PREVIEW__)
 
 const directoryModules = ref([])
 const directoryLoading = ref(true)
 const overviewGraph = ref(emptyGraph())
+const courseGraph = ref(null)
+const graphScope = ref('modules')
 const graphData = ref(emptyGraph())
 const graphLoading = ref(true)
 const errorMessage = ref('')
@@ -251,12 +224,16 @@ const chatMessages = ref([
   {
     role: 'assistant',
     content:
-      '你好，我是课程知识图谱助手。你可以围绕当前知识图谱提出问题，我会依据相关知识点进行回答。',
+      `你好，我是${ASSISTANT_NAME}，你的课程图谱小助手。你可以围绕当前知识图谱提出问题，我会依据相关知识点进行回答。`,
   },
 ])
 const chatLoading = ref(false)
 const chatConfigured = ref(false)
 const leftOpen = ref(false)
+const isCompact = ref(window.innerWidth <= 1100)
+function syncCompactLayout() {
+  isCompact.value = window.innerWidth <= 1100
+}
 const petSuggestion = ref(null)
 const lastPetSuggestionAt = ref(0)
 const PET_SUGGESTION_COOLDOWN = 45000
@@ -265,18 +242,22 @@ const moduleGraphCache = new Map()
 const detailCache = new Map()
 const learningPathCache = new Map()
 let learningPathRequestToken = 0
+let detailRequestToken = 0
+let graphRequestToken = 0
 
 const selectedModule = computed(() =>
   directoryModules.value.find((module) => module.id === selectedModuleId.value),
 )
 
 const stageTitle = computed(() => {
+  if (graphScope.value === 'course') return '全部知识点'
   if (detail.value) return detail.value.node.properties.name || '知识点详情'
   if (selectedModule.value) return selectedModule.value.name
   return '知识图谱总览'
 })
 
 const stageSubtitle = computed(() => {
+  if (graphScope.value === 'course') return '放大探索知识关系，点击节点查看详情'
   if (detail.value) return '知识点详情与关联知识'
   if (selectedModule.value) {
     return `${selectedModule.value.knowledgePoints.length} 个知识点`
@@ -299,7 +280,9 @@ const graphStats = computed(() => {
 })
 
 const currentModuleKnowledgePoints = computed(
-  () => selectedModule.value?.knowledgePoints || [],
+  () => (graphScope.value === 'course'
+    ? directoryModules.value.find(module => module.knowledgePoints.some(point => point.id === selectedKnowledgePointId.value))
+    : selectedModule.value)?.knowledgePoints || [],
 )
 
 const currentKnowledgeIndex = computed(() =>
@@ -347,15 +330,41 @@ async function loadDirectory() {
 }
 
 async function loadModuleOverview() {
+  const requestToken = ++graphRequestToken
   graphLoading.value = true
   try {
     const response = await apiClient.get('/api/graph/modules')
     overviewGraph.value = response.data.data
-    graphData.value = response.data.data
+    if (requestToken === graphRequestToken) graphData.value = response.data.data
   } catch (error) {
-    errorMessage.value = getErrorMessage(error, '模块总览加载失败')
+    if (requestToken === graphRequestToken) errorMessage.value = getErrorMessage(error, '模块总览加载失败')
   } finally {
-    graphLoading.value = false
+    if (requestToken === graphRequestToken) graphLoading.value = false
+  }
+}
+
+async function selectCourseOverview() {
+  const requestToken = ++graphRequestToken
+  closeDetail()
+  knowledgeHistory.value = []
+  selectedModuleId.value = ''
+  graphScope.value = 'course'
+  viewMode.value = 'all'
+  leftOpen.value = false
+  loadingModuleId.value = ''
+  graphLoading.value = true
+  errorMessage.value = ''
+  try {
+    if (!courseGraph.value) {
+      const response = await apiClient.get('/api/graph/all')
+      if (requestToken !== graphRequestToken) return
+      courseGraph.value = response.data.data
+    }
+    if (requestToken === graphRequestToken) graphData.value = courseGraph.value
+  } catch (error) {
+    if (requestToken === graphRequestToken) errorMessage.value = getErrorMessage(error, '全部知识点加载失败')
+  } finally {
+    if (requestToken === graphRequestToken) graphLoading.value = false
   }
 }
 
@@ -365,7 +374,7 @@ async function loadChatStatus() {
     chatConfigured.value = Boolean(response.data.data.configured)
     if (!chatConfigured.value) {
       chatMessages.value[0].content =
-        '你好，我是课程知识图谱助手。DeepSeek API Key 尚未配置，请在本地 backend/.env 中完成设置。'
+        `你好，我是${ASSISTANT_NAME}，你的课程图谱小助手。问答服务暂未连接，你可以先浏览图谱和知识点。`
     }
   } catch {
     chatConfigured.value = false
@@ -375,6 +384,10 @@ async function loadChatStatus() {
 async function selectModule(moduleId) {
   if (!moduleId) return
 
+  const requestToken = ++graphRequestToken
+  graphScope.value = 'module'
+  detailRequestToken += 1
+  detailLoading.value = false
   selectedKnowledgePointId.value = ''
   detail.value = null
   learningPath.value = []
@@ -393,10 +406,11 @@ async function selectModule(moduleId) {
       const response = await apiClient.get(`/api/modules/${moduleId}/graph`)
       moduleGraphCache.set(moduleId, response.data.data)
     }
-    graphData.value = moduleGraphCache.get(moduleId)
+    if (requestToken === graphRequestToken) graphData.value = moduleGraphCache.get(moduleId)
   } catch (error) {
-    errorMessage.value = getErrorMessage(error, '模块知识点加载失败')
+    if (requestToken === graphRequestToken) errorMessage.value = getErrorMessage(error, '模块知识点加载失败')
   } finally {
+    if (requestToken !== graphRequestToken) return
     graphLoading.value = false
     loadingModuleId.value = ''
     offerPetSuggestion({
@@ -425,11 +439,12 @@ async function loadKnowledgePoint(
     })
   }
 
-  if (moduleId && moduleId !== selectedModuleId.value) {
+  if (graphScope.value !== 'course' && moduleId && moduleId !== selectedModuleId.value) {
     await selectModule(moduleId)
   }
 
   selectedKnowledgePointId.value = knowledgePointId
+  const requestToken = ++detailRequestToken
   detailLoading.value = true
   learningPath.value = []
   learningPathCycle.value = false
@@ -445,12 +460,14 @@ async function loadKnowledgePoint(
       )
       detailCache.set(knowledgePointId, response.data.data)
     }
-    detail.value = detailCache.get(knowledgePointId)
+    if (requestToken === detailRequestToken) detail.value = detailCache.get(knowledgePointId)
   } catch (error) {
-    detail.value = null
-    errorMessage.value = getErrorMessage(error, '知识点详情加载失败')
+    if (requestToken === detailRequestToken) {
+      detail.value = null
+      errorMessage.value = getErrorMessage(error, '知识点详情加载失败')
+    }
   } finally {
-    detailLoading.value = false
+    if (requestToken === detailRequestToken) detailLoading.value = false
   }
 }
 
@@ -515,6 +532,8 @@ function handleGraphNode(node) {
 }
 
 function closeDetail() {
+  detailRequestToken += 1
+  detailLoading.value = false
   detail.value = null
   selectedKnowledgePointId.value = ''
   learningPath.value = []
@@ -540,6 +559,10 @@ function navigateRelativeKnowledge(direction) {
 }
 
 function backToOverview() {
+  graphRequestToken += 1
+  graphScope.value = 'modules'
+  detailRequestToken += 1
+  detailLoading.value = false
   selectedModuleId.value = ''
   selectedKnowledgePointId.value = ''
   detail.value = null
@@ -555,44 +578,57 @@ function backToOverview() {
 }
 
 async function refreshCurrentData(options = {}) {
+  const requestToken = ++graphRequestToken
+  const scope = graphScope.value
+  const moduleId = selectedModuleId.value
   const silent = Boolean(options.silent)
   if (!silent) graphLoading.value = true
   errorMessage.value = ''
 
   try {
     const directoryResponse = await apiClient.get('/api/directory')
+    if (requestToken !== graphRequestToken) return
     directoryModules.value = directoryResponse.data.data.modules
-
-    if (selectedModuleId.value) {
+    if (scope === 'course') {
+      const response = await apiClient.get('/api/graph/all')
+      if (requestToken !== graphRequestToken) return
+      courseGraph.value = response.data.data
+      graphData.value = response.data.data
+    } else if (moduleId) {
       const moduleResponse = await apiClient.get(
-        `/api/modules/${selectedModuleId.value}/graph`,
+        `/api/modules/${moduleId}/graph`,
       )
-      moduleGraphCache.set(selectedModuleId.value, moduleResponse.data.data)
+      if (requestToken !== graphRequestToken) return
+      moduleGraphCache.set(moduleId, moduleResponse.data.data)
       graphData.value = moduleResponse.data.data
     } else {
       const overviewResponse = await apiClient.get('/api/graph/modules')
+      if (requestToken !== graphRequestToken) return
       overviewGraph.value = overviewResponse.data.data
       graphData.value = overviewResponse.data.data
     }
 
     if (selectedKnowledgePointId.value) {
+      const knowledgeId = selectedKnowledgePointId.value
+      const detailToken = detailRequestToken
       const detailResponse = await apiClient.get(
-        `/api/knowledge-points/${selectedKnowledgePointId.value}`,
+        `/api/knowledge-points/${knowledgeId}`,
       )
+      if (requestToken !== graphRequestToken || detailToken !== detailRequestToken || selectedKnowledgePointId.value !== knowledgeId) return
       detailCache.set(
-        selectedKnowledgePointId.value,
+        knowledgeId,
         detailResponse.data.data,
       )
       detail.value = detailResponse.data.data
-      learningPathCache.delete(selectedKnowledgePointId.value)
-      loadLearningPath(selectedKnowledgePointId.value)
+      learningPathCache.delete(knowledgeId)
+      loadLearningPath(knowledgeId)
     }
   } catch (error) {
-    if (!silent) {
+    if (!silent && requestToken === graphRequestToken) {
       errorMessage.value = getErrorMessage(error, '刷新平台数据失败')
     }
   } finally {
-    if (!silent) graphLoading.value = false
+    if (requestToken === graphRequestToken) graphLoading.value = false
   }
 }
 
@@ -693,6 +729,7 @@ function closeDrawers() {
 }
 
 onMounted(() => {
+  window.addEventListener('resize', syncCompactLayout)
   Promise.all([
     loadDirectory(),
     loadModuleOverview(),
@@ -702,476 +739,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', syncCompactLayout)
   window.removeEventListener('focus', handleWindowFocus)
 })
 </script>
-
-<style scoped>
-.app-shell {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  color: #1f2937;
-  background: #f5f7fa;
-  overflow: hidden;
-}
-
-.topbar {
-  min-height: 64px;
-  padding: 0 18px;
-  border-bottom: 1px solid #dfe7f1;
-  display: grid;
-  grid-template-columns: minmax(320px, 1fr) auto minmax(260px, 1fr);
-  align-items: center;
-  gap: 18px;
-  background: #ffffff;
-}
-
-.brand {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.brand-mark {
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
-  display: grid;
-  flex: 0 0 auto;
-  place-items: center;
-  color: #ffffff;
-  background: #7c3aed;
-}
-
-.brand-copy {
-  min-width: 0;
-}
-
-.brand-copy h1 {
-  margin: 0 0 2px;
-  overflow: hidden;
-  color: #0f172a;
-  font-size: 16px;
-  line-height: 1.3;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.brand-copy span {
-  display: block;
-  color: #64748b;
-  font-size: 11px;
-}
-
-.breadcrumb {
-  max-width: 360px;
-  padding: 6px 10px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #475569;
-  background: #f8fafc;
-  font-size: 12px;
-}
-
-.breadcrumb span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.connection-state {
-  padding: 5px 8px;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #166534;
-  background: #f0fdf4;
-  font-size: 11px;
-  white-space: nowrap;
-}
-
-.connection-state i {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #22c55e;
-}
-
-.connection-state.error {
-  color: #991b1b;
-  background: #fef2f2;
-}
-
-.connection-state.error i {
-  background: #ef4444;
-}
-
-.mobile-button {
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border: 1px solid #dbe4ef;
-  border-radius: 6px;
-  display: none;
-  place-items: center;
-  color: #475569;
-  background: #ffffff;
-  cursor: pointer;
-}
-
-.error-banner {
-  min-height: 38px;
-  padding: 8px 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #991b1b;
-  background: #fef2f2;
-  border-bottom: 1px solid #fecaca;
-  font-size: 12px;
-}
-
-.error-banner span {
-  flex: 1;
-}
-
-.error-banner button {
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  border: 0;
-  border-radius: 5px;
-  display: grid;
-  place-items: center;
-  color: #991b1b;
-  background: transparent;
-  cursor: pointer;
-}
-
-.workspace {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 292px minmax(0, 1fr);
-  overflow: hidden;
-}
-
-.column {
-  min-width: 0;
-  min-height: 0;
-}
-
-.stage {
-  min-width: 0;
-  min-height: 0;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  background: #f5f7fa;
-  overflow: hidden;
-}
-
-.stage-toolbar {
-  min-height: 46px;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.stage-title {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-}
-
-.stage-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  display: grid;
-  flex: 0 0 auto;
-  place-items: center;
-  color: #1d4ed8;
-  background: #eff6ff;
-}
-
-.stage-title strong,
-.stage-title span {
-  display: block;
-}
-
-.stage-title strong {
-  max-width: 520px;
-  overflow: hidden;
-  color: #0f172a;
-  font-size: 14px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.stage-title span {
-  margin-top: 2px;
-  color: #64748b;
-  font-size: 11px;
-}
-
-.stage-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.graph-count {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: #64748b;
-  font-size: 11px;
-  white-space: nowrap;
-}
-
-.graph-count span {
-  padding: 4px 6px;
-  border: 1px solid #e2e8f0;
-  border-radius: 5px;
-  background: #ffffff;
-}
-
-.view-switch {
-  height: 32px;
-  padding: 3px;
-  border: 1px solid #dbe4ef;
-  border-radius: 7px;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  background: #f8fafc;
-}
-
-.view-switch button {
-  height: 24px;
-  padding: 0 7px;
-  border: 0;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #64748b;
-  background: transparent;
-  cursor: pointer;
-  font-size: 10px;
-}
-
-.view-switch button:hover {
-  color: #1d4ed8;
-}
-
-.view-switch button.active {
-  color: #1d4ed8;
-  background: #ffffff;
-  box-shadow: 0 2px 7px rgba(15, 23, 42, 0.1);
-}
-
-.back-button,
-.refresh-button {
-  height: 34px;
-  padding: 0 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #334155;
-  background: #ffffff;
-  cursor: pointer;
-  font-size: 11px;
-}
-
-.back-button:hover,
-.refresh-button:hover {
-  border-color: #93c5fd;
-  color: #1d4ed8;
-}
-
-.refresh-button:disabled {
-  cursor: wait;
-  opacity: 0.55;
-}
-
-.canvas-shell {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  border: 1px solid #dfe7f1;
-  border-radius: 8px;
-  background: #ffffff;
-  overflow: hidden;
-}
-
-.canvas-shell.detail-open {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(340px, 390px);
-}
-
-.graph-view {
-  width: 100%;
-  height: 100%;
-  min-width: 0;
-  min-height: 0;
-}
-
-.drawer-backdrop {
-  position: fixed;
-  z-index: 30;
-  inset: 64px 0 0;
-  border: 0;
-  background: rgba(15, 23, 42, 0.34);
-}
-
-@media (max-width: 1320px) {
-  .workspace {
-    grid-template-columns: 260px minmax(0, 1fr);
-  }
-
-  .brand-copy span {
-    display: none;
-  }
-}
-
-@media (max-width: 1380px) {
-  .canvas-shell.detail-open {
-    display: block;
-  }
-
-  :deep(.detail-panel.docked) {
-    position: absolute;
-    z-index: 8;
-    top: 14px;
-    right: 14px;
-    bottom: 14px;
-    width: min(410px, calc(100% - 28px));
-    height: auto;
-    border: 1px solid #dfe7f1;
-    border-radius: 8px;
-    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.16);
-  }
-}
-
-@media (max-width: 1100px) {
-  .topbar {
-    grid-template-columns: minmax(260px, 1fr) auto;
-  }
-
-  .breadcrumb {
-    display: none;
-  }
-
-  .mobile-button {
-    display: grid;
-  }
-
-  .workspace {
-    grid-template-columns: 250px minmax(0, 1fr);
-  }
-
-}
-
-@media (max-width: 760px) {
-  .topbar {
-    position: relative;
-    grid-template-columns: minmax(0, 1fr) auto;
-    min-height: 58px;
-    padding: 0 88px 0 10px;
-    gap: 8px;
-  }
-
-  .brand-mark {
-    width: 34px;
-    height: 34px;
-  }
-
-  .brand-copy h1 {
-    max-width: 210px;
-    font-size: 14px;
-  }
-
-  .topbar-actions {
-    position: absolute;
-    top: 11px;
-    right: 10px;
-  }
-
-  .connection-state {
-    display: none;
-  }
-
-  .workspace {
-    display: block;
-  }
-
-  .directory-column {
-    position: fixed;
-    z-index: 40;
-    top: 58px;
-    left: 0;
-    bottom: 0;
-    width: min(88vw, 300px);
-    box-shadow: 18px 0 40px rgba(15, 23, 42, 0.16);
-    transform: translateX(-105%);
-    transition: transform 0.22s ease;
-  }
-
-  .directory-column.mobile-open {
-    transform: translateX(0);
-  }
-
-  .stage {
-    width: 100%;
-    height: 100%;
-    padding: 8px;
-  }
-
-  .stage-toolbar {
-    min-height: 42px;
-    margin-bottom: 7px;
-  }
-
-  .graph-count {
-    display: none;
-  }
-
-  .view-switch button {
-    padding: 0 6px;
-  }
-
-  .view-switch button span {
-    display: none;
-  }
-
-  .stage-title strong {
-    max-width: 220px;
-  }
-
-  .drawer-backdrop {
-    inset: 58px 0 0;
-  }
-
-}
-</style>

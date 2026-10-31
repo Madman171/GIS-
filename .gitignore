@@ -33,6 +33,7 @@ dist-ssr/
 *.blend1
 playwright-report/
 test-results/
+.taste-skill/
 
 # Logs
 *.log
