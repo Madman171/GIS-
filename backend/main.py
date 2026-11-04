@@ -19,6 +19,7 @@ from pathlib import Path
 import deepseek_service
 import learning_path_engine
 import topology_checker
+from learning_bank import router as learning_router
 from config import (
     CORS_ALLOW_ORIGINS,
     KG_CONFIG,
@@ -83,6 +84,7 @@ app.add_middleware(
 )
 
 app.mount("/media", StaticFiles(directory=str(MEDIA_DIR)), name="media")
+app.include_router(learning_router)
 
 
 class TeachingQaRequest(BaseModel):

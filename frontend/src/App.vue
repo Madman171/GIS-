@@ -3,12 +3,17 @@
     <header class="topbar">
       <div class="brand">
         <div class="brand-copy">
-          <h1><span class="brand-initial">GIS</span><span class="brand-name">交通路网教学知识图谱平台</span></h1>
+          <component :is="isLearning ? 'div' : 'h1'" class="brand-heading"><span class="brand-initial">GIS</span><span class="brand-name">交通路网教学知识图谱平台</span></component>
           <span>V1.0 · 课程知识组织与图谱可视化</span>
         </div>
       </div>
 
-      <div class="breadcrumb" aria-label="当前位置">
+      <nav class="platform-nav" aria-label="平台功能">
+        <button type="button" :aria-current="!isLearning ? 'page' : undefined" @click="showPlatform('graph')">知识图谱</button>
+        <button type="button" :aria-current="isLearning ? 'page' : undefined" @click="showPlatform('learn')">学习闯关</button>
+      </nav>
+
+      <div v-if="!isLearning" class="breadcrumb" aria-label="当前位置">
         <span>{{ stageTitle }}</span>
       </div>
 
@@ -18,6 +23,7 @@
           {{ graphLoading ? '同步中' : errorMessage ? '连接异常' : isDesignPreview ? '本地快照预览' : 'Neo4j 在线' }}
         </span>
         <button
+          v-if="!isLearning"
           type="button"
           class="mobile-button"
           title="打开知识目录"
@@ -42,8 +48,9 @@
       </button>
     </div>
 
-    <main class="workspace">
+    <main class="workspace" :class="{ 'learning-workspace': isLearning }">
       <div
+        v-if="!isLearning"
         class="column directory-column"
         :class="{ 'mobile-open': leftOpen }"
         :inert="isCompact && !leftOpen"
@@ -61,7 +68,7 @@
         />
       </div>
 
-      <section class="stage">
+      <section v-if="!isLearning" class="stage">
         <div class="stage-toolbar">
           <div class="stage-title">
             <div>
@@ -135,6 +142,11 @@
             />
           </div>
 
+        </div>
+      </section>
+
+      <LearningCenter v-if="isLearning" @open-knowledge="openLearningKnowledge" />
+
           <Teleport to="body">
           <KnowledgeDetail
             v-if="detailLoading || detail"
@@ -154,10 +166,8 @@
             @next="navigateRelativeKnowledge('next')"
           />
           </Teleport>
-        </div>
-      </section>
-
       <AIPet
+        v-if="!isLearning"
         :messages="chatMessages"
         :loading="chatLoading"
         :configured="chatConfigured"
@@ -193,11 +203,21 @@ import AIPet from './components/AIPet.vue'
 import DirectoryPanel from './components/DirectoryPanel.vue'
 import KnowledgeDetail from './components/KnowledgeDetail.vue'
 import KnowledgeGraph from './components/KnowledgeGraphRich.vue'
+import LearningCenter from './components/LearningCenter.vue'
 import { getNodeType } from './constants/graph'
 import { ASSISTANT_NAME } from './constants/assistant'
 
 const emptyGraph = () => ({ nodes: [], links: [], summary: {} })
 const isDesignPreview = Boolean(window.__GIS_DESIGN_PREVIEW__)
+const isLearning = ref(window.location.hash.startsWith('#learn'))
+function syncPlatformRoute() { isLearning.value = window.location.hash.startsWith('#learn'); leftOpen.value = false }
+function showPlatform(view) {
+  closeDetail()
+  leftOpen.value = false
+  window.location.hash = view === 'learn' ? 'learn' : 'graph'
+  syncPlatformRoute()
+}
+function openLearningKnowledge(id) { loadKnowledgePoint(id, id.split('-')[0]) }
 
 const directoryModules = ref([])
 const directoryLoading = ref(true)
@@ -729,6 +749,7 @@ function closeDrawers() {
 }
 
 onMounted(() => {
+  window.addEventListener('hashchange', syncPlatformRoute)
   window.addEventListener('resize', syncCompactLayout)
   Promise.all([
     loadDirectory(),
@@ -739,6 +760,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('hashchange', syncPlatformRoute)
   window.removeEventListener('resize', syncCompactLayout)
   window.removeEventListener('focus', handleWindowFocus)
 })

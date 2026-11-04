@@ -1,0 +1,4629 @@
+{
+  "content_version": "1.0.1",
+  "chapters": [
+    {
+      "id": "L01",
+      "title": "GIS 与 QGIS 基础",
+      "prerequisite_chapters": [],
+      "objectives": [
+        "区分空间分析与单纯展示",
+        "识别点线面、矢量与栅格",
+        "理解图层和属性"
+      ],
+      "teaching_card": "GIS用空间位置及属性组织、分析和表达信息；QGIS是实现这些工作的软件之一。按本课表示约定：站点为点，道路中心线为线，校区边界为面。矢量要素有几何及属性；栅格用规则行列像元记录值。同一对象可因尺度和用途有不同表示。图层开关只控制显示；道路属性表通常一行一要素、一列一字段。此短卡补足原知识图谱中通用GIS基础较分散的讲解。",
+      "teaching_card_sources": [
+        "S01",
+        "S02",
+        "S03",
+        "S04",
+        "S09",
+        "S10",
+        "S13",
+        "S14"
+      ]
+    },
+    {
+      "id": "L02",
+      "title": "路网数据与坐标",
+      "prerequisite_chapters": [
+        "L01"
+      ],
+      "objectives": [
+        "辨别CRS、单位和坐标解释",
+        "区分指定CRS、项目CRS与重投影",
+        "读取基本道路几何及属性"
+      ],
+      "teaching_card": "坐标必须连同CRS解释。经纬度以角度表示；投影坐标用线性单位，但未必是米。QGIS指定图层CRS是在说明原坐标属于什么系统；改变项目CRS主要改变显示参考；重投影才执行坐标转换。不同已知CRS的数据可动态叠加。测量还需明确平面/椭球设置。本关只用明确标注单位的教学平面，不涉及具体国内坐标系选型。直角平面中，直线长度为√[(x₂−x₁)²+(y₂−y₁)²]，不可用来直接计算经纬度的米制距离。",
+      "teaching_card_sources": [
+        "S05",
+        "S06",
+        "S07",
+        "S08",
+        "S14",
+        "S24",
+        "S25",
+        "S26"
+      ]
+    },
+    {
+      "id": "L03",
+      "title": "拓扑连通与方向",
+      "prerequisite_chapters": [
+        "L01",
+        "L02"
+      ],
+      "objectives": [
+        "在简化路网中识别节点与边",
+        "区分图面交叉、拓扑连接和合法通行",
+        "按给定方向与限制判断可达性"
+      ],
+      "teaching_card": "本课简化路网中，节点表示交汇或端点，边表示路段。二维线相交未必可驶入，如无匝道立交。逻辑上连通也仍须检查方向、转向和方式限制。有向箭头只允许沿箭头通行；未给反向边时不能自行补出。真实尽端路可以合法，悬挂端点须结合数据规范判定。",
+      "teaching_card_sources": [
+        "S10",
+        "S11",
+        "S12",
+        "S13",
+        "S15",
+        "S20",
+        "S28"
+      ]
+    },
+    {
+      "id": "L04",
+      "title": "距离与时间阻抗",
+      "prerequisite_chapters": [
+        "L01",
+        "L02",
+        "L03"
+      ],
+      "objectives": [
+        "按目标选择成本及统一单位",
+        "累计路段距离与行程时间",
+        "区别道路耗时与额外延误"
+      ],
+      "teaching_card": "阻抗是按分析目标使用的成本，如公里或分钟。给定每段固定平均速率时，t=d/v；小时转分钟乘60。路线总时间为各段耗时加明确计入的等待/转向延误。本题库速度均为教学假设的平均行驶速率，不是设计速度或道路限速。未注明的停车等延误不计；不同单位不得直接混加。",
+      "teaching_card_sources": [
+        "S13",
+        "S14",
+        "S16",
+        "S22",
+        "S23"
+      ]
+    },
+    {
+      "id": "L05",
+      "title": "最短路径基本原理",
+      "prerequisite_chapters": [
+        "L01",
+        "L02",
+        "L03",
+        "L04"
+      ],
+      "objectives": [
+        "比较距离最短与时间最少",
+        "理解非负权Dijkstra的选点与松弛",
+        "识别等成本最优路线及停止条件"
+      ],
+      "teaching_card": "最优路线取决于所选成本。Dijkstra本课前提为所有可通行边的成本非负（可为0）、本次计算固定。算法每次确定累计暂定成本最小的未确定节点，并尝试更新邻点；不是挑当前最短的一条出边。首次发现终点不等于确定最优；终点被按最小暂定成本取出并确定后可结束单目标查询，但不保证其余全部可达节点均已求完。等成本最优路线可能不止一条。本卡明确补正M4-006缺失条件，须先讲后测。",
+      "teaching_card_sources": [
+        "S13",
+        "S14",
+        "S18",
+        "S19",
+        "S21",
+        "S27"
+      ]
+    },
+    {
+      "id": "L06",
+      "title": "拥堵与通行约束",
+      "prerequisite_chapters": [
+        "L01",
+        "L02",
+        "L03",
+        "L04",
+        "L05"
+      ],
+      "objectives": [
+        "依据情景成本更新路线",
+        "区别硬性禁行与成本增加",
+        "结合车辆条件判断路线可行性"
+      ],
+      "teaching_card": "本关每个时段是一张成本固定的情景表，比较该情景内路线；不模拟行驶途中跨时段改变成本的完整时变算法。硬性封路/禁行使边不可用，不能用成本0替代。拥堵可增加耗时，却不一定改变最优路线。历史时段估计不等于实时实测。车辆和出行方式约束须按题设检查；现实法规问题须另查国内适用规定。",
+      "teaching_card_sources": [
+        "S14",
+        "S15",
+        "S16",
+        "S17",
+        "S19"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "L01-P01",
+      "chapter_id": "L01",
+      "category": "practice",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-001",
+        "name": "GIS交通路网的专业定义与核心研究范畴"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "识别GIS的空间分析作用",
+      "required_teaching_card": "L01",
+      "stem": "下列哪项最能体现GIS对交通问题的分析作用？",
+      "options": [
+        {
+          "id": "A",
+          "text": "把道路图截成图片"
+        },
+        {
+          "id": "B",
+          "text": "结合道路连接和行程成本，比较从学校到医院的可行路线"
+        },
+        {
+          "id": "C",
+          "text": "只把地图背景换成蓝色"
+        },
+        {
+          "id": "D",
+          "text": "只给文件改名"
+        }
+      ],
+      "answer": "B",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "路线比较需要位置、关系和属性共同参与分析，是GIS的典型用途。展示和文件操作也可出现在工作流程中，但不能代替此处的空间分析。",
+      "option_feedback": {
+        "A": "截图是呈现结果，未进行题设路线分析。",
+        "B": "正确：利用空间关系及成本回答交通问题。",
+        "C": "换色属于显示设置。",
+        "D": "改名不产生空间分析结果。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S01",
+          "section": "2.1–2.2",
+          "support": "GIS分析空间信息。"
+        },
+        {
+          "source_id": "S14",
+          "section": "Cost attributes",
+          "support": "路线可按成本优化。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "限定为最能体现分析；其他选项仅为展示或文件操作。"
+      },
+      "points": null
+    },
+    {
+      "id": "L01-P02",
+      "chapter_id": "L01",
+      "category": "practice",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-004",
+        "name": "路网空间数据的两大核心载体：矢量模型、栅格模型"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "按表示目的选择几何类型",
+      "required_teaching_card": "L01",
+      "stem": "本课要表示“公交站位置、道路中心线、校区占地边界”，依次采用哪组矢量几何最合适？",
+      "options": [
+        {
+          "id": "A",
+          "text": "面、点、线"
+        },
+        {
+          "id": "B",
+          "text": "线、面、点"
+        },
+        {
+          "id": "C",
+          "text": "点、线、面"
+        },
+        {
+          "id": "D",
+          "text": "点、点、点"
+        }
+      ],
+      "answer": "C",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "题目明确了位置、中心线和边界三种表示目的，依次适合点、线、面；并非说现实道路永远只能画成线。",
+      "option_feedback": {
+        "A": "与三种表示目的不符。",
+        "B": "站点位置无需用线，中心线不是面。",
+        "C": "正确：对应位置、走向和范围。",
+        "D": "点无法保留道路中心线的走向及校区范围。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S02",
+          "section": "3.1、3.2、3.5",
+          "support": "点线面选择与表示目的及尺度有关。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "明确站点位置、中心线和占地边界；不声称几何表示唯一。"
+      },
+      "points": null
+    },
+    {
+      "id": "L01-P03",
+      "chapter_id": "L01",
+      "category": "practice",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-004",
+        "name": "路网空间数据的两大核心载体：矢量模型、栅格模型"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "辨别栅格数据",
+      "required_teaching_card": "L01",
+      "stem": "某高程数据按规则行列排列，每个像元记录一个高程值。它属于什么数据模型？",
+      "options": [
+        {
+          "id": "A",
+          "text": "栅格"
+        },
+        {
+          "id": "B",
+          "text": "只含道路名称的文本表"
+        },
+        {
+          "id": "C",
+          "text": "道路矢量线"
+        },
+        {
+          "id": "D",
+          "text": "公交站矢量点"
+        }
+      ],
+      "answer": "A",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "规则行列像元及像元值是栅格模型的关键特征；是否精确还取决于分辨率和数据质量等因素。",
+      "option_feedback": {
+        "A": "正确：用像元阵列表达高程。",
+        "B": "纯名称表不具备题述像元结构。",
+        "C": "矢量线以线几何表示要素。",
+        "D": "矢量点以点几何表示要素。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S03",
+          "section": "6.1–6.2",
+          "support": "栅格以行列像元及其值表达信息。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "以行列像元定义识别栅格，不引入精度高低断言。"
+      },
+      "points": null
+    },
+    {
+      "id": "L01-P04",
+      "chapter_id": "L01",
+      "category": "practice",
+      "type": "true_false",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M7-010",
+        "name": "QGIS路网数据加载与坐标系配置"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "理解图层显示开关",
+      "required_teaching_card": "L01",
+      "stem": "在QGIS中取消道路图层的可见性勾选，就等于从源数据中删除这些道路。",
+      "options": [],
+      "answer": false,
+      "grading_rule": {
+        "mode": "boolean",
+        "partial_credit": false
+      },
+      "explanation": "错误。该操作控制地图是否显示图层，源道路要素仍在；它也不等于给路网设置封路。",
+      "option_feedback": {},
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S09",
+          "section": "8.2.1 Layers Panel",
+          "support": "图层可见性由面板开关控制。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "区分可见性与源数据删除；判断为否。"
+      },
+      "points": null
+    },
+    {
+      "id": "L01-E01",
+      "chapter_id": "L01",
+      "category": "exam",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-009",
+        "name": "路网边的定义、分类与核心作用"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "读取道路属性表",
+      "required_teaching_card": "L01",
+      "stem": "一个普通道路线矢量图层的属性表中，每条路段要素占一行，含“名称、长度、通行方向”等列。某一行的“长度”值主要表示什么？",
+      "options": [
+        {
+          "id": "A",
+          "text": "所有图层的总长度"
+        },
+        {
+          "id": "B",
+          "text": "该行路段要素的一个属性值"
+        },
+        {
+          "id": "C",
+          "text": "地图当前缩放比例"
+        },
+        {
+          "id": "D",
+          "text": "该道路必然可双向通行"
+        }
+      ],
+      "answer": "B",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "在题设的一行一要素表中，长度列给出该路段的属性；方向须读取方向字段，不能从长度推断。",
+      "option_feedback": {
+        "A": "总长度须另作统计，不能由单行自动代表。",
+        "B": "正确：行定位要素，列定位属性。",
+        "C": "缩放比例属于地图显示状态。",
+        "D": "长度不决定方向。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S04",
+          "section": "12.2 开头与属性表说明",
+          "support": "矢量图层行对应要素，列对应字段。"
+        },
+        {
+          "source_id": "S10",
+          "section": "Edges、Junctions、Turns",
+          "support": "边可带用于网络分析的属性。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "限定普通道路要素表；没有以此否定QGIS非空间表。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L01-E02",
+      "chapter_id": "L01",
+      "category": "exam",
+      "type": "multiple",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-004",
+        "name": "路网空间数据的两大核心载体：矢量模型、栅格模型"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "区分模型及其表达",
+      "required_teaching_card": "L01",
+      "stem": "以下哪些说法正确？（多选）",
+      "options": [
+        {
+          "id": "A",
+          "text": "道路中心线可以用矢量线表达"
+        },
+        {
+          "id": "B",
+          "text": "高程栅格的每个像元可以记录高程值"
+        },
+        {
+          "id": "C",
+          "text": "只要是矢量，任何情况下都比栅格更准确"
+        },
+        {
+          "id": "D",
+          "text": "同一校园在不同尺度和用途下，可以表示为点或面"
+        }
+      ],
+      "answer": [
+        "A",
+        "B",
+        "D"
+      ],
+      "grading_rule": {
+        "mode": "exact_set",
+        "order_matters": false,
+        "partial_credit": false,
+        "student_instruction": "选出所有正确选项；多选、漏选或错选均不得分。"
+      },
+      "explanation": "模型需匹配对象、尺度和用途。矢量或栅格本身不能保证精度高低。",
+      "option_feedback": {
+        "A": "正确：线可表达中心线走向。",
+        "B": "正确：这是高程栅格的一种用途。",
+        "C": "错误：精度还受采集、分辨率、尺度等影响。",
+        "D": "正确：例如位置索引用点，占地范围用面。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S02",
+          "section": "3.1、3.2、3.5",
+          "support": "几何表达随尺度和目的变化。"
+        },
+        {
+          "source_id": "S03",
+          "section": "6.1–6.2",
+          "support": "栅格像元记录表面信息。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "A/B/D分别成立；C过度绝对，不接受。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L01-E03",
+      "chapter_id": "L01",
+      "category": "exam",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-002",
+        "name": "道路几何展示与交通网络分析的区别"
+      },
+      "auxiliary_knowledge_points": [
+        {
+          "id": "M1-012",
+          "name": "加权路网图模型的权重定义逻辑"
+        }
+      ],
+      "learning_objective": "辨别地图与可分析路网的区别",
+      "required_teaching_card": "L01",
+      "stem": "只有一张道路中心线地图，尚未定义实际连接、方向或成本。若要比较合法的最快驾车路线，首先应做什么？",
+      "options": [
+        {
+          "id": "A",
+          "text": "把所有线加粗"
+        },
+        {
+          "id": "B",
+          "text": "把图例去掉"
+        },
+        {
+          "id": "C",
+          "text": "只按屏幕上两点直线距离排序"
+        },
+        {
+          "id": "D",
+          "text": "补充并核实连接、通行规则和行程成本"
+        }
+      ],
+      "answer": "D",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "最快驾车路线需要可行性和时间成本；图面线条不自动提供这些信息。本题不声称所有矢量数据都没有拓扑。",
+      "option_feedback": {
+        "A": "符号粗细不能补全网络规则。",
+        "B": "图例显示不决定连通或耗时。",
+        "C": "直线距离不能替代受道路规则约束的行程时间。",
+        "D": "正确：须明确网络及分析依据。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S10",
+          "section": "Edges、Junctions、Turns",
+          "support": "网络分析依赖边、节点和转向关系。"
+        },
+        {
+          "source_id": "S14",
+          "section": "Cost attributes",
+          "support": "优化目标由成本属性确定。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "明说当前缺少网络规则，避免所有矢量均无拓扑的误述。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L01-E04",
+      "chapter_id": "L01",
+      "category": "exam",
+      "type": "true_false",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-004",
+        "name": "路网空间数据的两大核心载体：矢量模型、栅格模型"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "理解表示的目的依赖性",
+      "required_teaching_card": "L01",
+      "stem": "为了显示整座城市的公交站位置，本课把各站表示为点。这不意味着站房在现实中没有面积。",
+      "options": [],
+      "answer": true,
+      "grading_rule": {
+        "mode": "boolean",
+        "partial_credit": false
+      },
+      "explanation": "正确。点是针对当前位置展示目的的抽象，现实对象的面积可在另一尺度或专题中用面表达。",
+      "option_feedback": {},
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S02",
+          "section": "3.1、3.2、3.5",
+          "support": "要素几何取决于尺度及表示目的。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "点表示目的与现实物体面积不冲突。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L01-E05",
+      "chapter_id": "L01",
+      "category": "exam",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-009",
+        "name": "路网边的定义、分类与核心作用"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "区分交通属性和视觉样式",
+      "required_teaching_card": "L01",
+      "stem": "本题指定通行方向由“direction”字段及其编码解释。要检查某路段是否只允许沿数字化方向行驶，最直接查看什么？",
+      "options": [
+        {
+          "id": "A",
+          "text": "direction字段及其编码说明"
+        },
+        {
+          "id": "B",
+          "text": "屏幕上路段画得多粗"
+        },
+        {
+          "id": "C",
+          "text": "底图颜色"
+        },
+        {
+          "id": "D",
+          "text": "图层是否放在列表最上方"
+        }
+      ],
+      "answer": "A",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "字段须连同编码说明读取；不同数据的编码含义可能不同，不能凭颜色、顺序猜方向。",
+      "option_feedback": {
+        "A": "正确：题设已说明它是方向依据。",
+        "B": "线宽是样式，不是本题规则。",
+        "C": "背景不提供该路段通行方向。",
+        "D": "绘制顺序不代表通行方向。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S13",
+          "section": "Shortest path (point to point) / Strategy、Direction、Speed",
+          "support": "网络分析按方向字段与对应值解释方向。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "方向字段及编码由题设指定，不要求猜某软件编码。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L02-P01",
+      "chapter_id": "L02",
+      "category": "practice",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M3-017",
+        "name": "路网坐标属性与空间定位规则"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "理解图层CRS指定",
+      "required_teaching_card": "L02",
+      "stem": "某图层原坐标的真实CRS已经核实，但元数据标错了。在QGIS中仅纠正图层的CRS指定，不运行重投影。源几何坐标数值如何变化？",
+      "options": [
+        {
+          "id": "A",
+          "text": "自动全部改成经纬度"
+        },
+        {
+          "id": "B",
+          "text": "自动全部改成米"
+        },
+        {
+          "id": "C",
+          "text": "数值不变，但按纠正后的CRS解释"
+        },
+        {
+          "id": "D",
+          "text": "自动变成项目CRS的坐标"
+        }
+      ],
+      "answer": "C",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "指定CRS说明如何解释现有坐标，不执行坐标转换；因解释改变，显示位置可能改变。",
+      "option_feedback": {
+        "A": "指定不是自动坐标转换。",
+        "B": "目标单位也不是由“纠正”二字决定。",
+        "C": "正确：改变参考解释，不改几何数值。",
+        "D": "项目显示转换不等于重写源几何。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S05",
+          "section": "6.2 Layer CRS、6.3 Project CRS",
+          "support": "图层CRS指定与项目CRS作用不同。"
+        },
+        {
+          "source_id": "S24",
+          "section": "24.1.25.1 Assign projection；24.1.25.16 Find projection；24.1.25.25 Reproject layer",
+          "support": "Assign projection不重投影几何。"
+        },
+        {
+          "source_id": "S26",
+          "section": "Usage",
+          "support": "独立核对定义参考信息与转换几何不同；不借用其软件界面。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "对应M3-017的坐标解释子目标；不得沿用“必须统一后才能显示”的绝对说法。",
+        "specific_check": "限定源CRS已核实，仅改指定；源数值不变与显示可变兼容。"
+      },
+      "points": null
+    },
+    {
+      "id": "L02-P02",
+      "chapter_id": "L02",
+      "category": "practice",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M3-017",
+        "name": "路网坐标属性与空间定位规则"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "识别角度与线性单位",
+      "required_teaching_card": "L02",
+      "stem": "已知一份数据使用经纬度角度坐标。能否把两个经度值之差0.01直接当成0.01米？",
+      "options": [
+        {
+          "id": "A",
+          "text": "能，因为所有GIS坐标都是米"
+        },
+        {
+          "id": "B",
+          "text": "不能，角度差不是米制距离"
+        },
+        {
+          "id": "C",
+          "text": "能，只要地图放大"
+        },
+        {
+          "id": "D",
+          "text": "能，只要道路是直的"
+        }
+      ],
+      "answer": "B",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "经纬度是角度坐标。求米制距离需选择恰当的坐标转换或测地计算，不能直接把角度换标签。",
+      "option_feedback": {
+        "A": "并非所有坐标都以米为单位。",
+        "B": "正确：须区分角度与长度。",
+        "C": "缩放不改变坐标单位。",
+        "D": "线形不把角度自动变成米。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S06",
+          "section": "Coordinate systems",
+          "support": "地理坐标和投影坐标的单位类型不同。"
+        },
+        {
+          "source_id": "S07",
+          "section": "Units",
+          "support": "投影也须明确线性单位。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "角度差不直接等于米；未给无法可靠换算的伪数值答案。"
+      },
+      "points": null
+    },
+    {
+      "id": "L02-P03",
+      "chapter_id": "L02",
+      "category": "practice",
+      "type": "multiple",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M7-010",
+        "name": "QGIS路网数据加载与坐标系配置"
+      },
+      "auxiliary_knowledge_points": [
+        {
+          "id": "M3-017",
+          "name": "路网坐标属性与空间定位规则"
+        }
+      ],
+      "learning_objective": "区分三种坐标操作",
+      "required_teaching_card": "L02",
+      "stem": "以下关于QGIS坐标操作的说法，哪些正确？（多选）",
+      "options": [
+        {
+          "id": "A",
+          "text": "改变项目CRS主要改变地图显示参考，不会因此重写每个源文件的坐标"
+        },
+        {
+          "id": "B",
+          "text": "重投影是在已知正确源CRS的前提下执行坐标转换"
+        },
+        {
+          "id": "C",
+          "text": "给未知坐标随便指定一个看起来顺眼的CRS，就证明定位正确"
+        },
+        {
+          "id": "D",
+          "text": "不同已知CRS的图层可通过动态投影在同一项目中显示"
+        }
+      ],
+      "answer": [
+        "A",
+        "B",
+        "D"
+      ],
+      "grading_rule": {
+        "mode": "exact_set",
+        "order_matters": false,
+        "partial_credit": false,
+        "student_instruction": "选出所有正确选项；多选、漏选或错选均不得分。"
+      },
+      "explanation": "项目CRS、图层CRS和重投影分别涉及显示参考、坐标解释及转换。看起来重合并不能证明源CRS判断正确。",
+      "option_feedback": {
+        "A": "正确：显示参考与源文件不同。",
+        "B": "正确：转换须有可靠源参考。",
+        "C": "错误：须核对来源及元数据，而不是凭视觉猜定。",
+        "D": "正确：这是动态投影的用途。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S05",
+          "section": "6.2 Layer CRS、6.3 Project CRS",
+          "support": "说明图层/项目CRS及动态投影。"
+        },
+        {
+          "source_id": "S24",
+          "section": "24.1.25.1 Assign projection；24.1.25.16 Find projection；24.1.25.25 Reproject layer",
+          "support": "区分指定与重投影。"
+        },
+        {
+          "source_id": "S26",
+          "section": "Usage",
+          "support": "独立核对定义参考信息与转换几何不同；不借用其软件界面。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "显示、指定、转换三分；A/B/D，无依赖菜单记忆。"
+      },
+      "points": null
+    },
+    {
+      "id": "L02-P04",
+      "chapter_id": "L02",
+      "category": "practice",
+      "type": "numeric",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M3-018",
+        "name": "路网长度、曲率、坡度几何属性定义"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "按单位累计已知道路长度",
+      "required_teaching_card": "L02",
+      "stem": "教学路线由两段连续道路组成，长度分别为800米和1200米，且无重复路段。总路程是多少千米？填写千米数值，允许误差±0.001千米。",
+      "options": [],
+      "answer": {
+        "value": 2,
+        "unit": "km",
+        "tolerance": 0.001
+      },
+      "grading_rule": {
+        "mode": "absolute_tolerance",
+        "partial_credit": false,
+        "unit": "km",
+        "absolute_tolerance": 0.001,
+        "inclusive": true,
+        "equivalent_answers": "同一数值的等价格式可接受；单位换算后须满足指定单位与误差。",
+        "input_contract": "数值框使用题干指定单位；不接收表达式。未来接入时须实现有限数校验及显式单位换算，不隐式猜测单位。"
+      },
+      "explanation": "先统一单位：(800+1200)米=2000米=2千米。这里累计的是已知路段长度，不从屏幕比例猜距离。",
+      "option_feedback": {},
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S14",
+          "section": "Cost attributes",
+          "support": "路程成本沿路线累计。"
+        }
+      ],
+      "calculation": {
+        "operation": "sum_m_to_km",
+        "inputs": {
+          "metres": [
+            800,
+            1200
+          ]
+        },
+        "expected": 2,
+        "unit": "km",
+        "manual_derivation": "(800+1200)/1000=2 km。"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "米转千米；两段各走一次，无隐含重复长度。"
+      },
+      "points": null
+    },
+    {
+      "id": "L02-E01",
+      "chapter_id": "L02",
+      "category": "exam",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M3-017",
+        "name": "路网坐标属性与空间定位规则"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "在参考未知时拒绝虚假定位",
+      "required_teaching_card": "L02",
+      "stem": "收到一个缺少CRS说明的道路文件。下一步最稳妥的做法是什么？",
+      "options": [
+        {
+          "id": "A",
+          "text": "直接认定为米制坐标"
+        },
+        {
+          "id": "B",
+          "text": "随便指定CRS，位置看起来合理即可结束"
+        },
+        {
+          "id": "C",
+          "text": "只改地图颜色"
+        },
+        {
+          "id": "D",
+          "text": "向数据提供方核对CRS、单位和必要元数据，再解释和转换坐标"
+        }
+      ],
+      "answer": "D",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "未知CRS会让坐标解释不可靠。可借助范围等线索排查，但最终不能以一次视觉重合代替依据。",
+      "option_feedback": {
+        "A": "坐标数值大小不能单独证明单位。",
+        "B": "猜测不是可靠核查结论。",
+        "C": "颜色不能补齐空间参考。",
+        "D": "正确：先确认参考，再进行定位及转换。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S05",
+          "section": "6.2 Layer CRS、6.3 Project CRS",
+          "support": "图层需要正确CRS才能正确解释。"
+        },
+        {
+          "source_id": "S24",
+          "section": "24.1.25.1 Assign projection；24.1.25.16 Find projection；24.1.25.25 Reproject layer",
+          "support": "Find projection只给候选，指定与转换仍应区分。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "未知参考先核对元数据；候选投影不当确证。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L02-E02",
+      "chapter_id": "L02",
+      "category": "exam",
+      "type": "true_false",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M3-017",
+        "name": "路网坐标属性与空间定位规则"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "避免投影单位一概为米",
+      "required_teaching_card": "L02",
+      "stem": "只要某坐标系是投影坐标系，它的线性单位就一定是米，无需查看定义。",
+      "options": [],
+      "answer": false,
+      "grading_rule": {
+        "mode": "boolean",
+        "partial_credit": false
+      },
+      "explanation": "错误。投影坐标系也可能采用英尺等线性单位，应读取具体定义。即使单位为米，也仍需选择适合任务的投影和测量方式。",
+      "option_feedback": {},
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S07",
+          "section": "Units",
+          "support": "明确列出不同投影线性单位。"
+        },
+        {
+          "source_id": "S06",
+          "section": "Coordinate systems",
+          "support": "投影坐标具有定义的线性单位。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "投影单位可以是英尺，反例直接见PROJ。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L02-E03",
+      "chapter_id": "L02",
+      "category": "exam",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M7-010",
+        "name": "QGIS路网数据加载与坐标系配置"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "正确理解动态投影叠加",
+      "required_teaching_card": "L02",
+      "stem": "甲图层用已知的经纬度CRS，乙图层用已知且适用的投影CRS，QGIS已具备所需转换。要在同一地图里观察二者，下列哪项正确？",
+      "options": [
+        {
+          "id": "A",
+          "text": "可由项目动态投影进行显示转换，源文件坐标不因此被重写"
+        },
+        {
+          "id": "B",
+          "text": "必须先删除其中一个图层"
+        },
+        {
+          "id": "C",
+          "text": "把甲的CRS标签直接改成乙的CRS就等于重投影"
+        },
+        {
+          "id": "D",
+          "text": "同屏显示就证明所有空间分析参数也必然正确"
+        }
+      ],
+      "answer": "A",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "正确的源CRS及转换使动态叠加成为可能。分析还要另行核实工具的CRS、单位、椭球和参数，不能从显示成功推出一切正确。",
+      "option_feedback": {
+        "A": "正确：区分显示转换与源数据转换。",
+        "B": "不同CRS并不要求删除数据。",
+        "C": "改标签不改变源几何数值。",
+        "D": "显示正确不等于分析设置自动全部正确。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S05",
+          "section": "6.2 Layer CRS、6.3 Project CRS",
+          "support": "动态投影支持已知CRS图层的共同显示。"
+        },
+        {
+          "source_id": "S08",
+          "section": "7.1.8.1–7.1.8.2",
+          "support": "测量受方法和项目设置影响。"
+        },
+        {
+          "source_id": "S26",
+          "section": "Usage",
+          "support": "独立核对定义参考信息与转换几何不同；不借用其软件界面。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "已知CRS且具备转换的前提写明；分析设置不由显示代证。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L02-E04",
+      "chapter_id": "L02",
+      "category": "exam",
+      "type": "numeric",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M3-018",
+        "name": "路网长度、曲率、坡度几何属性定义"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "在明确平面条件下计算直线长度",
+      "required_teaching_card": "L02",
+      "stem": "在本题理想平面直角坐标中，单位为米。A=(100,200)，B=(400,600)，道路是一条A至B的直线。按平面欧氏距离计算长度，不使用椭球距离。填写米数值，允许误差±0.1米。",
+      "options": [],
+      "answer": {
+        "value": 500,
+        "unit": "m",
+        "tolerance": 0.1
+      },
+      "grading_rule": {
+        "mode": "absolute_tolerance",
+        "partial_credit": false,
+        "unit": "m",
+        "absolute_tolerance": 0.1,
+        "inclusive": true,
+        "equivalent_answers": "同一数值的等价格式可接受；单位换算后须满足指定单位与误差。",
+        "input_contract": "数值框使用题干指定单位；不接收表达式。未来接入时须实现有限数校验及显式单位换算，不隐式猜测单位。"
+      },
+      "explanation": "横向差300米、纵向差400米；直线路长=√(300²+400²)=500米。本题明确是平面几何，不把QGIS默认测量方法假定为平面。",
+      "option_feedback": {},
+      "assumptions": "理想平面直角坐标、米制、直线路段；不计高程、曲线、投影畸变或椭球弧长。",
+      "evidence": [
+        {
+          "source_id": "S08",
+          "section": "7.1.8.1–7.1.8.2",
+          "support": "平面距离与椭球测量应区分。"
+        },
+        {
+          "source_id": "S25",
+          "section": "2.1 Using the Distance Formula",
+          "support": "平面两点距离公式直接支持本题列式。"
+        }
+      ],
+      "calculation": {
+        "operation": "euclidean",
+        "inputs": {
+          "a": [
+            100,
+            200
+          ],
+          "b": [
+            400,
+            600
+          ]
+        },
+        "expected": 500,
+        "unit": "m",
+        "manual_derivation": "√[(400−100)²+(600−200)²]=√250000=500 m。"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "理想平面、米制、直线条件齐全，3-4-5长度复算。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L02-E05",
+      "chapter_id": "L02",
+      "category": "exam",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M3-017",
+        "name": "路网坐标属性与空间定位规则"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "解释测量设置的影响",
+      "required_teaching_card": "L02",
+      "stem": "在QGIS中把项目CRS设为米制投影后，能否仅凭这一点认定所有测量工具的结果都必然是平面欧氏距离？",
+      "options": [
+        {
+          "id": "A",
+          "text": "能，单位是米就没有椭球方法"
+        },
+        {
+          "id": "B",
+          "text": "不能，还要核查具体工具、椭球/平面设置及输出单位"
+        },
+        {
+          "id": "C",
+          "text": "能，属性表永远采用屏幕距离"
+        },
+        {
+          "id": "D",
+          "text": "能，图层数量决定计算方式"
+        }
+      ],
+      "answer": "B",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "米是长度单位，不等于计算方法。QGIS多种测量受椭球设置影响；项目采用投影也不自动排除椭球测量。",
+      "option_feedback": {
+        "A": "米也能用于表示测地距离。",
+        "B": "正确：需明确计算方法和单位。",
+        "C": "属性计算与屏幕距离不是同一概念。",
+        "D": "图层数量不决定平面或椭球方法。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S08",
+          "section": "7.1.8.1–7.1.8.2",
+          "support": "投影项目中默认测量仍可按椭球进行。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "计算方法与结果单位不同；不把米制投影等同平面测量。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L03-P01",
+      "chapter_id": "L03",
+      "category": "practice",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-007",
+        "name": "交通路网Node-Edge节点边基础模型定义"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "识别简化路网的节点和边",
+      "required_teaching_card": "L03",
+      "stem": "本课将路口及尽端位置建成节点，将其间道路建成边。下列对应正确的是哪项？",
+      "options": [
+        {
+          "id": "A",
+          "text": "节点是地图底色，边是图例"
+        },
+        {
+          "id": "B",
+          "text": "节点只能表示城市，不能表示路口"
+        },
+        {
+          "id": "C",
+          "text": "交汇位置对应节点，相邻节点间路段对应边"
+        },
+        {
+          "id": "D",
+          "text": "边只能有名称，不能有长度"
+        }
+      ],
+      "answer": "C",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "这是本课用于路径分析的节点—边抽象。实际网络可包含其他元素或自动生成的系统节点，不能把本题约定当成唯一数据实现。",
+      "option_feedback": {
+        "A": "底色和图例是显示元素。",
+        "B": "路口正是常用节点之一。",
+        "C": "正确：与题设建模约定一致。",
+        "D": "边可有长度、耗时等属性。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S10",
+          "section": "Edges、Junctions、Turns",
+          "support": "网络包含交汇节点和路段边。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "只按本课节点边抽象，不要求真实软件必须手工建节点表。"
+      },
+      "points": null
+    },
+    {
+      "id": "L03-P02",
+      "chapter_id": "L03",
+      "category": "practice",
+      "type": "true_false",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-015",
+        "name": "路网几何相邻与拓扑连通的区别"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "区别二维交叉和实际连通",
+      "required_teaching_card": "L03",
+      "stem": "已知两条道路一条在桥上、一条在桥下，交叉处没有匝道等连接设施。仅因二维地图上的线相交，就应允许车辆在交叉处相互驶入。",
+      "options": [],
+      "answer": false,
+      "grading_rule": {
+        "mode": "boolean",
+        "partial_credit": false
+      },
+      "explanation": "错误。图面交叉不是实际连接的充分条件。题设已经排除连接设施，建网时应保留上下层的区别。",
+      "option_feedback": {},
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S11",
+          "section": "Connectivity policies；Using elevation fields",
+          "support": "高程和连接策略可区分立交层级。"
+        },
+        {
+          "source_id": "S10",
+          "section": "Edges、Junctions、Turns",
+          "support": "交汇关系决定网络连接。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "桥上桥下无连接设施；几何交叉不能推出连接。"
+      },
+      "points": null
+    },
+    {
+      "id": "L03-P03",
+      "chapter_id": "L03",
+      "category": "practice",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-016",
+        "name": "路网方向性拓扑约束规则"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "按单向边判断通行",
+      "required_teaching_card": "L03",
+      "stem": "本题只有一条有向边A→B，未列任何其他边。仅按这个网络，从B到A的结论是什么？",
+      "options": [
+        {
+          "id": "A",
+          "text": "不可达，不能自动把A→B反向使用"
+        },
+        {
+          "id": "B",
+          "text": "可直接沿这条边逆行"
+        },
+        {
+          "id": "C",
+          "text": "任何单向边都自动有反向边"
+        },
+        {
+          "id": "D",
+          "text": "将线条画粗后就可逆行"
+        }
+      ],
+      "answer": "A",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "有向边的端点顺序表示允许方向。没有其他道路或反向边时，B到A不存在可行路线。",
+      "option_feedback": {
+        "A": "正确：本题网络只允许A到B。",
+        "B": "违反给定方向。",
+        "C": "反向边需要明确存在。",
+        "D": "样式不改变方向约束。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S20",
+          "section": "Overview / Edges",
+          "support": "有向图的反向边不自动存在。"
+        },
+        {
+          "source_id": "S13",
+          "section": "Shortest path (point to point) / Strategy、Direction、Speed",
+          "support": "道路方向是网络参数。"
+        }
+      ],
+      "calculation": {
+        "operation": "route",
+        "inputs": {
+          "edges": [
+            [
+              "A",
+              "B",
+              1
+            ]
+          ],
+          "start": "B",
+          "end": "A",
+          "blocked": [],
+          "directed": true
+        },
+        "expected": null,
+        "unit": "cost",
+        "manual_derivation": "仅有A→B，B无出边，所以B至A不可达。",
+        "optimal_paths": [],
+        "convention": "箭头为单向；双向须列出两条有向边。未列出的边不存在。只比较无重复节点的路线；本例正权，无最优循环。"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "无反向边或其他边；不可达结论限定于给定网络。"
+      },
+      "points": null
+    },
+    {
+      "id": "L03-P04",
+      "chapter_id": "L03",
+      "category": "practice",
+      "type": "multiple",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-013",
+        "name": "交通路网拓扑关系的核心定义"
+      },
+      "auxiliary_knowledge_points": [
+        {
+          "id": "M1-016",
+          "name": "路网方向性拓扑约束规则"
+        }
+      ],
+      "learning_objective": "区别连接与合法转向",
+      "required_teaching_card": "L03",
+      "stem": "两路段在网络中共享同一个逻辑节点。判断车辆能否由第一段进入第二段时，还可能需要检查哪些条件？（多选）",
+      "options": [
+        {
+          "id": "A",
+          "text": "路段允许通行方向"
+        },
+        {
+          "id": "B",
+          "text": "地图背景色"
+        },
+        {
+          "id": "C",
+          "text": "该转向是否被禁止"
+        },
+        {
+          "id": "D",
+          "text": "车辆类别是否受到通行限制"
+        }
+      ],
+      "answer": [
+        "A",
+        "C",
+        "D"
+      ],
+      "grading_rule": {
+        "mode": "exact_set",
+        "order_matters": false,
+        "partial_credit": false,
+        "student_instruction": "选出所有正确选项；多选、漏选或错选均不得分。"
+      },
+      "explanation": "连接解决网络关系，合法通行还受方向、转向及车辆限制。背景色不参与本题的交通规则。",
+      "option_feedback": {
+        "A": "正确：驶入或驶出方向可能不允许。",
+        "B": "错误：背景是显示属性。",
+        "C": "正确：共享节点也可能禁止某个转向。",
+        "D": "正确：同一边对不同车辆可有不同限制。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S10",
+          "section": "Edges、Junctions、Turns",
+          "support": "转向元素影响连续边之间的通行。"
+        },
+        {
+          "source_id": "S15",
+          "section": "Restriction usage、Parameters",
+          "support": "限制可结合车辆条件。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "检查方向、转向、车辆三个约束；共享节点不是通行保证。"
+      },
+      "points": null
+    },
+    {
+      "id": "L03-E01",
+      "chapter_id": "L03",
+      "category": "exam",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-029",
+        "name": "单向通行路网拓扑构建要点"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "组合单向路段判断可达路线",
+      "required_teaching_card": "L03",
+      "stem": "教学有向路网仅有A→B、B→C、C→A三条边，均允许本题车辆通行。以下哪条是从B到A的可行路线？节点顺序必须逐边合法。",
+      "options": [
+        {
+          "id": "A",
+          "text": "B→A"
+        },
+        {
+          "id": "B",
+          "text": "B→C→A"
+        },
+        {
+          "id": "C",
+          "text": "B→A→C"
+        },
+        {
+          "id": "D",
+          "text": "不存在从B到A的路线"
+        }
+      ],
+      "answer": "B",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "从B只能先到C，再由C到A；没有B→A边，也不能把C→A倒过来走。",
+      "option_feedback": {
+        "A": "不存在B→A直达边。",
+        "B": "正确：两步都符合给定方向。",
+        "C": "第一步B→A已不存在。",
+        "D": "B→C→A就是可行路线。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S20",
+          "section": "Overview / Edges",
+          "support": "有向路线须依次使用存在的有向边。"
+        }
+      ],
+      "calculation": {
+        "operation": "route",
+        "inputs": {
+          "edges": [
+            [
+              "A",
+              "B",
+              1
+            ],
+            [
+              "B",
+              "C",
+              1
+            ],
+            [
+              "C",
+              "A",
+              1
+            ]
+          ],
+          "start": "B",
+          "end": "A",
+          "blocked": [],
+          "directed": true
+        },
+        "expected": 2,
+        "unit": "edge_count",
+        "manual_derivation": "B唯一出边到C，C→A存在；合法路线B→C→A，两条边。",
+        "optimal_paths": [
+          [
+            "B",
+            "C",
+            "A"
+          ]
+        ],
+        "convention": "箭头为单向；双向须列出两条有向边。未列出的边不存在。只比较无重复节点的路线；本例正权，无最优循环。",
+        "candidate_mode": "feasible",
+        "candidate_paths": {
+          "A": [
+            "B",
+            "A"
+          ],
+          "B": [
+            "B",
+            "C",
+            "A"
+          ],
+          "C": [
+            "B",
+            "A",
+            "C"
+          ],
+          "D": null
+        }
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "枚举有向路线，B-C-A可行；其余选项不存在所需边。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L03-E02",
+      "chapter_id": "L03",
+      "category": "exam",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-014",
+        "name": "路网连通性拓扑规则"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "结合真实道路判断悬挂端点",
+      "required_teaching_card": "L03",
+      "stem": "检查路网时发现一个只有一条路接入的端点。现场资料确认这里是正常开放的真实尽端路，并非漏画。最合理的处理是什么？",
+      "options": [
+        {
+          "id": "A",
+          "text": "不看资料，删除所有这类端点"
+        },
+        {
+          "id": "B",
+          "text": "画一条虚构道路接到最近路口"
+        },
+        {
+          "id": "C",
+          "text": "认定所有尽端路都不能通车"
+        },
+        {
+          "id": "D",
+          "text": "结合建库规范保留真实结构；若使用禁悬挂规则，记录或审核合法例外"
+        }
+      ],
+      "answer": "D",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "真实尽端路可形成合理的悬挂端点。拓扑规则用于质量控制，但不能用虚构连接去消除真实结构；是否作为例外须遵从具体数据规范。",
+      "option_feedback": {
+        "A": "会误删真实道路。",
+        "B": "会制造不存在的连接。",
+        "C": "“尽端”并不等于禁止驶入。",
+        "D": "正确：按事实及规范审核例外。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S12",
+          "section": "Must Not Have Dangles (Line)",
+          "support": "Must Not Have Dangles规则允许真实尽端等合法例外。"
+        },
+        {
+          "source_id": "S28",
+          "section": "25.2.5 开头规则适用性说明；Line rules",
+          "support": "QGIS也明确真实尽端路不因规则而机械删除。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "M1-014原文过度禁止悬挂，见ERR-01。先用本关短卡讲明例外；线上原文未修改。",
+        "specific_check": "真实尽端路结合规范例外，不把所有悬挂都判错。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L03-E03",
+      "chapter_id": "L03",
+      "category": "exam",
+      "type": "true_false",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-015",
+        "name": "路网几何相邻与拓扑连通的区别"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "理解无连接立交的建模",
+      "required_teaching_card": "L03",
+      "stem": "某无匝道立交在本课网络中用两个不同层级的逻辑节点表示，即使它们二维位置重合，也不应仅凭重合就新增可转入连接。",
+      "options": [],
+      "answer": true,
+      "grading_rule": {
+        "mode": "boolean",
+        "partial_credit": false
+      },
+      "explanation": "正确。二维位置相同不足以证明跨层连接；应按实际连接和建网层级规则处理。",
+      "option_feedback": {},
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S11",
+          "section": "Connectivity policies；Using elevation fields",
+          "support": "高程/层级可使相同二维位置不连通。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "重合的二维位置与不同逻辑层级明确分离。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L03-E04",
+      "chapter_id": "L03",
+      "category": "exam",
+      "type": "multiple",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-011",
+        "name": "有向路网图模型的结构与适用场景"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "按给定有向图核对路线",
+      "required_teaching_card": "L03",
+      "stem": "教学路网仅有S→A、A→T、S→B、B→C、C→T、T→B。哪些序列是从S到T的合法路线？（多选；本题只问合法，不比较长短）",
+      "options": [
+        {
+          "id": "A",
+          "text": "S→A→T"
+        },
+        {
+          "id": "B",
+          "text": "S→B→T"
+        },
+        {
+          "id": "C",
+          "text": "S→B→C→T"
+        },
+        {
+          "id": "D",
+          "text": "S→T"
+        }
+      ],
+      "answer": [
+        "A",
+        "C"
+      ],
+      "grading_rule": {
+        "mode": "exact_set",
+        "order_matters": false,
+        "partial_credit": false,
+        "student_instruction": "选出所有正确选项；多选、漏选或错选均不得分。"
+      },
+      "explanation": "A、C的每一步都有对应方向的边，所以都合法。B到T没有直达边，S到T也没有直达边；合法路线不一定是边数最少的路线。",
+      "option_feedback": {
+        "A": "正确：S→A与A→T均存在。",
+        "B": "错误：存在T→B，不存在B→T。",
+        "C": "正确：S→B、B→C、C→T均存在。",
+        "D": "错误：没有S→T直达边。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S20",
+          "section": "Overview / Edges",
+          "support": "边必须按方向连接。"
+        }
+      ],
+      "calculation": {
+        "operation": "route",
+        "inputs": {
+          "edges": [
+            [
+              "S",
+              "A",
+              1
+            ],
+            [
+              "A",
+              "T",
+              1
+            ],
+            [
+              "S",
+              "B",
+              1
+            ],
+            [
+              "B",
+              "C",
+              1
+            ],
+            [
+              "C",
+              "T",
+              1
+            ],
+            [
+              "T",
+              "B",
+              1
+            ]
+          ],
+          "start": "S",
+          "end": "T",
+          "blocked": [],
+          "directed": true
+        },
+        "expected": 2,
+        "unit": "edge_count",
+        "manual_derivation": "合法简单路线有S→A→T（2条边）、S→B→C→T（3条边）。本题选全部合法路线，不限最短。",
+        "optimal_paths": [
+          [
+            "S",
+            "A",
+            "T"
+          ]
+        ],
+        "convention": "箭头为单向；双向须列出两条有向边。未列出的边不存在。只比较无重复节点的路线；本例正权，无最优循环。",
+        "candidate_mode": "feasible",
+        "candidate_paths": {
+          "A": [
+            "S",
+            "A",
+            "T"
+          ],
+          "B": [
+            "S",
+            "B",
+            "T"
+          ],
+          "C": [
+            "S",
+            "B",
+            "C",
+            "T"
+          ],
+          "D": [
+            "S",
+            "T"
+          ]
+        }
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "审稿时撤掉重复写法选项，改成两条不同合法路线；不限定最短。"
+      },
+      "points": 20,
+      "diagram_mermaid": "flowchart LR\n    S --> A\n    A --> T\n    S --> B\n    B --> C\n    C --> T\n    T --> B"
+    },
+    {
+      "id": "L03-E05",
+      "chapter_id": "L03",
+      "category": "exam",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-008",
+        "name": "路网节点的定义、分类与核心作用"
+      },
+      "auxiliary_knowledge_points": [
+        {
+          "id": "M1-016",
+          "name": "路网方向性拓扑约束规则"
+        }
+      ],
+      "learning_objective": "解释节点属性与限制",
+      "required_teaching_card": "L03",
+      "stem": "路口J在网络中连接多条边，但题设明确禁止“西侧驶入后向北转弯”，其他允许条件不变。能否仅因共享J节点就允许该转弯？",
+      "options": [
+        {
+          "id": "A",
+          "text": "不能，共享节点不免除明确的转向限制"
+        },
+        {
+          "id": "B",
+          "text": "能，连接优先于一切规则"
+        },
+        {
+          "id": "C",
+          "text": "能，只要道路颜色相同"
+        },
+        {
+          "id": "D",
+          "text": "能，只要把J改名"
+        }
+      ],
+      "answer": "A",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "节点表达连接位置，转向规则还约束特定的连续行驶动作。必须同时满足连接和题设通行规则。",
+      "option_feedback": {
+        "A": "正确：该转向已被明确禁止。",
+        "B": "忽略了题设限制。",
+        "C": "颜色不是许可依据。",
+        "D": "改名不改变合法性。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S10",
+          "section": "Edges、Junctions、Turns",
+          "support": "Turns描述连续边之间的动作。"
+        },
+        {
+          "source_id": "S15",
+          "section": "Restriction usage、Parameters",
+          "support": "禁止限制须排除对应通行。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "明确禁止特定转向，不能以几何或名称覆盖。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L04-P01",
+      "chapter_id": "L04",
+      "category": "practice",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-012",
+        "name": "加权路网图模型的权重定义逻辑"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "按优化目标选择权重",
+      "required_teaching_card": "L04",
+      "stem": "本次任务明确要在所有合法路线中选择“总路程最短”的路线。最直接的边权是什么？",
+      "options": [
+        {
+          "id": "A",
+          "text": "道路在屏幕上的颜色编号"
+        },
+        {
+          "id": "B",
+          "text": "道路名称的字数"
+        },
+        {
+          "id": "C",
+          "text": "统一长度单位的路段长度"
+        },
+        {
+          "id": "D",
+          "text": "图层在列表中的位置"
+        }
+      ],
+      "answer": "C",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "当目标是路程最短时，以长度为成本并沿路线累加；若目标改成最快，通常应使用时间而非直接沿用长度。",
+      "option_feedback": {
+        "A": "颜色编号没有路程含义。",
+        "B": "名称字数不是距离。",
+        "C": "正确：量纲和目标一致。",
+        "D": "图层位置是组织/显示信息。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S14",
+          "section": "Cost attributes",
+          "support": "成本属性应对应路线优化目标。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "目标仅距离，长度成本最直接；未混进速度。"
+      },
+      "points": null
+    },
+    {
+      "id": "L04-P02",
+      "chapter_id": "L04",
+      "category": "practice",
+      "type": "numeric",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-003",
+        "name": "时间阻抗模型的构建与计算规则"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "由固定平均速率计算时间",
+      "required_teaching_card": "L04",
+      "stem": "教学假设：一路段长2.4千米，车辆以40千米/小时的固定平均行驶速率行驶，不计等待和转向时间。需要多少分钟？填写分钟数，允许误差±0.01分钟。",
+      "options": [],
+      "answer": {
+        "value": 3.6,
+        "unit": "min",
+        "tolerance": 0.01
+      },
+      "grading_rule": {
+        "mode": "absolute_tolerance",
+        "partial_credit": false,
+        "unit": "min",
+        "absolute_tolerance": 0.01,
+        "inclusive": true,
+        "equivalent_answers": "同一数值的等价格式可接受；单位换算后须满足指定单位与误差。",
+        "input_contract": "数值框使用题干指定单位；不接收表达式。未来接入时须实现有限数校验及显式单位换算，不隐式猜测单位。"
+      },
+      "explanation": "时间=2.4÷40小时=0.06小时；乘60得到3.6分钟。40千米/小时是本题假设的平均行驶速率，不是设计速度或限速。",
+      "option_feedback": {},
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S22",
+          "section": "2.2 Speed，平均速度与距离/时间关系",
+          "support": "给定速率时由路程/速率求时间。"
+        },
+        {
+          "source_id": "S14",
+          "section": "Cost attributes",
+          "support": "时间可作为路线成本。"
+        }
+      ],
+      "calculation": {
+        "operation": "travel_time",
+        "inputs": {
+          "segments": [
+            [
+              2.4,
+              40
+            ]
+          ],
+          "delay_min": 0
+        },
+        "expected": 3.6,
+        "unit": "min",
+        "manual_derivation": "2.4/40×60=3.6 min。"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "速率为假设的平均行驶速率；单位小时转分钟。"
+      },
+      "points": null
+    },
+    {
+      "id": "L04-P03",
+      "chapter_id": "L04",
+      "category": "practice",
+      "type": "numeric",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-003",
+        "name": "时间阻抗模型的构建与计算规则"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "分段计算并累计时间",
+      "required_teaching_card": "L04",
+      "stem": "教学假设：连续两段路分别长0.8千米、1.2千米，平均行驶速率分别为20、40千米/小时。两段都必须走，不计等待或转向延误。总耗时多少分钟？允许误差±0.01分钟。",
+      "options": [],
+      "answer": {
+        "value": 4.2,
+        "unit": "min",
+        "tolerance": 0.01
+      },
+      "grading_rule": {
+        "mode": "absolute_tolerance",
+        "partial_credit": false,
+        "unit": "min",
+        "absolute_tolerance": 0.01,
+        "inclusive": true,
+        "equivalent_answers": "同一数值的等价格式可接受；单位换算后须满足指定单位与误差。",
+        "input_contract": "数值框使用题干指定单位；不接收表达式。未来接入时须实现有限数校验及显式单位换算，不隐式猜测单位。"
+      },
+      "explanation": "分别计算：0.8÷20×60=2.4分钟，1.2÷40×60=1.8分钟；合计4.2分钟。不能把不同路段速度直接相加后除总路程。",
+      "option_feedback": {},
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S22",
+          "section": "2.2 Speed，平均速度与距离/时间关系",
+          "support": "按每段路程和给定速率求时间。"
+        },
+        {
+          "source_id": "S14",
+          "section": "Cost attributes",
+          "support": "沿路线累加同单位成本。"
+        }
+      ],
+      "calculation": {
+        "operation": "travel_time",
+        "inputs": {
+          "segments": [
+            [
+              0.8,
+              20
+            ],
+            [
+              1.2,
+              40
+            ]
+          ],
+          "delay_min": 0
+        },
+        "expected": 4.2,
+        "unit": "min",
+        "manual_derivation": "0.8/20×60+1.2/40×60=2.4+1.8=4.2 min。"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "分段耗时相加，不用未加权平均速率代替。"
+      },
+      "points": null
+    },
+    {
+      "id": "L04-P04",
+      "chapter_id": "L04",
+      "category": "practice",
+      "type": "true_false",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-001",
+        "name": "路网网络分析的核心逻辑：阻抗成本模型"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "理解长度和时间目标可有不同结果",
+      "required_teaching_card": "L04",
+      "stem": "即使所有路线都合法，路程最短的路线也不一定是行程时间最少的路线。",
+      "options": [],
+      "answer": true,
+      "grading_rule": {
+        "mode": "boolean",
+        "partial_credit": false
+      },
+      "explanation": "正确。不同道路的速度或延误可能不同；距离成本和时间成本不是同一目标。两种目标也可能恰好选中同一路线，不能反过来说一定不同。",
+      "option_feedback": {},
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S14",
+          "section": "Cost attributes",
+          "support": "不同成本属性对应不同最优目标。"
+        },
+        {
+          "source_id": "S13",
+          "section": "Shortest path (point to point) / Strategy、Direction、Speed",
+          "support": "提供最短与最快两种策略。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "不一定最快，未写成必然不同。"
+      },
+      "points": null
+    },
+    {
+      "id": "L04-E01",
+      "chapter_id": "L04",
+      "category": "exam",
+      "type": "numeric",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-003",
+        "name": "时间阻抗模型的构建与计算规则"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "把固定延误加入行程时间",
+      "required_teaching_card": "L04",
+      "stem": "教学假设：唯一指定路线含1.5千米和1.0千米两段路，平均行驶速率分别为30和20千米/小时；整条路线另有且仅有一次1.5分钟等待。不计其他延误。总时间多少分钟？允许误差±0.01分钟。",
+      "options": [],
+      "answer": {
+        "value": 7.5,
+        "unit": "min",
+        "tolerance": 0.01
+      },
+      "grading_rule": {
+        "mode": "absolute_tolerance",
+        "partial_credit": false,
+        "unit": "min",
+        "absolute_tolerance": 0.01,
+        "inclusive": true,
+        "equivalent_answers": "同一数值的等价格式可接受；单位换算后须满足指定单位与误差。",
+        "input_contract": "数值框使用题干指定单位；不接收表达式。未来接入时须实现有限数校验及显式单位换算，不隐式猜测单位。"
+      },
+      "explanation": "两段各需3分钟，再加一次1.5分钟等待，合计7.5分钟。等待已明确单列，既不能遗漏，也不能每段重复加入。",
+      "option_feedback": {},
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S22",
+          "section": "2.2 Speed，平均速度与距离/时间关系",
+          "support": "各段行驶时间由路程/速率计算。"
+        },
+        {
+          "source_id": "S16",
+          "section": "Restriction、Added cost、Scaled cost",
+          "support": "附加时间成本可与路段时间累加。"
+        }
+      ],
+      "calculation": {
+        "operation": "travel_time",
+        "inputs": {
+          "segments": [
+            [
+              1.5,
+              30
+            ],
+            [
+              1.0,
+              20
+            ]
+          ],
+          "delay_min": 1.5
+        },
+        "expected": 7.5,
+        "unit": "min",
+        "manual_derivation": "1.5/30×60+1/20×60+1.5=3+3+1.5=7.5 min。"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "一次等待只加一次；各段3分钟，合计7.5。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L04-E02",
+      "chapter_id": "L04",
+      "category": "exam",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-002",
+        "name": "距离阻抗模型的构建与计算规则"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "累计带单位的距离成本",
+      "required_teaching_card": "L04",
+      "stem": "教学路线依次经过三段道路，长度为600米、0.9千米、500米，均各经过一次。总路程是多少？",
+      "options": [
+        {
+          "id": "A",
+          "text": "1100.9米"
+        },
+        {
+          "id": "B",
+          "text": "2.0千米"
+        },
+        {
+          "id": "C",
+          "text": "1100.9千米"
+        },
+        {
+          "id": "D",
+          "text": "0.9千米"
+        }
+      ],
+      "answer": "B",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "统一为千米：0.6+0.9+0.5=2.0千米。不能把以米和千米记录的数值直接相加。",
+      "option_feedback": {
+        "A": "把不同单位的原始数字直接相加了。",
+        "B": "正确：统一单位后累计。",
+        "C": "既混加单位又错误解释为千米。",
+        "D": "只保留中间路段，漏算两段。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S14",
+          "section": "Cost attributes",
+          "support": "同一成本沿路线累加时须使用一致单位。"
+        }
+      ],
+      "calculation": {
+        "operation": "sum_m_to_km",
+        "inputs": {
+          "metres": [
+            600,
+            900,
+            500
+          ]
+        },
+        "expected": 2,
+        "unit": "km",
+        "manual_derivation": "600/1000+0.9+500/1000=2.0 km。"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "600/900/500米，合计2千米；选项B唯一。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L04-E03",
+      "chapter_id": "L04",
+      "category": "exam",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-003",
+        "name": "时间阻抗模型的构建与计算规则"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "比较路段构成不同的路线耗时",
+      "required_teaching_card": "L04",
+      "stem": "教学假设：只有两条合法候选路线。甲：3千米，平均速率30千米/小时；乙：4千米，平均速率60千米/小时。均不计其他延误。若目标是时间最少，应选哪条？",
+      "options": [
+        {
+          "id": "A",
+          "text": "甲，因为3小于4，无需算时间"
+        },
+        {
+          "id": "B",
+          "text": "两者都为3分钟"
+        },
+        {
+          "id": "C",
+          "text": "乙，但理由是路程更短"
+        },
+        {
+          "id": "D",
+          "text": "乙，甲6分钟而乙4分钟"
+        }
+      ],
+      "answer": "D",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "甲=3÷30×60=6分钟，乙=4÷60×60=4分钟。乙距离更长却时间更少，说明目标必须明确。",
+      "option_feedback": {
+        "A": "只比较了距离，忽略时间目标。",
+        "B": "两条时间均算错。",
+        "C": "路线选择对，但理由错：乙路程更长。",
+        "D": "正确：按题设时间成本比较。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S22",
+          "section": "2.2 Speed，平均速度与距离/时间关系",
+          "support": "给定平均速率可求旅行时间。"
+        },
+        {
+          "source_id": "S14",
+          "section": "Cost attributes",
+          "support": "按选定成本比较路线。"
+        }
+      ],
+      "calculation": {
+        "operation": "compare_trips",
+        "inputs": {
+          "trips": {
+            "甲": [
+              [
+                3,
+                30
+              ]
+            ],
+            "乙": [
+              [
+                4,
+                60
+              ]
+            ]
+          }
+        },
+        "expected": {
+          "甲": 6,
+          "乙": 4
+        },
+        "unit": "min",
+        "manual_derivation": "甲3/30×60=6；乙4/60×60=4；乙更快。",
+        "winner": "乙"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "甲6乙4；选项C虽选乙但错误理由，不是正确完整陈述。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L04-E04",
+      "chapter_id": "L04",
+      "category": "exam",
+      "type": "multiple",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-001",
+        "name": "路网网络分析的核心逻辑：阻抗成本模型"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "明确时间成本计算前提",
+      "required_teaching_card": "L04",
+      "stem": "对本课的“各段固定平均速率、总时间可加”教学模型，下列哪些做法正确？（多选）",
+      "options": [
+        {
+          "id": "A",
+          "text": "统一长度、速度和时间单位"
+        },
+        {
+          "id": "B",
+          "text": "区分已计入平均耗时的延误与另加的延误，避免重复累计"
+        },
+        {
+          "id": "C",
+          "text": "把道路限速无条件当作每次实际平均行驶速率"
+        },
+        {
+          "id": "D",
+          "text": "明确本题是否计入等待、转向等额外时间"
+        }
+      ],
+      "answer": [
+        "A",
+        "B",
+        "D"
+      ],
+      "grading_rule": {
+        "mode": "exact_set",
+        "order_matters": false,
+        "partial_credit": false,
+        "student_instruction": "选出所有正确选项；多选、漏选或错选均不得分。"
+      },
+      "explanation": "时间模型必须说明速度含义及延误范围。限速是约束，不保证车辆实际平均速率等于该值；本题库直接给定教学平均速率。",
+      "option_feedback": {
+        "A": "正确：否则数值不可直接运算。",
+        "B": "正确：同一延误不能算两次。",
+        "C": "错误：限速不等于实际平均行驶速率。",
+        "D": "正确：决定总成本包含哪些部分。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S22",
+          "section": "2.2 Speed，平均速度与距离/时间关系",
+          "support": "计算时间依赖给定平均速率及单位。"
+        },
+        {
+          "source_id": "S14",
+          "section": "Cost attributes",
+          "support": "成本必须具有明确含义。"
+        },
+        {
+          "source_id": "S23",
+          "section": "Design speed / operating speed / posted speed",
+          "support": "设计速度、限速与运行速度概念不同；不用于国内法规判断。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "避开M3-021和M3-024中速度概念混用，见ERR-05、ERR-06。",
+        "specific_check": "单位、延误范围、速度含义明确；不作为国内限速法规题。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L04-E05",
+      "chapter_id": "L04",
+      "category": "exam",
+      "type": "true_false",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M1-012",
+        "name": "加权路网图模型的权重定义逻辑"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "区分同单位成本和不同量纲",
+      "required_teaching_card": "L04",
+      "stem": "若未定义任何综合评分公式，就可以把“2千米+3分钟”直接写成“总成本5分钟”。",
+      "options": [],
+      "answer": false,
+      "grading_rule": {
+        "mode": "boolean",
+        "partial_credit": false
+      },
+      "explanation": "错误。距离和时间量纲不同，不能直接相加并当成分钟。若要建立综合评分，必须另行定义换算、权重和解释；本课不考该扩展模型。",
+      "option_feedback": {},
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S14",
+          "section": "Cost attributes",
+          "support": "距离与时间成本具有各自单位和意义。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "不同量纲不可无公式混加；综合评分不在本轮考查。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L05-P01",
+      "chapter_id": "L05",
+      "category": "practice",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-006",
+        "name": "Dijkstra最短路径算法原理与路网适配"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "明确Dijkstra的非负权前提",
+      "required_teaching_card": "L05",
+      "stem": "本课用标准Dijkstra求固定边权的最短路径。下列哪项符合本课要求的边权条件？",
+      "options": [
+        {
+          "id": "A",
+          "text": "边权可以任意为负，不需要额外检查"
+        },
+        {
+          "id": "B",
+          "text": "只要求起点第一条边为正"
+        },
+        {
+          "id": "C",
+          "text": "所有可通行边权都非负，允许为0"
+        },
+        {
+          "id": "D",
+          "text": "所有边权必须互不相同"
+        }
+      ],
+      "answer": "C",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "标准Dijkstra的正确性依赖非负边权，不要求权重互异，也不排除0。负权情形不能直接沿用本课算法保证。",
+      "option_feedback": {
+        "A": "负权不满足本课前提。",
+        "B": "须检查全部可通行边，不能只看起点。",
+        "C": "正确：非负包括0。",
+        "D": "相同权重可以存在。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S18",
+          "section": "Dijkstra’s algorithm",
+          "support": "直接说明非负边权条件。"
+        },
+        {
+          "source_id": "S21",
+          "section": "第1–2页：invariant、minimum frontier distance",
+          "support": "以正权情形的最小暂定距离不变量交叉核对；零权范围以S18为准。"
+        },
+        {
+          "source_id": "S27",
+          "section": "第1页 Non-negative Edge Weights；第2–4页算法与正确性",
+          "support": "独立核对非负权下最小累计暂定值、松弛和确定节点的含义。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "M4-006须先补充非负权前提，见ERR-02及L05讲解卡。",
+        "specific_check": "非负允许0，负权不可直接套用；Cornell仅交叉核对正权部分。"
+      },
+      "points": null
+    },
+    {
+      "id": "L05-P02",
+      "chapter_id": "L05",
+      "category": "practice",
+      "type": "numeric",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-006",
+        "name": "Dijkstra最短路径算法原理与路网适配"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "完成一次松弛更新",
+      "required_teaching_card": "L05",
+      "stem": "教学Dijkstra过程：节点B当前暂定成本为8分钟；已确定节点C的成本为3分钟，C→B边成本为2分钟。经C更新B后，B的暂定成本是多少分钟？其余条件不变。允许误差±0.001分钟。",
+      "options": [],
+      "answer": {
+        "value": 5,
+        "unit": "min",
+        "tolerance": 0.001
+      },
+      "grading_rule": {
+        "mode": "absolute_tolerance",
+        "partial_credit": false,
+        "unit": "min",
+        "absolute_tolerance": 0.001,
+        "inclusive": true,
+        "equivalent_answers": "同一数值的等价格式可接受；单位换算后须满足指定单位与误差。",
+        "input_contract": "数值框使用题干指定单位；不接收表达式。未来接入时须实现有限数校验及显式单位换算，不隐式猜测单位。"
+      },
+      "explanation": "新候选成本=3+2=5分钟，小于旧值8，所以更新为5。这只是一次暂定值更新，不据此声称所有节点已经确定。",
+      "option_feedback": {},
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S18",
+          "section": "Dijkstra’s algorithm",
+          "support": "松弛比较旧暂定值与经已确定节点的新累计值。"
+        },
+        {
+          "source_id": "S21",
+          "section": "第1–2页：invariant、minimum frontier distance",
+          "support": "更新暂定成本并保持最短路不变量。"
+        },
+        {
+          "source_id": "S27",
+          "section": "第1页 Non-negative Edge Weights；第2–4页算法与正确性",
+          "support": "独立核对非负权下最小累计暂定值、松弛和确定节点的含义。"
+        }
+      ],
+      "calculation": {
+        "operation": "relax",
+        "inputs": {
+          "old": 8,
+          "settled": 3,
+          "edge": 2
+        },
+        "expected": 5,
+        "unit": "min",
+        "manual_derivation": "min(8,3+2)=5 min。"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "min(旧值8,候选5)=5；暂定不等同全部节点确定。"
+      },
+      "points": null
+    },
+    {
+      "id": "L05-P03",
+      "chapter_id": "L05",
+      "category": "practice",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-006",
+        "name": "Dijkstra最短路径算法原理与路网适配"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "根据累计暂定成本选择节点",
+      "required_teaching_card": "L05",
+      "stem": "某次Dijkstra迭代中，尚未确定且可达的候选节点U、V、W的累计暂定成本依次为4、7、12分钟，且这是全部候选。下一步应确定哪个节点？",
+      "options": [
+        {
+          "id": "A",
+          "text": "U"
+        },
+        {
+          "id": "B",
+          "text": "V"
+        },
+        {
+          "id": "C",
+          "text": "W"
+        },
+        {
+          "id": "D",
+          "text": "按节点名字倒序选，与成本无关"
+        }
+      ],
+      "answer": "A",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "选择累计暂定成本最小的U；不是按某条单独出边的长度或节点名称决定。",
+      "option_feedback": {
+        "A": "正确：4是最小的累计暂定成本。",
+        "B": "7大于4。",
+        "C": "12大于4。",
+        "D": "排序名称不符合该算法的选点依据。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S18",
+          "section": "Dijkstra’s algorithm",
+          "support": "每步选累计暂定成本最小的未确定节点。"
+        },
+        {
+          "source_id": "S21",
+          "section": "第1–2页：invariant、minimum frontier distance",
+          "support": "最小frontier距离节点可被确定。"
+        },
+        {
+          "source_id": "S27",
+          "section": "第1页 Non-negative Edge Weights；第2–4页算法与正确性",
+          "support": "独立核对非负权下最小累计暂定值、松弛和确定节点的含义。"
+        }
+      ],
+      "calculation": {
+        "operation": "minimum",
+        "inputs": {
+          "values": {
+            "U": 4,
+            "V": 7,
+            "W": 12
+          }
+        },
+        "expected": 4,
+        "unit": "min",
+        "manual_derivation": "min(4,7,12)=4，对应U。",
+        "winner": "U"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "累计候选4/7/12，无平局；选U。"
+      },
+      "points": null
+    },
+    {
+      "id": "L05-P04",
+      "chapter_id": "L05",
+      "category": "practice",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-001",
+        "name": "路网网络分析的核心逻辑：阻抗成本模型"
+      },
+      "auxiliary_knowledge_points": [
+        {
+          "id": "M4-002",
+          "name": "距离阻抗模型的构建与计算规则"
+        },
+        {
+          "id": "M4-003",
+          "name": "时间阻抗模型的构建与计算规则"
+        }
+      ],
+      "learning_objective": "按目标比较候选路线",
+      "required_teaching_card": "L05",
+      "stem": "教学假设：从S到T只有甲、乙两条合法候选路线。甲全程4千米、10分钟；乙全程6千米、4分钟。若分别求距离最短和时间最少，应如何选择？",
+      "options": [
+        {
+          "id": "A",
+          "text": "两种目标都选甲"
+        },
+        {
+          "id": "B",
+          "text": "距离最短选乙，时间最少选甲"
+        },
+        {
+          "id": "C",
+          "text": "两种目标都选乙"
+        },
+        {
+          "id": "D",
+          "text": "距离最短选甲，时间最少选乙"
+        }
+      ],
+      "answer": "D",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "长度比较4<6，时间比较4<10。最短路径中的“短”是相对于所选成本而言，软件策略必须与目标一致。",
+      "option_feedback": {
+        "A": "甲距离短，但不是最快。",
+        "B": "把两个目标的答案颠倒了。",
+        "C": "乙最快，但不是距离最短。",
+        "D": "正确：分别比较两列成本。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S14",
+          "section": "Cost attributes",
+          "support": "不同成本属性决定不同路线目标。"
+        },
+        {
+          "source_id": "S13",
+          "section": "Shortest path (point to point) / Strategy、Direction、Speed",
+          "support": "最短与最快策略不同。"
+        }
+      ],
+      "calculation": {
+        "operation": "scenario_minima",
+        "inputs": {
+          "scenarios": {
+            "distance_km": {
+              "甲": 4,
+              "乙": 6
+            },
+            "time_min": {
+              "甲": 10,
+              "乙": 4
+            }
+          }
+        },
+        "expected": {
+          "distance_km": [
+            "甲"
+          ],
+          "time_min": [
+            "乙"
+          ]
+        },
+        "unit": "mixed",
+        "manual_derivation": "距离min(4,6)=4选甲；时间min(10,4)=4选乙。"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "分别比较距离列和时间列，无量纲混加。"
+      },
+      "points": null
+    },
+    {
+      "id": "L05-E01",
+      "chapter_id": "L05",
+      "category": "exam",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-006",
+        "name": "Dijkstra最短路径算法原理与路网适配"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "用固定非负边权求最短路径",
+      "required_teaching_card": "L05",
+      "stem": "教学有向路网仅有下列边，括号内为分钟：S→A(2)、S→B(5)、A→B(1)、A→T(7)、B→T(2)。不计其他延误，目标为时间最少。应选哪项？",
+      "options": [
+        {
+          "id": "A",
+          "text": "S→A→T，9分钟"
+        },
+        {
+          "id": "B",
+          "text": "S→A→B→T，5分钟"
+        },
+        {
+          "id": "C",
+          "text": "S→B→T，7分钟"
+        },
+        {
+          "id": "D",
+          "text": "S→T，1分钟"
+        }
+      ],
+      "answer": "B",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "三条合法简单路线分别为9、5、7分钟，最优为S→A→B→T的5分钟。它经过更多边，却累计成本更小；图中没有S→T直达边。",
+      "option_feedback": {
+        "A": "路线合法且9分钟计算正确，但不是最优。",
+        "B": "正确：2+1+2=5分钟，小于9和7。",
+        "C": "路线合法且7分钟计算正确，但不是最优。",
+        "D": "不存在S→T边，1分钟也无依据。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S18",
+          "section": "Dijkstra’s algorithm",
+          "support": "非负权累计最短路径。"
+        },
+        {
+          "source_id": "S19",
+          "section": "Parameters / Returns / Notes",
+          "support": "路线成本是边权之和。"
+        }
+      ],
+      "calculation": {
+        "operation": "route",
+        "inputs": {
+          "edges": [
+            [
+              "S",
+              "A",
+              2
+            ],
+            [
+              "S",
+              "B",
+              5
+            ],
+            [
+              "A",
+              "B",
+              1
+            ],
+            [
+              "A",
+              "T",
+              7
+            ],
+            [
+              "B",
+              "T",
+              2
+            ]
+          ],
+          "start": "S",
+          "end": "T",
+          "blocked": [],
+          "directed": true
+        },
+        "expected": 5,
+        "unit": "min",
+        "manual_derivation": "S-A-T=2+7=9；S-B-T=5+2=7；S-A-B-T=2+1+2=5；最小5 min。",
+        "optimal_paths": [
+          [
+            "S",
+            "A",
+            "B",
+            "T"
+          ]
+        ],
+        "convention": "箭头为单向；双向须列出两条有向边。未列出的边不存在。只比较无重复节点的路线；本例正权，无最优循环。",
+        "candidate_mode": "optimal",
+        "candidate_paths": {
+          "A": [
+            "S",
+            "A",
+            "T"
+          ],
+          "B": [
+            "S",
+            "A",
+            "B",
+            "T"
+          ],
+          "C": [
+            "S",
+            "B",
+            "T"
+          ],
+          "D": [
+            "S",
+            "T"
+          ]
+        },
+        "claimed_costs": {
+          "A": 9,
+          "B": 5,
+          "C": 7,
+          "D": 1
+        }
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "3条合法简单路线9/7/5；更少边不保证更低权。"
+      },
+      "points": 20,
+      "diagram_mermaid": "flowchart LR\n    S -->|\"2 min\"| A\n    S -->|\"5 min\"| B\n    A -->|\"1 min\"| B\n    A -->|\"7 min\"| T\n    B -->|\"2 min\"| T"
+    },
+    {
+      "id": "L05-E02",
+      "chapter_id": "L05",
+      "category": "exam",
+      "type": "multiple",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-006",
+        "name": "Dijkstra最短路径算法原理与路网适配"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "识别全部等成本最优路线",
+      "required_teaching_card": "L05",
+      "stem": "教学有向路网仅有S→A(2)、A→T(4)、S→B(3)、B→T(3)、S→T(8)，单位均为分钟。不计其他延误。下列哪些是时间最少的路线？（多选）",
+      "options": [
+        {
+          "id": "A",
+          "text": "S→A→T"
+        },
+        {
+          "id": "B",
+          "text": "S→B→T"
+        },
+        {
+          "id": "C",
+          "text": "S→T"
+        },
+        {
+          "id": "D",
+          "text": "S→A→B→T"
+        }
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "grading_rule": {
+        "mode": "exact_set",
+        "order_matters": false,
+        "partial_credit": false,
+        "student_instruction": "选出所有正确选项；多选、漏选或错选均不得分。"
+      },
+      "explanation": "经A为2+4=6分钟，经B为3+3=6分钟，直达为8分钟。存在两条等成本最优路线，两条都应接受；A→B边不存在。",
+      "option_feedback": {
+        "A": "正确：6分钟，为并列最优。",
+        "B": "正确：6分钟，为并列最优。",
+        "C": "错误：8分钟比6分钟多。",
+        "D": "错误：缺少A→B边。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S19",
+          "section": "Parameters / Returns / Notes",
+          "support": "按累计权重定义最短距离；最优可不唯一。"
+        },
+        {
+          "source_id": "S18",
+          "section": "Dijkstra’s algorithm",
+          "support": "非负权最短路径条件。"
+        }
+      ],
+      "calculation": {
+        "operation": "route",
+        "inputs": {
+          "edges": [
+            [
+              "S",
+              "A",
+              2
+            ],
+            [
+              "A",
+              "T",
+              4
+            ],
+            [
+              "S",
+              "B",
+              3
+            ],
+            [
+              "B",
+              "T",
+              3
+            ],
+            [
+              "S",
+              "T",
+              8
+            ]
+          ],
+          "start": "S",
+          "end": "T",
+          "blocked": [],
+          "directed": true
+        },
+        "expected": 6,
+        "unit": "min",
+        "manual_derivation": "经A=2+4=6；经B=3+3=6；直达=8；最小6，两条并列。",
+        "optimal_paths": [
+          [
+            "S",
+            "A",
+            "T"
+          ],
+          [
+            "S",
+            "B",
+            "T"
+          ]
+        ],
+        "convention": "箭头为单向；双向须列出两条有向边。未列出的边不存在。只比较无重复节点的路线；本例正权，无最优循环。",
+        "candidate_mode": "optimal",
+        "candidate_paths": {
+          "A": [
+            "S",
+            "A",
+            "T"
+          ],
+          "B": [
+            "S",
+            "B",
+            "T"
+          ],
+          "C": [
+            "S",
+            "T"
+          ],
+          "D": [
+            "S",
+            "A",
+            "B",
+            "T"
+          ]
+        }
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "两条6分钟最优全部接受；8分钟非最优；不存在A-B。"
+      },
+      "points": 20,
+      "diagram_mermaid": "flowchart LR\n    S -->|\"2 min\"| A\n    A -->|\"4 min\"| T\n    S -->|\"3 min\"| B\n    B -->|\"3 min\"| T\n    S -->|\"8 min\"| T"
+    },
+    {
+      "id": "L05-E03",
+      "chapter_id": "L05",
+      "category": "exam",
+      "type": "true_false",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-006",
+        "name": "Dijkstra最短路径算法原理与路网适配"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "区分首次发现与确定最优",
+      "required_teaching_card": "L05",
+      "stem": "教学有向图仅有S→T(10)、S→A(2)、A→T(2)，单位为分钟。Dijkstra首次从S发现T的暂定值10后，就能断言10分钟是最优答案。",
+      "options": [],
+      "answer": false,
+      "grading_rule": {
+        "mode": "boolean",
+        "partial_credit": false
+      },
+      "explanation": "错误。此时T只是被发现；经A的候选总成本2+2=4分钟更小。应在按最小暂定成本取出并确定终点时结束单目标查询。",
+      "option_feedback": {},
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S18",
+          "section": "Dijkstra’s algorithm",
+          "support": "发现节点与确定最短成本不同。"
+        },
+        {
+          "source_id": "S21",
+          "section": "第1–2页：invariant、minimum frontier distance",
+          "support": "按最小暂定成本确定节点的依据。"
+        },
+        {
+          "source_id": "S27",
+          "section": "第1页 Non-negative Edge Weights；第2–4页算法与正确性",
+          "support": "独立核对非负权下最小累计暂定值、松弛和确定节点的含义。"
+        }
+      ],
+      "calculation": {
+        "operation": "route",
+        "inputs": {
+          "edges": [
+            [
+              "S",
+              "T",
+              10
+            ],
+            [
+              "S",
+              "A",
+              2
+            ],
+            [
+              "A",
+              "T",
+              2
+            ]
+          ],
+          "start": "S",
+          "end": "T",
+          "blocked": [],
+          "directed": true
+        },
+        "expected": 4,
+        "unit": "min",
+        "manual_derivation": "直达10；S-A-T=2+2=4；首次发现10非最优。",
+        "optimal_paths": [
+          [
+            "S",
+            "A",
+            "T"
+          ]
+        ],
+        "convention": "箭头为单向；双向须列出两条有向边。未列出的边不存在。只比较无重复节点的路线；本例正权，无最优循环。"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "M4-006原文“到达终点”含混，见ERR-02。先讲L05短卡。",
+        "specific_check": "首次发现10仍可改善为4；没有以首次触及终点为停止条件。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L05-E04",
+      "chapter_id": "L05",
+      "category": "exam",
+      "type": "numeric",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-006",
+        "name": "Dijkstra最短路径算法原理与路网适配"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "候选路线更贵时保留旧暂定值",
+      "required_teaching_card": "L05",
+      "stem": "教学Dijkstra过程：尚未确定的节点X旧暂定成本6分钟；当前已确定节点Y的成本为4分钟，Y→X边成本为3分钟。此次松弛后X暂定成本是多少分钟？允许误差±0.001分钟。",
+      "options": [],
+      "answer": {
+        "value": 6,
+        "unit": "min",
+        "tolerance": 0.001
+      },
+      "grading_rule": {
+        "mode": "absolute_tolerance",
+        "partial_credit": false,
+        "unit": "min",
+        "absolute_tolerance": 0.001,
+        "inclusive": true,
+        "equivalent_answers": "同一数值的等价格式可接受；单位换算后须满足指定单位与误差。",
+        "input_contract": "数值框使用题干指定单位；不接收表达式。未来接入时须实现有限数校验及显式单位换算，不隐式猜测单位。"
+      },
+      "explanation": "新候选为4+3=7分钟，不优于原有6分钟，保留6。Y先以4分钟确定、X仍暂定为6分钟，符合选点次序；松弛不是每次都覆盖原值。",
+      "option_feedback": {},
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S18",
+          "section": "Dijkstra’s algorithm",
+          "support": "松弛保留较小累计暂定成本。"
+        },
+        {
+          "source_id": "S21",
+          "section": "第1–2页：invariant、minimum frontier distance",
+          "support": "暂定距离更新不变量。"
+        },
+        {
+          "source_id": "S27",
+          "section": "第1页 Non-negative Edge Weights；第2–4页算法与正确性",
+          "support": "独立核对非负权下最小累计暂定值、松弛和确定节点的含义。"
+        }
+      ],
+      "calculation": {
+        "operation": "relax",
+        "inputs": {
+          "old": 6,
+          "settled": 4,
+          "edge": 3
+        },
+        "expected": 6,
+        "unit": "min",
+        "manual_derivation": "min(6,4+3)=min(6,7)=6 min。"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "审查时将不自洽的旧草稿7+1改为4+3；Y为4先确定，X为6仍暂定，新候选7不改善，保持6。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L05-E05",
+      "chapter_id": "L05",
+      "category": "exam",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-006",
+        "name": "Dijkstra最短路径算法原理与路网适配"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "区分单目标和全部可达节点求解",
+      "required_teaching_card": "L05",
+      "stem": "在满足本课前提的Dijkstra计算中，终点T已按最小暂定成本被取出并确定。此时哪项说法正确？",
+      "options": [
+        {
+          "id": "A",
+          "text": "只求S到T时可以结束，但不能由此保证全部可达节点的最短成本都已确定"
+        },
+        {
+          "id": "B",
+          "text": "所有可达节点必然都已经确定"
+        },
+        {
+          "id": "C",
+          "text": "此时T仍必然不是最优，必须再重复走同一条边"
+        },
+        {
+          "id": "D",
+          "text": "只要曾经发现T，就与此处的“取出并确定”完全等价"
+        }
+      ],
+      "answer": "A",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "单目标查询可在目标被确定后结束；求全部可达节点须继续按算法处理其余可达候选。“首次发现”和“取出并确定”不能混同。",
+      "option_feedback": {
+        "A": "正确：区分查询输出范围。",
+        "B": "错误：可能尚有其他可达候选未确定。",
+        "C": "错误：题设已满足确定T最优的条件。",
+        "D": "错误：暂定值仍可能在确定前改善。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S19",
+          "section": "Parameters / Returns / Notes",
+          "support": "target不同导致单目标或全部可达节点输出。"
+        },
+        {
+          "source_id": "S21",
+          "section": "第1–2页：invariant、minimum frontier distance",
+          "support": "最小暂定距离确定节点的条件。"
+        },
+        {
+          "source_id": "S27",
+          "section": "第1页 Non-negative Edge Weights；第2–4页算法与正确性",
+          "support": "独立核对非负权下最小累计暂定值、松弛和确定节点的含义。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "对应ERR-02的输出范围勘误；本题不沿用原文“到终点就得到所有节点”的结论。",
+        "specific_check": "单目标确定后可停，全部可达输出仍须继续；补讲卡先行。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L06-P01",
+      "chapter_id": "L06",
+      "category": "practice",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-021",
+        "name": "早晚高峰路网阻抗动态更新机制"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "按指定时段成本选择路线",
+      "required_teaching_card": "L06",
+      "stem": "教学情景表（每次出行全程采用同一列固定成本）：甲路线平峰5分钟、高峰12分钟；乙路线平峰7分钟、高峰8分钟。两条均合法。高峰以时间最少为目标，应选哪条？",
+      "options": [
+        {
+          "id": "A",
+          "text": "甲，因为它平峰快"
+        },
+        {
+          "id": "B",
+          "text": "甲，因为5小于8"
+        },
+        {
+          "id": "C",
+          "text": "乙，高峰8分钟小于甲的12分钟"
+        },
+        {
+          "id": "D",
+          "text": "无法比较，因为分钟不能相加"
+        }
+      ],
+      "answer": "C",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "按高峰这一列比较12与8，选乙。不能将甲平峰值拿来与乙高峰值比较。本例是两张固定成本表，不模拟途中跨时段变化。",
+      "option_feedback": {
+        "A": "用错了本次情景。",
+        "B": "混用了不同时段的数值。",
+        "C": "正确：同一高峰情景内比较。",
+        "D": "这里各值都是同单位的全程耗时，可以比较。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S17",
+          "section": "Historical traffic profiles",
+          "support": "历史交通可按时段给出不同成本估计。"
+        },
+        {
+          "source_id": "S14",
+          "section": "Cost attributes",
+          "support": "同一目标下比较成本。"
+        }
+      ],
+      "calculation": {
+        "operation": "scenario_minima",
+        "inputs": {
+          "scenarios": {
+            "平峰": {
+              "甲": 5,
+              "乙": 7
+            },
+            "高峰": {
+              "甲": 12,
+              "乙": 8
+            }
+          }
+        },
+        "expected": {
+          "平峰": [
+            "甲"
+          ],
+          "高峰": [
+            "乙"
+          ]
+        },
+        "unit": "min",
+        "manual_derivation": "平峰min(5,7)=5选甲；高峰min(12,8)=8选乙。"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "全程使用同一固定情景列；12与8比较。"
+      },
+      "points": null
+    },
+    {
+      "id": "L06-P02",
+      "chapter_id": "L06",
+      "category": "practice",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-019",
+        "name": "路网禁行约束的路径筛选算法"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "将硬性封路排除于可行网络",
+      "required_teaching_card": "L06",
+      "stem": "题设明确某边在本次出行中“完全封闭，禁止本题车辆通行”。建模时最合适的处理是什么？",
+      "options": [
+        {
+          "id": "A",
+          "text": "把时间成本设为0，鼓励优先走"
+        },
+        {
+          "id": "B",
+          "text": "将该边标为不可用，或施加本次必须遵守的禁止限制"
+        },
+        {
+          "id": "C",
+          "text": "只把道路颜色改灰就一定生效"
+        },
+        {
+          "id": "D",
+          "text": "保持可通行，只在名称后加感叹号"
+        }
+      ],
+      "answer": "B",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "完全封路是可行性约束，应让路径计算不能使用该边。0表示零成本而非禁止；显示变化也不自动改变求解约束。",
+      "option_feedback": {
+        "A": "会把禁行误建成免费通行。",
+        "B": "正确：在求解规则中明确不可用。",
+        "C": "符号变灰不等于网络限制已设置。",
+        "D": "名称不会自动施加禁止规则。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S15",
+          "section": "Restriction usage、Parameters",
+          "support": "Prohibited限制不允许使用相应网络元素。"
+        },
+        {
+          "source_id": "S16",
+          "section": "Restriction、Added cost、Scaled cost",
+          "support": "Restriction barrier用于临时阻断。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "完全禁止与仅避免/增加成本分开；0不表示封闭。"
+      },
+      "points": null
+    },
+    {
+      "id": "L06-P03",
+      "chapter_id": "L06",
+      "category": "practice",
+      "type": "multiple",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-019",
+        "name": "路网禁行约束的路径筛选算法"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "按给定车辆阈值检查可行性",
+      "required_teaching_card": "L06",
+      "stem": "纯教学规则：隧道只允许车高不大于2.4米的车辆通行，其他道路规则均满足。下列哪些判断正确？（多选；这些数值不是现实道路法规）",
+      "options": [
+        {
+          "id": "A",
+          "text": "车高2.6米的车辆不得通过该隧道"
+        },
+        {
+          "id": "B",
+          "text": "车高1.8米的车辆满足本题高度条件"
+        },
+        {
+          "id": "C",
+          "text": "2.6米车辆只要走得慢，就自动解除高度禁止"
+        },
+        {
+          "id": "D",
+          "text": "未核对车高前，不能仅凭最短路程确认隧道可用"
+        }
+      ],
+      "answer": [
+        "A",
+        "B",
+        "D"
+      ],
+      "grading_rule": {
+        "mode": "exact_set",
+        "order_matters": false,
+        "partial_credit": false,
+        "student_instruction": "选出所有正确选项；多选、漏选或错选均不得分。"
+      },
+      "explanation": "2.6>2.4，不满足条件；1.8≤2.4，满足本题高度限制。降低速度不改变题设硬性高度条件。",
+      "option_feedback": {
+        "A": "正确：超过本题阈值。",
+        "B": "正确：低于本题阈值。",
+        "C": "错误：本题没有“低速例外”。",
+        "D": "正确：应先核实车辆参数及限制。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S15",
+          "section": "Restriction usage、Parameters",
+          "support": "参数化限制可结合车辆条件判定。"
+        }
+      ],
+      "calculation": {
+        "operation": "threshold",
+        "inputs": {
+          "limit": 2.4,
+          "heights": {
+            "高车": 2.6,
+            "小车": 1.8
+          }
+        },
+        "expected": {
+          "高车": false,
+          "小车": true
+        },
+        "unit": "m",
+        "manual_derivation": "2.6>2.4禁行；1.8≤2.4满足高度条件。"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "阈值纯教学，非真实法规；不大于条件及两车高明确。"
+      },
+      "points": null
+    },
+    {
+      "id": "L06-P04",
+      "chapter_id": "L06",
+      "category": "practice",
+      "type": "true_false",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M5-005",
+        "name": "动态GIS交通路网的定义与核心特征"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "理解历史交通估计的限度",
+      "required_teaching_card": "L06",
+      "stem": "历史数据给出的某时段典型耗时只是估计，不保证今天每一次出行都恰好等于该耗时。",
+      "options": [],
+      "answer": true,
+      "grading_rule": {
+        "mode": "boolean",
+        "partial_credit": false
+      },
+      "explanation": "正确。历史时段模型描述典型模式；事故、天气等会使实际状况偏离，不能把估计当作实时实测或保证值。",
+      "option_feedback": {},
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S17",
+          "section": "Historical traffic profiles",
+          "support": "历史交通使用时段速度模式估计成本。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "历史典型值非实测保证；判断为是。"
+      },
+      "points": null
+    },
+    {
+      "id": "L06-E01",
+      "chapter_id": "L06",
+      "category": "exam",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-019",
+        "name": "路网禁行约束的路径筛选算法"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "封路后重新选择可行路线",
+      "required_teaching_card": "L06",
+      "stem": "教学有向图仅有S→A(2)、A→T(2)、S→B(3)、B→T(3)，单位分钟；本次A→T完全封闭，其他边可用且成本固定。时间最少的可行路线是哪项？",
+      "options": [
+        {
+          "id": "A",
+          "text": "S→A→T，4分钟"
+        },
+        {
+          "id": "B",
+          "text": "S→A→T，2分钟，把封闭边当0"
+        },
+        {
+          "id": "C",
+          "text": "从S出发后永远无路可走"
+        },
+        {
+          "id": "D",
+          "text": "S→B→T，6分钟"
+        }
+      ],
+      "answer": "D",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "A→T禁止使用，经A方案失效；经B仍可用，3+3=6分钟。可用边中没有其他S至T路线。",
+      "option_feedback": {
+        "A": "使用了封闭边。",
+        "B": "把禁止误作0成本，仍不合法。",
+        "C": "忽略了经B的可行路线。",
+        "D": "正确：排除封路后重算。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S16",
+          "section": "Restriction、Added cost、Scaled cost",
+          "support": "禁止障碍阻断对应网络元素。"
+        },
+        {
+          "source_id": "S19",
+          "section": "Parameters / Returns / Notes",
+          "support": "最短路在可用边上累计成本。"
+        }
+      ],
+      "calculation": {
+        "operation": "route",
+        "inputs": {
+          "edges": [
+            [
+              "S",
+              "A",
+              2
+            ],
+            [
+              "A",
+              "T",
+              2
+            ],
+            [
+              "S",
+              "B",
+              3
+            ],
+            [
+              "B",
+              "T",
+              3
+            ]
+          ],
+          "start": "S",
+          "end": "T",
+          "blocked": [
+            [
+              "A",
+              "T"
+            ]
+          ],
+          "directed": true
+        },
+        "expected": 6,
+        "unit": "min",
+        "manual_derivation": "排除A→T；仅S-B-T可行，3+3=6 min。",
+        "optimal_paths": [
+          [
+            "S",
+            "B",
+            "T"
+          ]
+        ],
+        "convention": "箭头为单向；双向须列出两条有向边。未列出的边不存在。只比较无重复节点的路线；本例正权，无最优循环。",
+        "candidate_mode": "optimal",
+        "candidate_paths": {
+          "A": [
+            "S",
+            "A",
+            "T"
+          ],
+          "B": [
+            "S",
+            "A",
+            "T"
+          ],
+          "C": null,
+          "D": [
+            "S",
+            "B",
+            "T"
+          ]
+        },
+        "claimed_costs": {
+          "A": 4,
+          "B": 2,
+          "D": 6
+        }
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "排除A-T；经B为6；不会把封闭边当0。"
+      },
+      "points": 20,
+      "diagram_mermaid": "flowchart LR\n    S -->|\"2 min\"| A\n    A -->|\"2 min（封闭）\"| T\n    S -->|\"3 min\"| B\n    B -->|\"3 min\"| T"
+    },
+    {
+      "id": "L06-E02",
+      "chapter_id": "L06",
+      "category": "exam",
+      "type": "numeric",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-021",
+        "name": "早晚高峰路网阻抗动态更新机制"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "应用时间倍率并保留其他路段成本",
+      "required_teaching_card": "L06",
+      "stem": "教学固定高峰情景：指定路线第一段原耗时4分钟，高峰只把这一段耗时乘1.5；第二段仍为3分钟。两段必须连续经过一次，不计其他延误。高峰总耗时多少分钟？允许误差±0.01分钟。",
+      "options": [],
+      "answer": {
+        "value": 9,
+        "unit": "min",
+        "tolerance": 0.01
+      },
+      "grading_rule": {
+        "mode": "absolute_tolerance",
+        "partial_credit": false,
+        "unit": "min",
+        "absolute_tolerance": 0.01,
+        "inclusive": true,
+        "equivalent_answers": "同一数值的等价格式可接受；单位换算后须满足指定单位与误差。",
+        "input_contract": "数值框使用题干指定单位；不接收表达式。未来接入时须实现有限数校验及显式单位换算，不隐式猜测单位。"
+      },
+      "explanation": "只对指定路段应用倍率：4×1.5+3=9分钟。不是把整条路线都乘1.5，也不是给4直接加1.5。",
+      "option_feedback": {},
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S16",
+          "section": "Restriction、Added cost、Scaled cost",
+          "support": "Scaled cost可按倍率调整受影响成本。"
+        },
+        {
+          "source_id": "S17",
+          "section": "Historical traffic profiles",
+          "support": "不同路段可有不同的时段耗时。"
+        }
+      ],
+      "calculation": {
+        "operation": "scaled_sum",
+        "inputs": {
+          "base": 4,
+          "factor": 1.5,
+          "other": 3
+        },
+        "expected": 9,
+        "unit": "min",
+        "manual_derivation": "4×1.5+3=6+3=9 min。"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "仅第一段乘1.5，第二段固定3；总9。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L06-E03",
+      "chapter_id": "L06",
+      "category": "exam",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-019",
+        "name": "路网禁行约束的路径筛选算法"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "识别约束下的不可达结果",
+      "required_teaching_card": "L06",
+      "stem": "教学有向网络只有S→A、A→T两条边；本次A→T完全封闭，未给任何替代道路。应报告什么？",
+      "options": [
+        {
+          "id": "A",
+          "text": "在本题网络和约束下，S到T不可达"
+        },
+        {
+          "id": "B",
+          "text": "自动虚构一条S→T直达路"
+        },
+        {
+          "id": "C",
+          "text": "把封路成本写成0后继续给出路线"
+        },
+        {
+          "id": "D",
+          "text": "忽略封路，总能算出合法路线"
+        }
+      ],
+      "answer": "A",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "禁止边不能使用，且没有替代连接，应明确报告不可达。这个结论限定于题给网络，不声称现实世界绝无其他道路。",
+      "option_feedback": {
+        "A": "正确：约束下不存在可行路线。",
+        "B": "题设之外的边不能自行增加。",
+        "C": "0成本不表达封闭。",
+        "D": "忽略约束得不到本题合法结果。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S15",
+          "section": "Restriction usage、Parameters",
+          "support": "硬性限制排除对应通行。"
+        },
+        {
+          "source_id": "S16",
+          "section": "Restriction、Added cost、Scaled cost",
+          "support": "封闭可切断可达性。"
+        }
+      ],
+      "calculation": {
+        "operation": "route",
+        "inputs": {
+          "edges": [
+            [
+              "S",
+              "A",
+              1
+            ],
+            [
+              "A",
+              "T",
+              1
+            ]
+          ],
+          "start": "S",
+          "end": "T",
+          "blocked": [
+            [
+              "A",
+              "T"
+            ]
+          ],
+          "directed": true
+        },
+        "expected": null,
+        "unit": "cost",
+        "manual_derivation": "排除A→T后仅有S→A，不能到T。",
+        "optimal_paths": [],
+        "convention": "箭头为单向；双向须列出两条有向边。未列出的边不存在。只比较无重复节点的路线；本例正权，无最优循环。"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "封路后不可达，不以虚构道路凑路线。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L06-E04",
+      "chapter_id": "L06",
+      "category": "exam",
+      "type": "multiple",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-020",
+        "name": "时间依赖型动态路网算法原理"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "正确解读固定情景比较及变化",
+      "required_teaching_card": "L06",
+      "stem": "本题库把平峰、高峰各看作一张全程成本固定的情景表。以下哪些说法正确？（多选）",
+      "options": [
+        {
+          "id": "A",
+          "text": "每次比较应使用同一情景列的成本"
+        },
+        {
+          "id": "B",
+          "text": "某路段拥堵后，最优路线必然改变"
+        },
+        {
+          "id": "C",
+          "text": "封路会改变可行路线集合，不只是改变显示颜色"
+        },
+        {
+          "id": "D",
+          "text": "这种简化比较不等于已经实现途中跨时段变化的完整时变路由算法"
+        }
+      ],
+      "answer": [
+        "A",
+        "C",
+        "D"
+      ],
+      "grading_rule": {
+        "mode": "exact_set",
+        "order_matters": false,
+        "partial_credit": false,
+        "student_instruction": "选出所有正确选项；多选、漏选或错选均不得分。"
+      },
+      "explanation": "情景比较要保持时间条件一致；硬约束会影响可行性；成本虽变，原路线仍可能比其他路线便宜。本题只检查已讲的简化模型边界。",
+      "option_feedback": {
+        "A": "正确：不能随意拼接不同时段的全程值。",
+        "B": "错误：成本增加后仍可能保持最优。",
+        "C": "正确：禁止使用会排除含该边的路线。",
+        "D": "正确：本课未实现途中随时刻变化的求解。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S17",
+          "section": "Historical traffic profiles",
+          "support": "历史交通按时段描述变化，实际时变建模另需时间处理。"
+        },
+        {
+          "source_id": "S15",
+          "section": "Restriction usage、Parameters",
+          "support": "禁止限制改变可行通行。"
+        }
+      ],
+      "calculation": null,
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "M4-020只取“时间条件影响成本”入门子目标；不考尚未讲解的完整时变算法。",
+        "specific_check": "区分情景快照与途中时变算法；拥堵不保证换路。"
+      },
+      "points": 20
+    },
+    {
+      "id": "L06-E05",
+      "chapter_id": "L06",
+      "category": "exam",
+      "type": "single",
+      "origin": "原创教学题",
+      "data_origin": "所有自拟道路、数字、时间、车辆阈值均为教学假设，不是真实调查数据或法规数值。",
+      "main_knowledge_point": {
+        "id": "M4-021",
+        "name": "早晚高峰路网阻抗动态更新机制"
+      },
+      "auxiliary_knowledge_points": [],
+      "learning_objective": "判断成本增加后原路线能否仍最优",
+      "required_teaching_card": "L06",
+      "stem": "教学固定情景中只有两条合法候选路线：甲原为5分钟，因局部拥堵全程另加1分钟；乙仍为8分钟。没有封路或其他延误。更新后应选哪条时间最少路线？",
+      "options": [
+        {
+          "id": "A",
+          "text": "乙，因为只要拥堵就必须换路"
+        },
+        {
+          "id": "B",
+          "text": "两条都为8分钟"
+        },
+        {
+          "id": "C",
+          "text": "甲，更新后6分钟仍小于8分钟"
+        },
+        {
+          "id": "D",
+          "text": "甲，但仍按5分钟报告"
+        }
+      ],
+      "answer": "C",
+      "grading_rule": {
+        "mode": "exact_option",
+        "partial_credit": false
+      },
+      "explanation": "甲更新为5+1=6分钟，仍小于乙8分钟。应更新并比较成本，既不能机械换路，也不能保留过时耗时。",
+      "option_feedback": {
+        "A": "成本增加不必然改变最优路线。",
+        "B": "甲是6分钟，不是8分钟。",
+        "C": "正确：更新后甲仍最优。",
+        "D": "路线选择虽对，但耗时未更新。"
+      },
+      "assumptions": "按题干限定的表示方式和分析目标作答，不外推到所有GIS场景。",
+      "evidence": [
+        {
+          "source_id": "S14",
+          "section": "Cost attributes",
+          "support": "按更新后的成本比较。"
+        },
+        {
+          "source_id": "S17",
+          "section": "Historical traffic profiles",
+          "support": "时段条件会改变行程成本估计。"
+        }
+      ],
+      "calculation": {
+        "operation": "updated_comparison",
+        "inputs": {
+          "base": 5,
+          "added": 1,
+          "alternative": 8
+        },
+        "expected": {
+          "甲": 6,
+          "乙": 8
+        },
+        "unit": "min",
+        "manual_derivation": "甲5+1=6；乙8；6<8，选甲。",
+        "winner": "甲"
+      },
+      "review": {
+        "fact": "本轮作者核查完成",
+        "item": "本轮作者歧义审查完成",
+        "answer": "本轮作者逐项核对完成；含计算者另有程序复核",
+        "external_expert_review": "未进行",
+        "release": "仅供教师审阅",
+        "alignment_note": "只考已核实的限定结论；先讲本关短卡。",
+        "specific_check": "先更新甲为6再与8比较；选择不变但耗时变。"
+      },
+      "points": 20
+    }
+  ],
+  "sources": [
+    {
+      "id": "S01",
+      "title": "QGIS：Introducing GIS",
+      "url": "https://docs.qgis.org/3.44/en/docs/gentle_gis_introduction/introducing_gis.html",
+      "version_or_date": "QGIS 3.44",
+      "section": "2.1–2.2",
+      "supports": "GIS组织、分析和呈现空间信息；软件是GIS的工具。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S02",
+      "title": "QGIS：Vector Data",
+      "url": "https://docs.qgis.org/3.44/en/docs/gentle_gis_introduction/vector_data.html",
+      "version_or_date": "QGIS 3.44",
+      "section": "3.1、3.2、3.5",
+      "supports": "点线面是矢量几何类型；表示随尺度、目的而变；要素还具有属性。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S03",
+      "title": "QGIS：Raster Data",
+      "url": "https://docs.qgis.org/3.44/en/docs/gentle_gis_introduction/raster_data.html",
+      "version_or_date": "QGIS 3.44",
+      "section": "6.1–6.2",
+      "supports": "栅格按行列组织像元，可表示影像和连续表面。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S04",
+      "title": "QGIS：Working with the Attribute Table",
+      "url": "https://docs.qgis.org/3.44/en/docs/user_manual/working_with_vector/attribute_table.html",
+      "version_or_date": "QGIS 3.44",
+      "section": "12.2 开头与属性表说明",
+      "supports": "对矢量要素图层，行对应要素，列对应字段；属性不等于符号样式。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S05",
+      "title": "QGIS：Working with Projections",
+      "url": "https://docs.qgis.org/3.44/en/docs/user_manual/working_with_projections/working_with_projections.html",
+      "version_or_date": "QGIS 3.44",
+      "section": "6.2 Layer CRS、6.3 Project CRS",
+      "supports": "指定CRS用于解释坐标；项目动态投影用于显示；两者不等同于重投影源几何。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S06",
+      "title": "Esri：Coordinate systems and projections",
+      "url": "https://doc.esri.com/en/arcgis-pro/latest/help/mapping/properties/coordinate-systems-and-projections.html",
+      "version_or_date": "ArcGIS Pro 在线文档，访问日版本",
+      "section": "Coordinate systems",
+      "supports": "地理坐标采用角度，投影坐标采用线性单位；识别CRS后才有空间解释。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S07",
+      "title": "PROJ：Cartographic projection / Units",
+      "url": "https://proj.org/en/stable/usage/projections.html",
+      "version_or_date": "PROJ 9.9.0 在线 stable",
+      "section": "Units",
+      "supports": "投影的线性单位并非一律为米，可有英尺等单位。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S08",
+      "title": "QGIS：2D Map View / Measuring",
+      "url": "https://docs.qgis.org/3.44/en/docs/user_manual/map_views/map_view.html#measuring",
+      "version_or_date": "QGIS 3.44",
+      "section": "7.1.8.1–7.1.8.2",
+      "supports": "椭球测量与平面测量应区分；不能单靠项目CRS推断距离计算方法。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S09",
+      "title": "QGIS：General Tools / Layers Panel",
+      "url": "https://docs.qgis.org/3.44/en/docs/user_manual/introduction/general_tools.html",
+      "version_or_date": "QGIS 3.44",
+      "section": "8.2.1 Layers Panel",
+      "supports": "图层面板组织图层，勾选控制显示；显示开关不是删除数据或网络禁行。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S10",
+      "title": "Esri：Network elements",
+      "url": "https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/network-elements.html",
+      "version_or_date": "ArcGIS Pro 在线文档，访问日版本",
+      "section": "Edges、Junctions、Turns",
+      "supports": "边、交汇节点和转向构成网络；连接和通行约束不同。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S11",
+      "title": "Esri：Understanding connectivity",
+      "url": "https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/understanding-connectivity.html",
+      "version_or_date": "ArcGIS Pro 在线文档，访问日版本",
+      "section": "Connectivity policies；Using elevation fields",
+      "supports": "几何交叉不自动意味着可转入；端点、顶点和高程规则决定建网连通。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S12",
+      "title": "Esri：Add Rule To Topology",
+      "url": "https://pro.arcgis.com/en/pro-app/3.4/tool-reference/data-management/add-rule-to-topology.htm",
+      "version_or_date": "ArcGIS Pro 3.4",
+      "section": "Must Not Have Dangles (Line)",
+      "supports": "禁止悬挂规则可对真实尽端路等作例外；不能机械删除所有悬挂端点。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S13",
+      "title": "QGIS：Network analysis",
+      "url": "https://docs.qgis.org/3.44/en/docs/user_manual/processing_algs/qgis/networkanalysis.html",
+      "version_or_date": "QGIS 3.44",
+      "section": "Shortest path (point to point) / Strategy、Direction、Speed",
+      "supports": "可选最短或最快策略；道路方向与速度由字段及设置解释；存在原生处理算法。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S14",
+      "title": "Esri：Cost attributes",
+      "url": "https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/cost-attributes.html",
+      "version_or_date": "ArcGIS Pro 在线文档，访问日版本",
+      "section": "Cost attributes",
+      "supports": "距离、时间等成本用于最优路线；累加前须统一量纲和含义。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S15",
+      "title": "Esri：Restriction attributes",
+      "url": "https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/restriction-attributes.html",
+      "version_or_date": "ArcGIS Pro 在线文档，访问日版本",
+      "section": "Restriction usage、Parameters",
+      "supports": "禁止通行不同于避免或偏好；约束可随车辆与出行方式而变。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S16",
+      "title": "Esri：Barriers",
+      "url": "https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/barriers.html",
+      "version_or_date": "ArcGIS Pro 在线文档，访问日版本",
+      "section": "Restriction、Added cost、Scaled cost",
+      "supports": "临时封路可用禁止障碍；额外成本或倍率成本有不同作用。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S17",
+      "title": "Esri：Historical traffic",
+      "url": "https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/historical-traffic.html",
+      "version_or_date": "ArcGIS Pro 在线文档，访问日版本",
+      "section": "Historical traffic profiles",
+      "supports": "历史交通按时段估计旅行速度/成本，不保证等于实时状态。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S18",
+      "title": "NetworkX：Dijkstra",
+      "url": "https://networkx.org/documentation/stable/reference/algorithms/shortest_paths/dijkstra.html",
+      "version_or_date": "NetworkX 3.7 在线 stable",
+      "section": "Dijkstra’s algorithm",
+      "supports": "非负边权；以累计暂定距离选择下一节点并松弛；单目标与全源输出不同。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S19",
+      "title": "NetworkX：single_source_dijkstra",
+      "url": "https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.shortest_paths.weighted.single_source_dijkstra.html",
+      "version_or_date": "NetworkX 3.7 在线 stable",
+      "section": "Parameters / Returns / Notes",
+      "supports": "target为空求全部可达节点，指定target求该目标；成本为边权之和。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S20",
+      "title": "NetworkX：DiGraph",
+      "url": "https://networkx.org/documentation/stable/reference/classes/digraph.html",
+      "version_or_date": "NetworkX 3.7 在线 stable",
+      "section": "Overview / Edges",
+      "supports": "有向边按方向连接节点；反向边不是自动存在。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S21",
+      "title": "Cornell CS2110：The shortest-path invariant",
+      "url": "https://www.cs.cornell.edu/courses/cs2110/2017sp/online/shortestPath/03shortestPathInv.pdf",
+      "version_or_date": "2017 春季课程，David Gries",
+      "section": "第1–2页：invariant、minimum frontier distance",
+      "supports": "在文中正权前提下，选择最小暂定距离并确定节点；用于独立交叉核对，不据此扩张负权条件。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S22",
+      "title": "OpenStax Physics：Speed and Velocity",
+      "url": "https://openstax.org/books/physics/pages/2-2-speed-and-velocity",
+      "version_or_date": "Physics 在线教材，访问日版本",
+      "section": "2.2 Speed，平均速度与距离/时间关系",
+      "supports": "给定平均速率时，时间=路程/速率；须统一单位。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S23",
+      "title": "FHWA：Relationship between Design Speed and Posted Speed",
+      "url": "https://www.fhwa.dot.gov/design/standards/151007.cfm",
+      "version_or_date": "2015-10-07 备忘录；页面更新2017-09-18",
+      "section": "Design speed / operating speed / posted speed",
+      "supports": "三类速度是不同概念。仅用作概念勘误，不据此制定中国道路法规题。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S24",
+      "title": "QGIS：Vector general / Reproject layer",
+      "url": "https://docs.qgis.org/3.44/en/docs/user_manual/processing_algs/qgis/vectorgeneral.html#reproject-layer",
+      "version_or_date": "QGIS 3.44",
+      "section": "24.1.25.1 Assign projection；24.1.25.16 Find projection；24.1.25.25 Reproject layer",
+      "supports": "指定投影保留原几何坐标；重投影执行坐标转换；查找投影仅给出候选。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S25",
+      "title": "OpenStax College Algebra 2e：Rectangular Coordinate Systems and Graphs",
+      "url": "https://openstax.org/books/college-algebra-2e/pages/2-1-the-rectangular-coordinate-systems-and-graphs",
+      "version_or_date": "College Algebra 2e 在线教材，访问日版本",
+      "section": "2.1 Using the Distance Formula",
+      "supports": "平面两点欧氏距离由坐标差的平方和开方得到。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S26",
+      "title": "Esri：Define Projection",
+      "url": "https://pro.arcgis.com/en/pro-app/3.3/tool-reference/data-management/define-projection.htm",
+      "version_or_date": "ArcGIS Pro 3.3",
+      "section": "Usage",
+      "supports": "只定义参考信息不修改几何；转换几何用Project。用于独立交叉核查，不作为QGIS菜单说明。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S27",
+      "title": "MIT 6.006：Lecture 13, Dijkstra’s Algorithm",
+      "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/d819e7f4568aced8d5b59e03db6c7b67_MIT6_006S20_lec13.pdf",
+      "version_or_date": "2020 春季课程",
+      "section": "第1页 Non-negative Edge Weights；第2–4页算法与正确性",
+      "supports": "非负边权含零；累计最小暂定值出队及松弛的原理。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S28",
+      "title": "QGIS：Topology Checker Plugin",
+      "url": "https://docs.qgis.org/3.44/en/docs/user_manual/plugins/core_plugins/plugins_topology_checker.html",
+      "version_or_date": "QGIS 3.44",
+      "section": "25.2.5 开头规则适用性说明；Line rules",
+      "supports": "规则依用途选择；真实尽端路不能仅因规则标记就删除。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "CN01",
+      "title": "交通运输部：《公路限速标志设计规范》解读",
+      "url": "https://xxgk.mot.gov.cn/jigou/glj/202007/t20200722_3436356.html",
+      "version_or_date": "2020-07-22；JTG/T 3381-02—2020的官方解读",
+      "section": "三、主要内容（一）及（二）至（四）",
+      "accessed": "2026-11-02",
+      "supports": "国内官方资料明确区分并协调设计速度、运行速度、标志限速和法定限速；此处仅作概念依据，不据旧公告断言所有标准目前状态或给出真实道路限速。"
+    }
+  ]
+}
