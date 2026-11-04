@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here.
 
+## [1.5.0] - 2026-11-04
+
+- feat: add six-stage GIS learning and chapter exams
+- feat: add six-stage GIS learning and chapter exams
+
 ## [1.4.0] - 2026-10-31
 
 - feat: refresh course atlas and integrate 2D Xiaodi
