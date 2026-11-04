@@ -78,3 +78,33 @@ test('practice network failure preserves the selection and allows resubmission',
   await page.getByRole('button', { name: '核对答案', exact: true }).click()
   await expect(page.getByText('回答正确', { exact: true })).toBeVisible()
 })
+
+test('a partial retake stays active after lesson review and reload', async ({ page }) => {
+  const qs = bank.questions.filter(q => q.chapter_id === 'L01')
+  const result = q => ({ question_id: q.id, correct: true,
+    submitted_answer: q.type === 'numeric' ? String(q.answer.value) : q.answer,
+    correct_answer: q.answer, explanation: q.explanation,
+    option_feedback: q.option_feedback, sources: [], main_knowledge_point: q.main_knowledge_point })
+  const practice = qs.filter(q => q.category === 'practice')
+  const saved = { version: '1.0.1', lastChapter: 'L01', chapters: { L01: {
+    learned: true, phase: 'result', bestScore: 100, examAnswers: {}, examInProgress: false,
+    practiceAnswers: Object.fromEntries(practice.map(q => [q.id, q.answer])),
+    practiceResults: Object.fromEntries(practice.map(q => [q.id, result(q)])),
+    lastExam: { chapter_id: 'L01', score: 100, total: 100, correct_count: 5, question_count: 5,
+      passed: true, results: qs.filter(q => q.category === 'exam').map(result) },
+  } } }
+  await page.addInitScript(value => {
+    if (!sessionStorage.getItem('test-progress-seeded')) {
+      localStorage.setItem('gis-learning-progress-v1', JSON.stringify(value))
+      sessionStorage.setItem('test-progress-seeded', 'yes')
+    }
+  }, saved)
+  await page.goto('/#learn')
+  await page.getByRole('button', { name: '重新考试', exact: true }).click()
+  await page.locator('#question-L01-E01 input[value="B"]').check()
+  await page.getByRole('button', { name: '知识讲解', exact: true }).click()
+  await page.reload()
+  await page.getByRole('button', { name: '章节考试', exact: true }).click()
+  await expect(page.locator('#question-L01-E01 input[value="B"]')).toBeChecked()
+  await expect(page.getByRole('button', { name: '交卷并查看解析' })).toBeVisible()
+})

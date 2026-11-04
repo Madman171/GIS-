@@ -121,7 +121,8 @@
 .result-actions { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; margin: 20px 0 28px; }
 .review-heading { margin-bottom: 20px !important; }
 .exam-review-question { background: var(--raised); border-radius: 8px; padding: 24px; margin-top: 20px; }
-.exam-review-question h3 { font-size: 16px; font-weight: 500; line-height: 1.9; margin: 0 0 16px; }
+.exam-review-question h3.question-caption { font-size: 12px; font-weight: 400; line-height: 1.7; margin: 0 0 16px; }
+.exam-review-question > p.review-question-stem { font-size: 16px; font-weight: 500; line-height: 1.9; margin: 0 0 16px; }
 .exam-review-question > p:not(.question-caption), .review-options { font-size: 14px; line-height: 1.9; }
 .review-options li + li { margin-top: 6px; }
 .learning-finish { font-size: 14px; line-height: 1.8; }

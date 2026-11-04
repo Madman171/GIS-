@@ -1,7 +1,7 @@
 export const PROGRESS_KEY = 'gis-learning-progress-v1'
 
 export function emptyChapter() {
-  return { learned: false, practiceAnswers: {}, practiceResults: {}, examAnswers: {}, bestScore: null, lastExam: null, phase: 'lesson' }
+  return { learned: false, practiceAnswers: {}, practiceResults: {}, examAnswers: {}, examInProgress: false, bestScore: null, lastExam: null, phase: 'lesson' }
 }
 
 export function loadProgress(version, chapters, storage) {
@@ -22,6 +22,7 @@ export function loadProgress(version, chapters, storage) {
           if (value[field] && !Array.isArray(value[field]) && typeof value[field] === 'object') state[field] = value[field]
         }
         if (value.lastExam && Array.isArray(value.lastExam.results) && value.lastExam.results.length === chapter.exam_count && value.lastExam.chapter_id === chapter.id) state.lastExam = value.lastExam
+        state.examInProgress = value.examInProgress === true || (value.phase === 'exam' && !state.lastExam)
         if (['lesson', 'practice', 'exam', 'result'].includes(value.phase)) state.phase = value.phase
         if (state.phase === 'result' && !state.lastExam) state.phase = 'lesson'
         result.chapters[chapter.id] = state
