@@ -77,7 +77,20 @@ try {
     assert.equal(await page.locator('.exam-score strong').innerText(), '100')
     assert.equal(await page.locator('.exam-review-question').count(), 5)
     assert.equal(await page.locator('.answer-feedback').count(), 5)
-    if (chapterIndex === 0) await page.screenshot({ path: resolve(out, 'exam-result-desktop.png') })
+    if (chapterIndex === 0) {
+      await page.screenshot({ path: resolve(out, 'exam-result-desktop.png') })
+      // A retake remains the active paper after revisiting a lesson and reloading.
+      await page.getByRole('button', { name: '重新考试', exact: true }).click()
+      await fillQuestion(exams[0], exams[0].answer)
+      await page.getByRole('button', { name: '知识讲解', exact: true }).click()
+      await page.reload({ waitUntil: 'networkidle' })
+      await page.getByRole('button', { name: '章节考试', exact: true }).click()
+      await page.locator(`#question-${exams[0].id}`).waitFor()
+      assert(await page.locator(`#question-${exams[0].id} input[value="${exams[0].answer}"]`).isChecked())
+      for (const q of exams.slice(1)) await fillQuestion(q, q.type === 'numeric' ? q.answer.value : q.answer)
+      await page.getByRole('button', { name: '交卷并查看解析' }).click()
+      await page.getByRole('heading', { name: '本关通过，继续前行' }).waitFor()
+    }
     results.push({ chapter: chapter.id, practice: practice.length, exam: exams.length, score: 100 })
     if (chapterIndex < bank.chapters.length - 1) await page.getByRole('button', { name: '进入下一关 →', exact: true }).click()
   }

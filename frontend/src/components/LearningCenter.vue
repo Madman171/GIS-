@@ -59,7 +59,7 @@
               <header class="exam-result-summary" :class="{ passed: record.lastExam.passed }"><div><h2>{{ record.lastExam.passed ? '本关通过，继续前行' : '再巩固一下，你可以重试' }}</h2><p>答对{{ record.lastExam.correct_count }} / {{ record.lastExam.question_count }}题 · {{ passScore }}分通过</p></div><p class="exam-score"><strong>{{ record.lastExam.score }}</strong><span> / {{ record.lastExam.total }}分</span></p></header>
               <div class="result-actions"><button v-if="record.lastExam.passed && nextChapter" type="button" class="learning-primary" @click="selectChapter(nextChapter.id)">进入下一关 →</button><span v-else-if="record.lastExam.passed" class="learning-finish">六关已完成。你可以回到图谱，继续探索交通路网。</span><button type="button" class="learning-secondary" @click="beginExam">重新考试</button><button type="button" class="learning-text-button" @click="setPhase('lesson')">回顾本关讲解</button></div>
               <h2 class="review-heading">逐题回顾</h2>
-              <article v-for="(question, index) in examQuestions" :key="question.id" class="exam-review-question"><p class="question-caption">{{ index + 1 }} / {{ examQuestions.length }} · {{ typeLabels[question.type] }}</p><h3>{{ question.stem }}</h3><LearningDiagram v-if="question.diagram" :diagram="question.diagram" /><ul v-if="question.options.length" class="review-options"><li v-for="option in question.options" :key="option.id"><strong>{{ option.id }}</strong> {{ option.text }}</li></ul><p>你的答案：{{ formatAnswer(examResult(question.id)?.submitted_answer, question.type) }}{{ question.type === 'numeric' ? ` ${question.numeric.unit}` : '' }}</p><LearningFeedback v-if="examResult(question.id)" :result="examResult(question.id)" :question="question" @open-knowledge="$emit('open-knowledge', $event)" /></article>
+              <article v-for="(question, index) in examQuestions" :key="question.id" class="exam-review-question"><h3 class="question-caption">{{ index + 1 }} / {{ examQuestions.length }} · {{ typeLabels[question.type] }}</h3><p class="review-question-stem">{{ question.stem }}</p><LearningDiagram v-if="question.diagram" :diagram="question.diagram" /><ul v-if="question.options.length" class="review-options"><li v-for="option in question.options" :key="option.id"><strong>{{ option.id }}</strong> {{ option.text }}</li></ul><p>你的答案：{{ formatAnswer(examResult(question.id)?.submitted_answer, question.type) }}{{ question.type === 'numeric' ? ` ${question.numeric.unit}` : '' }}</p><LearningFeedback v-if="examResult(question.id)" :result="examResult(question.id)" :question="question" @open-knowledge="$emit('open-knowledge', $event)" /></article>
             </section>
           </template>
         </template>
@@ -171,8 +171,8 @@ async function checkPractice() {
   finally { busy.value = false }
 }
 function nextPractice() { practiceIndex.value = Math.min(practiceIndex.value + 1, practiceQuestions.value.length - 1); liveMessage.value = ''; resetScroll() }
-function beginExam() { if (!practiceComplete.value) return; record.value.examAnswers = {}; setPhase('exam') }
-function openExamTab() { if (!practiceComplete.value) return; setPhase(record.value.lastExam ? 'result' : 'exam') }
+function beginExam() { if (!practiceComplete.value) return; record.value.examAnswers = {}; record.value.examInProgress = true; setPhase('exam') }
+function openExamTab() { if (!practiceComplete.value) return; setPhase(record.value.examInProgress ? 'exam' : record.value.lastExam ? 'result' : 'exam') }
 function updateExamAnswer(id, answer) { record.value.examAnswers[id] = answer; save() }
 async function submitExam() {
   if (busy.value || examDone.value !== examQuestions.value.length) return
@@ -181,6 +181,7 @@ async function submitExam() {
     const { data: response } = await api.post(`/api/learning/chapters/${activeId.value}/exam`, { answers: record.value.examAnswers })
     if (!mounted) return
     record.value.lastExam = response.data
+    record.value.examInProgress = false
     record.value.bestScore = Math.max(record.value.bestScore ?? 0, response.data.score)
     setPhase('result'); liveMessage.value = `本次考试${response.data.score}分，${response.data.passed ? '本关已通过' : '可查看解析后重新考试'}。`
   } catch (err) { error.value = errorText(err); liveMessage.value = error.value }
