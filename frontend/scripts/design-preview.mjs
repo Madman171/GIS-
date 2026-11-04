@@ -1,4 +1,5 @@
 // Local design review only: serve the production build with the repository's real graph snapshot.
+// Graph data is local. Learning endpoints proxy the local production backend grader.
 // This server neither connects to Neo4j nor calls a language model.
 import http from 'node:http'
 import { readFile, stat } from 'node:fs/promises'
@@ -42,6 +43,16 @@ http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://localhost')
     const p = decodeURIComponent(url.pathname)
+    if (p.startsWith('/api/learning/')) {
+      const chunks = []
+      for await (const chunk of req) chunks.push(chunk)
+      const response = await fetch(`${process.env.LEARNING_API_BASE || 'http://127.0.0.1:8001'}${p}`, {
+        method: req.method, headers: { 'Content-Type': 'application/json' },
+        body: req.method === 'POST' ? Buffer.concat(chunks) : undefined,
+      })
+      res.writeHead(response.status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' })
+      res.end(await response.text()); return
+    }
     let data
     if (p === '/api/directory') data = { modules: directory }
     else if (p === '/api/graph/modules') data = graph(modules)
@@ -81,4 +92,4 @@ http.createServer(async (req, res) => {
     }
     res.end(content)
   } catch (error) { console.error(error.message); res.writeHead(500); res.end('Local preview error') }
-}).listen(5181, '127.0.0.1', () => console.log('Local design preview: http://127.0.0.1:5181 (repository snapshot; no live AI)'))
+}).listen(Number(process.env.DESIGN_PREVIEW_PORT || 5181), '127.0.0.1', () => console.log(`Local design preview: http://127.0.0.1:${process.env.DESIGN_PREVIEW_PORT || 5181} (repository snapshot; no live AI)`))

@@ -49,7 +49,7 @@ svg { flex-shrink: 0; }
 .brand-mark { width: 30px; display: grid; place-items: center; color: var(--accent); }
 .brand-mark svg { width: 28px; height: 28px; stroke-width: 1.5; }
 .brand-copy { min-width: 0; }
-.brand-copy h1 { display: flex; align-items: baseline; gap: 12px; margin: 0; font-family: var(--font); font-size: 32px; font-weight: 600; line-height: 1.25; letter-spacing: -.025em; }
+.brand-copy .brand-heading { display: flex; align-items: baseline; gap: 12px; margin: 0; font-family: var(--font); font-size: 32px; font-weight: 600; line-height: 1.25; letter-spacing: -.025em; }
 .brand-initial { font-family: var(--font); font-size: 36px; font-weight: 500; letter-spacing: -.065em; line-height: 1; }
 .brand-name { text-wrap: balance; }
 .brand-copy > span { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; }
@@ -334,7 +334,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
 }
 @media (max-width: 1100px) {
   .topbar { min-height: 72px; padding: 0 20px; gap: 12px; }
-  .brand-copy h1 { font-size: 28px; gap: 10px; }
+  .brand-copy .brand-heading { font-size: 28px; gap: 10px; }
   .brand-initial { font-size: 32px; }
   .brand-copy > span { font-size: 11px; }
   .breadcrumb { display: none; }
@@ -358,7 +358,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
   .brand { gap: 8px; }
   .brand-mark { width: 24px; }
   .brand-mark svg { width: 24px; height: 24px; }
-  .brand-copy h1 { font-size: 20px; line-height: 1.4; max-width: 290px; gap: 8px; letter-spacing: 0; }
+  .brand-copy .brand-heading { font-size: 20px; line-height: 1.4; max-width: 290px; gap: 8px; letter-spacing: 0; }
   .brand-initial { font-size: 27px; }
   .brand-copy > span { font-size: 11px; margin-top: 1px; }
   .connection-state { display: none; }
