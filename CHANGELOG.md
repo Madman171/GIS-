@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here.
 
+## [1.5.1] - 2026-11-04
+
+- fix: preserve chapter retakes across lesson review
+- fix: preserve chapter retakes across lesson review
+
 ## [1.5.0] - 2026-11-04
 
 - feat: add six-stage GIS learning and chapter exams
