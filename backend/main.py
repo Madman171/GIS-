@@ -71,7 +71,7 @@ async def lifespan(app: FastAPI) -> Iterator[None]:
 
 app = FastAPI(
     title="GIS交通路网教学知识图谱平台",
-    version="1.5.1",
+    version="1.6.0",
     lifespan=lifespan,
 )
 

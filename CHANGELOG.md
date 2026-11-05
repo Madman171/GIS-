@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here.
 
+## [1.6.0] - 2026-11-05
+
+- feat: add shared teaching lessons for six introductory chapters
+- feat: 为六关入门知识点补充可独立阅读的文字教学
+
 ## [1.5.1] - 2026-11-04
 
 - fix: preserve chapter retakes across lesson review
