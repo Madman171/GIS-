@@ -1,0 +1,46 @@
+/* Extend the accepted editorial reading style, seed 633635674; no new shell. */
+.teaching-section { margin: 28px 0 0; color: var(--text); min-width: 0; }
+.teaching-section-header { margin-bottom: 16px; }
+.teaching-section-header h2, .teaching-section-header h3 { margin: 0 0 8px; font-size: 19px; line-height: 1.6; }
+.teaching-section-header > p, .teaching-estimate { color: var(--muted); font-size: 13px; line-height: 1.8; margin: 0; }
+.teaching-unit { min-width: 0; border: 1px solid var(--border); border-radius: 8px; margin-top: 12px; background: var(--surface); }
+.teaching-unit > summary { cursor: pointer; padding: 18px 20px; min-height: 48px; color: var(--text); }
+.teaching-unit-title { font-family: var(--font-heading); font-size: 18px; font-weight: 600; line-height: 1.7; overflow-wrap: anywhere; }
+.teaching-unit-meta { display: block; font-size: 12px; color: var(--muted); line-height: 1.8; margin: 4px 0 0 18px; }
+.teaching-unit[open] > summary { border-bottom: 1px solid var(--border); background: var(--raised); border-radius: 8px 8px 0 0; }
+.teaching-article { padding: 20px; max-width: 850px; margin: 0 auto; font-size: 16px; line-height: 1.95; overflow-wrap: anywhere; }
+.teaching-article h3, .teaching-article h4, .teaching-article h5, .teaching-article h6 { margin: 28px 0 12px; font-size: 18px; font-weight: 600; line-height: 1.7; }
+.teaching-article > :first-child { margin-top: 0; }
+.teaching-article p { margin: 0 0 18px; font-size: 16px; line-height: 1.95; color: var(--text); }
+.teaching-article figure { margin: 22px 0; }
+.teaching-article figure img { display: block; width: 100%; height: auto; border-radius: 4px; }
+.teaching-article em { font-style: normal; color: var(--muted); font-size: 13px; }
+.teaching-article strong { font-weight: 600; }
+.teaching-article a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.teaching-article pre { white-space: pre; overflow: auto; padding: 16px; background: var(--raised); border-radius: 5px; line-height: 1.6; font-size: 15px; }
+.teaching-article blockquote { margin: 16px 0; padding: 14px 18px; background: #f4eee4; border-left: 3px solid #b69c76; color: var(--text); }
+.teaching-article ul, .teaching-article ol { padding-left: 24px; margin: 14px 0 20px; }
+.teaching-article li { margin: 6px 0; }
+.teaching-table-wrap { overflow-x: auto; max-width: 100%; margin: 20px 0; }
+.teaching-article table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.8; }
+.teaching-article th, .teaching-article td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; min-width: 100px; }
+.teaching-article th { font-weight: 600; }
+.teaching-answer, .teaching-sources { margin: 16px 0 22px; border: 1px solid var(--border); border-radius: 6px; padding: 0 16px; background: #fbf8f1; }
+.teaching-answer > summary, .teaching-sources > summary { min-height: 44px; padding: 10px 0; cursor: pointer; color: var(--accent); font-size: 14px; line-height: 1.7; }
+.teaching-answer[open], .teaching-sources[open] { padding-bottom: 4px; }
+.teaching-answer p { margin: 4px 0 14px; }
+.teaching-answer h3, .teaching-answer h4, .teaching-answer h5 { margin-top: 14px; }
+.teaching-sources ul { font-size: 13px; }
+.teaching-sources span { display: block; color: var(--muted); }
+.teaching-estimate { margin: 14px 0 0; }
+.teaching-unit summary:focus-visible, .teaching-answer summary:focus-visible, .teaching-sources summary:focus-visible, .teaching-table-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.learning-page-content > .lesson-start { margin: 24px 0 12px; }
+@media (max-width: 600px) {
+  .teaching-unit > summary { padding: 14px; }
+  .teaching-unit-title { font-size: 17px; }
+  .teaching-article { padding: 16px 14px; }
+  .teaching-article p { font-size: 16px; }
+  .teaching-article th, .teaching-article td { padding: 8px; }
+  .teaching-article blockquote { padding: 12px; }
+  .teaching-answer, .teaching-sources { padding-left: 12px; padding-right: 12px; }
+}

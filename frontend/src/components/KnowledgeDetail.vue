@@ -74,6 +74,8 @@
           <p>{{ properties.description || '暂无详细说明。' }}</p>
         </section>
 
+        <TeachingSection :knowledge-point-id="detail.node.id" />
+
         <section class="content-section learning-path-section">
           <h3>前置学习路径</h3>
 
@@ -240,6 +242,7 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { LoaderCircle } from '@lucide/vue'
+import TeachingSection from './TeachingSection.vue'
 import {
   getNodeName,
   getNodeType,

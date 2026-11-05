@@ -1,0 +1,605 @@
+{
+  "version": "1.0.0",
+  "scope": "六关入门教学；不代表高阶知识点全部内容",
+  "lessons": [
+    {
+      "id": "T01",
+      "title": "从看地图到分析道路：GIS、图层与空间数据",
+      "level": "简明讲解",
+      "readingTime": "4–6分钟",
+      "knowledgePointIds": [
+        "M1-001",
+        "M1-002",
+        "M1-004",
+        "M1-009",
+        "M7-010"
+      ],
+      "sourceIds": [
+        "S01",
+        "S02",
+        "S03",
+        "S04",
+        "S09",
+        "S13"
+      ],
+      "embeddedSources": false,
+      "markdown": "# 从看地图到分析道路：GIS、图层与空间数据\n\n## 先明确要回答什么\n\n你在屏幕上看到学校、公交站和道路，已经能回答“它们大致在哪里”。如果继续问“从学校到医院，哪条驾车路线在给定条件下最快”，就需要道路连接、方向、通行限制和行驶成本。地图显示帮助我们观察，网络分析则依据数据与规则比较路线；两者可以出现在同一套GIS工作流程中。[S01](https://docs.qgis.org/3.44/en/docs/gentle_gis_introduction/introducing_gis.html) [S13](https://docs.qgis.org/3.44/en/docs/user_manual/processing_algs/qgis/networkanalysis.html) \n\nGIS是地理信息系统，用空间位置和属性组织、管理、分析与表达信息。QGIS是一种GIS软件，不是GIS这个概念本身。开始操作之前，先写下问题、需要的数据和判断依据，能避免只有一张漂亮的道路图，却不知道怎样支持结论。\n\n## 用合适的数据表达对象\n\n矢量数据用点、线、面等几何以及属性表示要素。本课把公交站的位置记为点、道路中心线记为线、校区边界记为面。这是针对任务的表示约定，不是说车站没有面积、道路没有宽度。观察整座城市的站点分布时，一个点便于定位；研究站房占地时，可能改用面。[S02](https://docs.qgis.org/3.44/en/docs/gentle_gis_introduction/vector_data.html) \n\n![同一学习区域中的点、线、面与规则栅格示意](/assets/teaching/intro/data-models.svg)\n\n栅格数据由规则排列的行列像元组成，每个像元记录一个值，例如高程或影像波段值。看到规则网格并逐格记录地表信息，可以先识别为栅格表达。模型的适用性还取决于任务、尺度、分辨率与数据质量，不能仅凭“矢量”或“栅格”就断定精度高低。[S03](https://docs.qgis.org/3.44/en/docs/gentle_gis_introduction/raster_data.html) \n\n## 几何告诉你位置，属性补充含义\n\n一条道路要素通常既有几何，也有属性。以本课普通道路图层为例，属性表一行代表一个路段要素，一列代表某个字段；某行的长度值描述该行要素，不是整个图层的总长。[S04](https://docs.qgis.org/3.44/en/docs/user_manual/working_with_vector/attribute_table.html) \n\n| 路段 | length_km | direction |\n|---|---|---|\n| 甲路段 | 0.8 | 本例编码1：仅沿数字化方向 |\n| 乙路段 | 1.2 | 本例编码0：双向 |\n\n以上编码完全是教学设定，不是所有道路文件的通用标准。判断方向时，应查阅该数据的字段和编码说明，不能根据路名、颜色或线条看起来朝哪边来猜。字段也可能缺失或过时，正式分析前要检查其含义和质量。\n\n图层是在软件中组织、显示数据的一种方式。QGIS中加载道路数据后，可以在图层面板控制其可见性；取消可见性勾选只影响当前显示，并不等于删除源道路。这里先理解这些概念，无需背菜单或安装软件。[S09](https://docs.qgis.org/3.44/en/docs/user_manual/introduction/general_tools.html) \n\n## 想一想\n\n> 关掉道路图层后，屏幕上看不见路了。能否据此说数据已经被删除？\n\n**引导解析：** 不能。可见性和源数据是否存在是两件事。可以重新开启显示，检查数据源和属性表，再核实是否发生了真正的删除或编辑。\n\n## 自测\n\n### 1. 选择表达方式\n\n教学任务是标出各公交站的位置、道路中心线和一片公园的占地边界。分别使用什么矢量几何？如果以后研究站房占地，是否仍必须使用点？\n\n### 2. 从字段找依据\n\n一条线旁写着“向阳路”，属性表另有经核实的方向字段和编码说明。能否仅凭路名确认双向通行？还应检查什么？\n\n## 自测答案与解析\n\n1. 本任务依次用点、线、面。研究站房占地可以使用面；选择取决于表达目的和尺度，不能把本次约定当成对象唯一的表达方式。\n2. 不能。应核对方向字段及编码，并结合其他适用限制判断。路名不直接说明通行规则，字段也需核实其有效性。\n\n## 接下来怎样学\n\n先辨认数据表达和属性含义，再学习坐标如何解释位置、节点和边如何表达连接。只有补足相应信息，才进入路线比较。",
+      "reviewed": "2026-11-05"
+    },
+    {
+      "id": "T02",
+      "title": "坐标有了，为什么道路仍可能放错位置？",
+      "level": "重点详讲",
+      "readingTime": "8–12分钟",
+      "knowledgePointIds": [
+        "M3-017",
+        "M3-018",
+        "M7-010"
+      ],
+      "sourceIds": [
+        "S05",
+        "S06",
+        "S07",
+        "S08",
+        "S24",
+        "S25",
+        "S26"
+      ],
+      "embeddedSources": false,
+      "markdown": "# 坐标有了，为什么道路仍可能放错位置？\n\n## 数字必须有解释规则\n\n收到一组道路坐标，不能只凭数字大小猜它落在哪里。坐标参考系统，简称CRS，用来把坐标数值与地球上的位置联系起来。文件缺少CRS说明时，应先查原始元数据、数据提供方及可核验的资料，而不是反复试一个“看起来对齐”的系统。[S05](https://docs.qgis.org/3.44/en/docs/user_manual/working_with_projections/working_with_projections.html) [S06](https://doc.esri.com/en/arcgis-pro/latest/help/mapping/properties/coordinate-systems-and-projections.html) \n\n经纬度以角度描述位置，常见投影坐标使用线性单位。线性单位可能是米，也可能是英尺等；“投影坐标”四个字本身不能替代单位定义。经度相差0.01度，绝不能直接写成相差0.01米。[S07](https://proj.org/en/stable/usage/projections.html) \n\n本节不要求选择国内某个具体坐标系，也不把某一种投影说成所有距离分析的通用选择。先掌握检查顺序：来源是什么、原坐标属于什么系统、单位是什么、测量采用什么方法。\n\n## 三种容易混淆的操作\n\n在QGIS中，指定图层CRS、修改项目CRS和重投影分别解决不同问题。下面只解释作用，不要求打开软件。[S05](https://docs.qgis.org/3.44/en/docs/user_manual/working_with_projections/working_with_projections.html) [S24](https://docs.qgis.org/3.44/en/docs/user_manual/processing_algs/qgis/vectorgeneral.html#reproject-layer) \n\n| 操作 | 主要作用 | 会因此改写源几何坐标吗？ |\n|---|---|---|\n| 指定图层CRS | 说明现有数值应该按什么系统解释 | 仅此操作不会 |\n| 修改项目CRS | 改变地图显示的参考系统，支持动态转换显示 | 不会仅因此改写各源图层 |\n| 重投影 | 将原系统中的坐标转换到目标系统，通常输出新数据 | 输出几何采用转换后的坐标 |\n\n假设真实CRS已经核实，但文件把说明标错了。首先需要正确解释原有数值；仅纠正指定不会改变这些数值。如果原CRS根本未知，直接指定一个目标CRS并不能完成可靠转换。重投影同样需要正确的原系统和适当的转换条件。[S26](https://pro.arcgis.com/en/pro-app/3.3/tool-reference/data-management/define-projection.htm) \n\n不同已知CRS的数据，可以在所需转换可用的情况下动态叠加显示；不必为了看在一张图上就先把全部源文件改成同一个CRS。显示正确也不自动证明所有距离计算设置正确。\n\n## 测量之前，再确认计算方法\n\nQGIS的测量涉及椭球设置和单位等选项。椭球是近似描述地球形状的数学表面。把项目CRS换成米制投影，不能仅据此认定所有工具都在使用平面欧氏距离。正式测量应查看实际使用的测量设置和相应工具说明。[S08](https://docs.qgis.org/3.44/en/docs/user_manual/map_views/map_view.html#measuring) \n\n为了先学会单位与长度计算，下面明确采用理想平面直角坐标，单位为米，不考虑椭球和地形高差。A=(0,0)，B=(300,400)，道路是一条连接A、B的直线。横向差300米、纵向差400米，按勾股关系，长度为√(300²+400²)=500米。[S25](https://openstax.org/books/college-algebra-2e/pages/2-1-the-rectangular-coordinate-systems-and-graphs) \n\n| 已知信息 | 应怎样理解 |\n|---|---|\n| 坐标差300、400，单位明确为米 | 可以在题设平面内计算500米 |\n| 只有两个经纬度数值 | 不能把上述米制平面公式直接套上去 |\n| 道路实际由多段折线组成 | 应沿道路几何逐段求长，不能只用起终点直线替代 |\n\n这里也要区分路线里程和两点直线距离。沿道路走过的长度，按所经过的路段累加；弯曲道路的沿线长度不一定等于端点直线距离。描述几何时，曲率反映弯曲程度，坡度涉及高差与相应距离的关系；它们不等于长度，具体计算定义和单位须另行明确。本关计算只使用给定的路段长度或明确的平面直线，不要求曲率、坡度公式。\n\n## 想一想\n\n> 同一张地图上，两份数据叠在了一起，是否已经能确认“按米计算长度”一定可靠？\n\n**引导解析：** 还不能。需要确认原CRS解释正确、相应单位明确，并核对实际测量方法。叠加显示与长度测量各有自己的条件。\n\n## 自测\n\n### 1. 区分说明和转换\n\n数据原坐标的真实CRS已经查清，仅元数据标注有误。只纠正CRS指定后，能否说源几何坐标已经全部被转换为另一套数值？说明理由。\n\n### 2. 在给定平面中算一次\n\n理想平面以米为单位，直路端点P=(10,20)、Q=(610,820)。求长度，并换算成千米。随后再走0.5千米，合计路程是多少？不计其他路段。\n\n### 3. 判断资料是否充分\n\n一份文件没有CRS说明。有人建议“先指定为常见米制投影，再直接测量”。缺少什么必要信息？应先做什么？\n\n## 自测答案与解析\n\n1. 不能。仅纠正指定是在更正原数值的解释，数值本身不因此改变；重投影才执行坐标转换。\n2. 坐标差为600、800米，长度√(600²+800²)=1000米=1千米；再走0.5千米，总路程为1.5千米。公式成立的前提是题目给定的平面、米制单位和直线路段。\n3. 缺少原坐标应如何解释的依据。先核对元数据、来源和数据提供方；不能用猜测指定代替可靠的CRS确认。",
+      "reviewed": "2026-11-05"
+    },
+    {
+      "id": "T03",
+      "title": "节点和边：把道路连成可以分析的网络",
+      "level": "重点详讲",
+      "readingTime": "6–10分钟",
+      "knowledgePointIds": [
+        "M1-007",
+        "M1-008",
+        "M1-009"
+      ],
+      "sourceIds": [
+        "S04",
+        "S10",
+        "S11",
+        "S14",
+        "S20"
+      ],
+      "embeddedSources": false,
+      "markdown": "# 节点和边：把道路连成可以分析的网络\n\n## 路线需要哪些基本信息？\n\n从学校到车站，车辆不是在地图上任意画一条线就能走。它需要沿真实道路前进，在有连接的位置换到下一段。为了记录这种结构，本课采用节点—边模型：节点表示路口、道路端点等连接位置，边表示节点之间的路段。它是本课路网分析的基础表达。[S10](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/network-elements.html) \n\n节点不是屏幕上所有可见的小圆点，边也不是任何装饰线。重要的是数据是否建立了相应关系。例如A—N表示A与N之间有一条路段，N—B表示N与B之间另有一条路段；是否允许车辆沿它们行驶，还要检查方向与限制。\n\n![四条路段共享一个节点N，并列出本例的连接记录](/assets/teaching/M1-015/figure-02-junction.svg)\n\n## 先读结构，再读路线\n\n沿用图中教学设定，存在A—N、N—B、C—N、N—D四条边，均可双向使用，本题车辆的路口通行均允许。A→N→D依次使用A—N和N—D，因此是可行的节点顺序。若有人写A→D，却没有列出A与D之间的直接边，就省略了必要连接，不能把它当成本例的一条直接路段。\n\n路径中的箭头表示这次按什么顺序经过节点。这里原边双向可用，所以A→N与N→A都允许；如果数据仅给出A→N的单向边，就不能自行补出反向。先读清题目对边和方向的约定，再检查相邻节点之间的连接，才不会把路线顺序和道路方向混为一谈。[S20](https://networkx.org/documentation/stable/reference/classes/digraph.html) \n\n检查较长的节点序列时，可以逐段提问：这一段边存在吗？方向允许吗？本题车辆适用吗？在连接处的这一次转向允许吗？任一段不符合条件，整个给定序列就不能作为本次可行路线。这个检查不需要先比较长短，找可行路线和找最优路线是两个不同层次。\n\n## 节点可以承载什么？\n\n路口节点、道路端点、匝道连接点和交通枢纽，关注的功能不同。在简化图上，它们都可以记成节点，但不意味着处理完全相同。节点的位置、连接记录与有关通行条件，需要结合任务解释。[S10](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/network-elements.html) [S11](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/understanding-connectivity.html) \n\n例如几条边共享一个路口N，连接关系仍然存在，但从某条边进入另一条边的转向可以被禁止。不能看到同一节点，就默认所有车辆都能向任意方向转；也不能为了禁止一次左转而删除整个路口。分清节点的连接作用与指定动作的限制，后续才能正确分析。\n\n## 边除了形状，还要有什么？\n\n一条边常需要长度、通行方向、道路类别或行驶成本等属性。本课普通道路要素表的一行描述一个路段，其长度字段不是整个路网总长；字段是否存在、采用什么单位、编码怎样解释，都需要核实。[S04](https://docs.qgis.org/3.44/en/docs/user_manual/working_with_vector/attribute_table.html) [S14](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/cost-attributes.html) \n\n| 本例路段记录 | 能回答的问题 | 不能仅凭它回答的问题 |\n|---|---|---|\n| 连接A与N | 这两处之间有给定路段 | 任意车辆是否都可用 |\n| 长度为0.9千米 | 这段已给定的路程 | 固定需要多少分钟 |\n| 方向编码及说明 | 在本数据中允许的方向 | 未提供的其他路口限制 |\n\n本课图中的一条边是教学抽象。现实中弯曲道路可以有多个几何顶点，分段方式也随建模目标变化；不能把每一个折点都当成允许转入其他道路的交叉口。节点怎样设置、道路怎样划分，要与真实连接和建网规则一致。[S11](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/understanding-connectivity.html) \n\n## 想一想\n\n> 道路画成弯曲折线，中间出现了几个折点。能否据此认定每个折点都能转到另一条道路？\n\n**引导解析：** 不能。折点首先描述几何形状，是否形成与其他道路的连接，还需要相应的真实连接和网络规则。\n\n## 自测\n\n### 1. 按连接记录检查\n\n本题仅有双向边U—J、J—V、J—W，均允许使用且无转向限制。U→J→W与U→W，哪个完整表达了通过给定路段的路线？\n\n### 2. 读取路段属性\n\n路段U—J的长度为0.6千米，方向允许，其他属性没有提供。能否由此直接算出固定耗时？至少还缺什么？\n\n### 3. 限制是否等于断开？\n\nJ仍连接三条边，但仅U→J→V被明确禁止。是否应把J与所有边断开？说明这样做可能误伤哪类通行。\n\n## 自测答案与解析\n\n1. U→J→W逐段对应U—J、J—W，符合条件。U→W省略了J，本题没有直接的U—W边。\n2. 不能。至少需要适用的行驶速率或时间成本，以及是否计入等待、转向等时间的约定；长度不等于时间。\n3. 不应全部断开。应该保留连接并表达指定转向限制，否则会误伤题目未禁止的其他通行，例如在其他条件允许时的U→J→W。",
+      "reviewed": "2026-11-05"
+    },
+    {
+      "id": "T04",
+      "title": "地图上相交的道路，真的能转过去吗？",
+      "level": "重点详讲",
+      "readingTime": "8–12分钟",
+      "knowledgePointIds": [
+        "M1-013",
+        "M1-015"
+      ],
+      "sourceIds": [
+        "S10",
+        "S11",
+        "TEACH-TURNS",
+        "TEACH-TOPOLOGY"
+      ],
+      "embeddedSources": true,
+      "markdown": "# 地图上相交的道路，真的能转过去吗？\n\n\n这节课不需要打开软件。学完后，你应能用自己的话区分“图上相交”“网络相连”和“允许通行”，依据条件解释车辆能否转入另一条道路，并识别什么时候还不能下结论。\n\n## 一、先别急着在交叉点转弯\n\n假设你从学校出发，想去附近的车站。地图上一条东西向道路和一条南北向道路交叉，看起来只要走到交点再转弯就能到达。可是，这个交点会不会是桥上和桥下的位置重合？即使确实是路口，车辆能否按你想要的方向通过？一张交叉线图还没有回答这些问题。\n\n先观察下面的草图。它只表示两条中心线的二维位置；中间的交叉符号不表示已经建立共享节点。\n\n```text\n      C\n      |\nA ----+---- B\n      |\n      D\n```\n\n**思考点一｜现在掌握的信息够吗？**\n\n> 你只有一张两条线相交的截图，没有道路层级、连接记录或通行规则。现在能断定“可以直接转过去”吗？能断定“一定不能转过去”吗？\n\n**引导解析：** 两种断言都缺少依据。目前可以确认的是图上存在交叉；还要了解真实道路是否有连接、网络怎样记录这种连接，以及本次通行是否受到限制。“暂时无法判断”不等于“已知不连通”。\n\n## 二、从道路图走向路网\n\n在本课的简化路网中，一段道路用一条**边**表示，路段的连接位置或端点用**节点**表示。节点和边共同表达道路之间的连接关系；这里讨论的**拓扑连接**，重点就是网络中哪些路段可以衔接。它不等同于线条在屏幕上是否碰到一起。[S1](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/network-elements.html) [S4](https://docs.qgis.org/3.44/en/docs/gentle_gis_introduction/topology.html)\n\n如果一条边连接A和N，另一条连接N和B，就可以用“A→N→B”描述依次经过的节点；这个写法本身还没有证明通行被允许，仍需核对方向等条件。本节各图的四个外围位置统一记作A、B、C、D，中间的共享节点记作N；图上方为北。\n\n一条路线也可以继续经过更多节点。检查节点顺序时，要逐段确认相邻两个节点之间存在可以使用的边；不能因为起点和终点看起来接近，就跳过中间缺少的连接。\n\n## 三、案例一：两条路跨过去，却没有直接相通\n\n看图1。教学设定是：A—B位于桥上，C—D位于桥下，交叉处没有匝道或其他转换通道。本例所说的**匝道**，是连接桥上、桥下道路的转换道路。这一次，A—B与C—D虽然在俯视图中交叉，却没有供车辆在该处换到另一条路上的通道。[S2](https://pro.arcgis.com/en/pro-app/3.6/help/analysis/networks/understanding-connectivity.htm)\n\n![图1：分层立交，图上交叉但交叉处没有转换连接](/assets/teaching/M1-015/figure-01-overpass.svg)\n\n*图1｜自拟教学示意。桥下C—D连续通过，图中的遮挡表示上下跨越。右侧只是层级关系示意，不表示道路方位。*\n\n因此，车辆不能在这个交点直接从A—B转入C—D。这个结论来自题目已说明的设施条件，不是因为“桥梁永远不能与别的道路连接”。桥梁在适当的出入口也可以连接其他道路；若别处有合法连接，车辆仍可能绕行到另一条路。我们在这里判断的只是这个交点能否直接转换。\n\n若新增转换道路，还要把它及出入口的连接正确表达在网络中，再核对方向和限制，才能分析新的通行顺序。设施增加了，哪些连接随之增加，需要依据新增资料逐项确认。\n\n## 四、案例二：真实路口，还要在网络中表达连接\n\n再看图2。教学设定改为同层道路实际相接，并且已经按照本课建网规则，让四条路段共享节点N。**建网规则**是把道路资料转换为网络时采用的连接判定规则；实际工作中，还可能涉及端点、顶点和层级等信息，本节先掌握其用途。[S2](https://pro.arcgis.com/en/pro-app/3.6/help/analysis/networks/understanding-connectivity.htm)\n\n![图2：普通平面路口以共享节点N表达四条路段之间的连接](/assets/teaching/M1-015/figure-02-junction.svg)\n\n*图2｜自拟教学设定：四条路段均为双向，本题车辆均可使用，所讨论的路口通行没有额外禁转。圆点与右侧连接记录共同说明N在本例中的含义。*\n\n在这些条件下，从A沿边到N，再沿边到B，就是一条可行的通行顺序。这里的圆点是对已有网络关系的示意；只在截图上补画一个圆点，不会自动把底层数据连接起来。反过来，地图没有显示圆点，也不足以证明网络一定没有节点。有些节点可能没有被显示出来。\n\n如果真实道路应该连接，数据却没有正确表达，可能需要检查和修正建网结果。不能为了让图看起来“通顺”，把任何靠近或交叉的道路都接起来；修正的依据应当是真实连接和适用的建网规则。[S2](https://pro.arcgis.com/en/pro-app/3.6/help/analysis/networks/understanding-connectivity.htm) [S4](https://docs.qgis.org/3.44/en/docs/gentle_gis_introduction/topology.html)\n\n这也解释了为什么把道路画得逼真还不够。假如数据把桥上、桥下误接起来，分析可能给出现场无法完成的转弯；假如把真实路口漏接，原本可行的通行又可能被遗漏。我们需要核对现实中的连接和数据中的记录，定位两者为什么不一致，再决定如何处理。\n\n## 五、案例三：节点相连，某一次转向仍可能被禁止\n\n保持图2的连接关系，再增加一个教学条件：从西侧A驶入N后，禁止转向北侧C，其他通行条件不变。图3中的红色路线标记的是“A→N→C”这一次左转。**转向**指从一条路段经过连接处进入另一条路段的动作；限制可以针对某一次动作，而不是整个节点。[S1](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/network-elements.html) [S3](https://pro.arcgis.com/en/pro-app/3.6/help/analysis/networks/turns-in-the-network-dataset.htm)\n\n![图3：保留共享节点N，只禁止A到N再到C这一次左转](/assets/teaching/M1-015/figure-03-turn.svg)\n\n*图3｜自拟禁行条件，不代表现实道路规定。上方为北，所以从A向东驶入、再转向C，是左转；叉号仅指向文字说明的转向，不表示C路段封闭。*\n\n这时，A→N→C不可用，但A→N→B仍可直行；按照本例给定条件，C→N→D也仍可直行。若为了阻止这一次左转而删除N，反而会破坏原本应保留的连接。现实分析还可能需要检查单向通行、车辆类型和适用时段等条件；“共享节点”只回答连接问题，不能替代这些检查。[S3](https://pro.arcgis.com/en/pro-app/3.6/help/analysis/networks/turns-in-the-network-dataset.htm)\n\n**思考点二｜禁止一次左转，要不要删掉整个路口？**\n\n> 因为A→N→C被禁止，就把N和四条路段的连接全部删掉，这样处理合理吗？\n\n**引导解析：** 不合理。应保留本来存在的连接，并表达指定的转向限制。删掉整个节点会把本例仍允许的直行也错误地切断。区分“哪些路段相连”和“哪些通行动作允许”，才能准确描述这个路口。\n\n## 六、把判断过程变成三个步骤\n\n![图4：先看几何位置，再查网络连接，最后核对通行限制；资料不足时保留判断](/assets/teaching/M1-015/figure-04-method.svg)\n\n*图4｜三步判断方法。图上交叉是一条位置线索，后续还需要连接和通行信息；任何一步缺少关键资料，都应先列出缺失条件。*\n\n第一步，看几何位置，说明道路在哪里相交、接近或重叠。第二步，查网络连接，结合实际设施与建网记录，确认所需的路段衔接是否成立。第三步，核对本次车辆、方向和转向所适用的通行限制。只有连接得到确认、相关限制也都满足，才能把这次转换作为可行通行的一部分。\n\n回答问题时，试着把理由说完整：“因为这里没有转换通道，所以不能在交点直接转入”；或者“目前只有位置图，还缺连接与限制资料，所以不能确定”。这样的解释比单独记住一个“能”或“不能”，更容易用于新的道路情境。\n\n> **小迪提醒：** 先说清你已经知道什么，再说明还缺什么。信息不足时保留判断，也是在认真分析。\n\n## 七、自己判断：三个新情境\n\n以下均为原创形成性练习，不计分。先写出结论和理由，再查看后面的解析；题目中的道路、连接和限制都是教学设定。\n\n### 自测一｜资料够不够？\n\n一份资料只有两条道路中心线的平面截图，未标注道路层级；网络连接记录、转换设施和通行限制也均未提供。同学据此说：“线已经交叉，这辆车一定能在交点转入另一条路。”\n\n你是否接受这个结论？请至少指出两类还需要核实的信息，并说明“目前不能确定”与“已知不能直接转入”有什么区别。\n\n### 自测二｜选出合理的处理（单选）\n\n沿用图2的四条双向路段和共享节点N。题目只增加一条限制：**A→N→C禁止**；本题车辆的其他路口通行均允许。以下哪种处理符合条件？\n\n- A. 因为共享N，所以仍允许A→N→C。\n- B. 删除N及其全部连接，避免发生被禁止的左转。\n- C. 保留N和路段连接，禁止A→N→C，同时保留A→N→B的通行。\n- D. 把从A进入N的所有通行都禁止，因为左转和直行必须一起处理。\n\n### 自测三｜增加匝道后，哪些结论改变了？\n\n把图1的局部路网简化为原有两条边A—B、C—D。现在在B与D之间新增一条匝道，中间节点记作R；匝道用B—R、R—D两条边表示。新增连接已经正确建网。\n\n**本题只考虑这四条边，它们均可双向通行，本题车辆全部适用，经过各连接处的相关转向也均允许。原立交交叉处仍没有直接转换通道。**\n\n车辆现在能否从A通过匝道到达C？如果能，请写出一个依次经过的节点顺序。新增匝道是否也意味着原来的交叉位置可以直接从桥上转到桥下？说明理由。\n\n---\n\n## 八、自测答案与解析\n\n### 自测一\n\n**不接受“一定能转入”的断言，应保留判断。** 需要核实的资料包括：实际道路层级及转换设施、网络是否正确记录所需连接、本次车辆和方向所适用的通行限制。任意说明其中两类并解释其作用，即达到本题的基本要求；完整分析应检查三类信息。\n\n“目前不能确定”表示证据不足，两种结果都有可能；“已知不能直接转入”则已有明确条件排除这次转换，例如确认无连接通道，或者确认该转向禁止。没有资料不等于已经证明不连通；同样，线条相交也不能证明可通行。\n\n### 自测二\n\n**正确答案：C。** 题目保留了连接，只禁止指定转向。A→N→B不属于被禁止的动作，且题目明确其他条件均允许，因此应当保留。\n\n- **A错误：** 用共享节点替代了转向限制检查。\n- **B错误：** 把一次转向的限制扩大成整个节点断开，会错误地影响其他通行。\n- **C正确：** 分别表达连接和指定转向限制，符合全部已知条件。\n- **D错误：** “从A进入N”是直行和该左转都会经过的部分；题目没有禁止所有从A进入N的通行。\n\n### 自测三\n\n**可以。一条可行的节点顺序是A→B→R→D→C。** A—B是桥上道路，B—R—D是新增匝道，D—C是桥下道路。每一段都存在，方向和转向又都满足题设，因此可以沿这个顺序到达C。\n\n但不能在原交点直接从桥上转下去。新增的转换通道位于题目指定的B—R—D处，不会让其他图面交叉位置自动多出直接连接。“两条道路之间出现了可行绕行路径”与“某个交点可以直接转接”是不同结论。\n\n## 九、回顾与下一步\n\n用一句话回顾本节：**几何位置提供线索，网络连接说明路段如何衔接，通行限制决定本次动作是否可用。** 若你能独立解释三个自测情境的结论，就可以继续阅读M1-007「交通路网Node-Edge节点边基础模型定义」与M1-011「有向路网图模型的结构与适用场景」，或进入第三关“拓扑连通与方向”巩固相关判断。\n\n配套短视频可以帮助回顾三个案例；本篇正文和题解已包含完成本节所需的信息。\n\n## 十、来源与核查说明\n\n以下资料用于核查概念和适用条件，讲解、图示及习题为本项目原创。没有复制官方示意图或大段原文。具体软件中的实现作为依据，不据此要求所有GIS采用同一种建网方式。网络连接是否可靠还取决于数据质量；本节分析均以各案例明确给出的资料为限。\n\n| 编号 | 来源与版本 | 核对位置 | 支持的具体结论 | 访问日期 |\n|---|---|---|---|---|\n| S1 | [Esri：Understand network elements](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/network-elements.html)，ArcGIS Pro在线文档，访问日页面 | 开头的Edges、Junctions、Turns及其关系 | 节点、边与转向在网络中的分工；连接结构与特定转向的信息应区分 | 2026-11-05 |\n| S2 | [Esri：Connectivity](https://pro.arcgis.com/en/pro-app/3.6/help/analysis/networks/understanding-connectivity.htm)，ArcGIS Pro 3.6 | Group connectivity → Connect edges in a connectivity group；Vertical connectivity → Elevation fields | 几何重合本身不能代替完整的连接判定；连接策略和层级可用于区分桥上、桥下道路 | 2026-11-05 |\n| S3 | [Esri：Turns](https://pro.arcgis.com/en/pro-app/3.6/help/analysis/networks/turns-in-the-network-dataset.htm)，ArcGIS Pro 3.6 | 开头关于turn、转向成本与禁止转向的说明；Understanding turns | 已有连接处仍可限制特定转向，不能把所有连接一律解释为任意转向可用 | 2026-11-05 |\n| S4 | [QGIS：7. Topology](https://docs.qgis.org/3.44/en/docs/gentle_gis_introduction/topology.html)，QGIS 3.44 | §7.1 Overview；§7.2 Topology errors；§7.3 Topology rules | 拓扑涉及要素间连接、相邻关系；数据记录可能没有正确表达实际应有的连接，规则需结合用途理解 | 2026-11-05 |",
+      "reviewed": "2026-11-05"
+    },
+    {
+      "id": "T05",
+      "title": "单向道路：有连接，也要沿允许的方向走",
+      "level": "简明讲解",
+      "readingTime": "3–5分钟",
+      "knowledgePointIds": [
+        "M1-011",
+        "M1-016",
+        "M1-029"
+      ],
+      "sourceIds": [
+        "S13",
+        "S15",
+        "S20"
+      ],
+      "embeddedSources": false,
+      "markdown": "# 单向道路：有连接，也要沿允许的方向走\n\n## 箭头是一条通行条件\n\n两处之间存在道路，不代表两个方向都允许。本课用有向边U→V表达仅允许从U到V的方向；若还允许反向，需要另有反向边或明确的双向约定。不同软件的存储方式可以不同，这里采用给定有向图，不把符号当成某个数据文件的固定编码。[S20](https://networkx.org/documentation/stable/reference/classes/digraph.html) [S13](https://docs.qgis.org/3.44/en/docs/user_manual/processing_algs/qgis/networkanalysis.html) \n\n把路线写成节点顺序之后，要逐边检查。例如本题只有P→Q、Q→R、R→P三条边，均允许本题车辆使用，连接处转向均允许。从Q到P可以依次经过Q→R→P，但不能直接使用Q→P，因为题目没有那条边。\n\n![有向环P到Q到R到P，反向边不能自行补出](/assets/teaching/intro/direction.svg)\n\n这个例子说明，“没有直接反向边”不等于“全网绝对无法反向到达”。能否绕行，要看其他给定边及相关限制。检查到某一段不允许时，应否定当前序列；若问题问有没有别的路线，还需继续查找，不能提前把全网判成不可达。\n\n## 数据方向不靠猜\n\n实际道路资料可能通过字段和编码描述单向或双向。应阅读该数据的定义，明确“沿数字化方向”和“逆数字化方向”的含义。路名、线条颜色或你从左向右阅读的习惯，都不能替代方向字段。连接确认后，车辆类型和指定转向等限制也仍要检查。[S15](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/restriction-attributes.html) \n\n## 自测\n\n只给出X→Y、Y→Z、Z→X三条边，其他转向与使用条件均允许。下面两个序列从Y出发，哪个可以到X：Y→X，还是Y→Z→X？如果删去Z→X且没有别的边，还能到X吗？\n\n## 自测答案与解析\n\nY→Z→X的每一段都存在，故可行；直接Y→X不存在。删去Z→X后，从Y只能到Z，不能到X。两个结论的依据不同：先前只是缺少直接边，删边后才在这个明确限定的局部网络中没有可行路线。",
+      "reviewed": "2026-11-05"
+    },
+    {
+      "id": "T06",
+      "title": "路网检查：尽端路不一定是数据错误",
+      "level": "简明讲解",
+      "readingTime": "3–5分钟",
+      "knowledgePointIds": [
+        "M1-014"
+      ],
+      "sourceIds": [
+        "S11",
+        "S12",
+        "S28"
+      ],
+      "embeddedSources": false,
+      "markdown": "# 路网检查：尽端路不一定是数据错误\n\n## 先问本来应不应该连接\n\n拓扑检查用于发现不符合所选规则的数据情况，例如本来应该相接的道路留下小缝隙。但检查标记只是需要核实的线索，不等于每一处都应使用同一种修复方法。规则必须结合真实道路和数据规范解释。[S28](https://docs.qgis.org/3.44/en/docs/user_manual/plugins/core_plugins/plugins_topology_checker.html) \n\n设想两种情况：甲处是实际存在的尽端路，只有一条道路接入；乙处是现场确实连通的普通路口，但数字化时少画了一小段。两处在图上都可能出现线的端点，处理却不同。甲应保留真实尽端结构，乙才需要调查遗漏并正确表达连接。[S12](https://pro.arcgis.com/en/pro-app/3.4/tool-reference/data-management/add-rule-to-topology.htm) \n\n![合法尽端、非预期断裂与不能误接的跨层道路对照](/assets/teaching/intro/topology-check.svg)\n\n## 为什么不能把所有端点接起来？\n\n有些检查规则要求线不出现悬挂端点。这里的悬挂，是端点没有与其他适用线连接的情况；真实尽端路可能属于应记录的合法例外。若为了消除标记，把尽端路拉到附近道路上，就会制造现场并不存在的连接。[S12](https://pro.arcgis.com/en/pro-app/3.4/tool-reference/data-management/add-rule-to-topology.htm) [S28](https://docs.qgis.org/3.44/en/docs/user_manual/plugins/core_plugins/plugins_topology_checker.html) \n\n同样，距离近也不等于应该连接。桥上桥下、隔离设施两侧或平行道路不能仅因位置靠近就被误接。操作前保留原数据，核对道路设施和规范；操作后再检查连接、几何与相关属性是否仍正确。具体捕捉容差和处理工具属于后续实操，本讲先建立核实意识。[S11](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/understanding-connectivity.html) \n\n## 自测\n\n路网检查标记了三个位置：①现场确认的真实尽端路；②现场应连通但数据留有缝隙的路口；③没有转换设施的上下跨越道路。应该把哪一处列为连接修正的候选？另外两处为什么不能一律拉线接上？\n\n## 自测答案与解析\n\n②是连接修正的候选，仍需按资料与规范确认处理方式。①应保留真实尽端结构，并按采用的检查规范记录例外；③没有该处转换连接，不能凭几何位置制造连接。检查的目标是准确表达道路，不是把所有标记机械清零。",
+      "reviewed": "2026-11-05"
+    },
+    {
+      "id": "T07",
+      "title": "路线的成本是什么：先定目标，再累加同类数值",
+      "level": "简明讲解",
+      "readingTime": "4–6分钟",
+      "knowledgePointIds": [
+        "M1-012",
+        "M4-001",
+        "M4-002"
+      ],
+      "sourceIds": [
+        "S14",
+        "S15"
+      ],
+      "embeddedSources": false,
+      "markdown": "# 路线的成本是什么：先定目标，再累加同类数值\n\n## 为什么要给道路一个数？\n\n比较可行路线时，需要说明什么叫“更好”。若目标是总里程最短，就用路段长度作为边权；若目标是时间最少，就用适用的行驶时间。边权是附在边上的成本数值，本课也把需要最小化的行程成本称为阻抗。它不是道路难度的固定标签，而是任务中选定的比较依据。[S14](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/cost-attributes.html) \n\n下面只考虑图示四条有向边，各边在本次计算中固定，均允许本题车辆通行且无额外转向限制。数字是给定沿道路长度，单位统一为千米，不代表真实调查。\n\n![从S到T的两条路线，S到A和A到T各3千米，S到B为2千米，B到T为5千米](/assets/teaching/intro/distance-network.svg)\n\nS→A→T长3+3=6千米；S→B→T长2+5=7千米。因此在本题全部合法候选中，距离目标应选前者。不能因为S→B这一段较短，就认定经B的整条路线最短。\n\n## 单位与累加范围要明确\n\n600米、0.9千米和500米需要先统一单位，才能得到0.6+0.9+0.5=2千米。若路线真的重复经过某段，通常应按经过次数计入里程；本课具体计算以题目给出的路线和次数为准。\n\n距离和时间不是同一种量。没有事先定义综合评分公式时，不能把“2千米+3分钟”直接说成“5分钟”。即使将来使用多指标模型，也必须交代转换、权重和含义；本讲只比较单位一致、可相加的成本。\n\n还有一点：只能先在允许的路线中比较成本。禁止通行的路段不会因为长度短就变成可用，路网限制与成本排序要分别处理。[S15](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/restriction-attributes.html) \n\n## 自测\n\n只有两条合法候选路线：甲由0.7千米和800米组成，乙全程1.6千米。按距离目标选哪条？如果只知道这些长度，能否确定时间目标也选同一条？\n\n## 自测答案与解析\n\n甲为0.7+0.8=1.5千米，小于乙的1.6千米，距离目标选甲。还不能确定时间目标，因为缺少适用速率或时间成本及其他延误条件。比较标准改变后，应使用相应成本重新判断。",
+      "reviewed": "2026-11-05"
+    },
+    {
+      "id": "T08",
+      "title": "从千米到分钟：把行驶时间算清楚",
+      "level": "重点详讲",
+      "readingTime": "6–10分钟",
+      "knowledgePointIds": [
+        "M4-003"
+      ],
+      "sourceIds": [
+        "S14",
+        "S22",
+        "CN01"
+      ],
+      "embeddedSources": false,
+      "markdown": "# 从千米到分钟：把行驶时间算清楚\n\n## 长度不能直接当作耗时\n\n给你一条长1.8千米的路，能否马上知道要走几分钟？还不能。至少要知道适用的行驶速率，并说明是否计入等待、转向或停车等时间。即使路线相同，条件改变后耗时也可能不同。\n\n本课先用简化模型：每段平均行驶速率在本次计算中固定且大于零，给定路段长度可信；各段行驶时间与明确列出的额外延误可以相加。所有道路、速率与延误都是教学假设，不是对真实出行的预测。[S14](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/cost-attributes.html) [S22](https://openstax.org/books/physics/pages/2-2-speed-and-velocity) \n\n## 分清公式中的单位\n\n在这个模型下，行驶时间=路段长度÷平均行驶速率。如果长度用千米，速率用千米/小时，所得时间就是小时，换成分钟还要乘60。不要算出0.05小时后直接写成0.05分钟。\n\n例如1.8千米÷36千米/小时=0.05小时，即3分钟。若整段行程另有且仅有一次0.4分钟等待，总时间为3+0.4=3.4分钟。等待没有因为路线包含两个端点就自动变成两次，必须按题目指定的次数计入。\n\n| 量 | 本课写法 | 检查重点 |\n|---|---|---|\n| 长度 | 千米或米 | 先统一单位 |\n| 平均行驶速率 | 千米/小时等 | 与长度、时间单位配套，且本模型中大于零 |\n| 行驶时间 | 长度÷速率 | 确认结果是小时还是分钟 |\n| 总行程时间 | 各段行驶时间＋明确给出的延误 | 不漏算，也不重复计算 |\n\n## 多段道路，应当逐段计算\n\n假设连续两段路各长1千米，平均速率分别为20和40千米/小时，不计其他延误。第一段需1÷20×60=3分钟，第二段需1÷40×60=1.5分钟，总计4.5分钟。\n\n如果简单把两个速率平均成30，再算2÷30×60，会得到4分钟，和逐段结果不一致。问题在于两段路所花的时间不同，速率不能在未说明条件时直接作算术平均。入门阶段最稳妥的办法是逐段求时间，再累加；不要为省一步计算更换了模型。[S22](https://openstax.org/books/physics/pages/2-2-speed-and-velocity) \n\n还要区分平均运行速率与道路限速。限速不是车辆每次行驶都能保持的平均速率；真实行程会受到交通状况和等待等因素影响。只有限速信息时，不能把据此算出的一个数承诺为实际耗时。本课使用的是题目明确给出的平均行驶速率。[CN01](https://xxgk.mot.gov.cn/jigou/glj/202007/t20200722_3436356.html) \n\n## 最短和最快为什么可能不同？\n\n沿用距离讲解中的两条候选路线：S→A→T为6千米，S→B→T为7千米。现在额外给定：前者各段平均速率都为30千米/小时，后者各段都为70千米/小时，均合法，不计任何其他延误。\n\n前者需6÷30×60=12分钟，后者需7÷70×60=6分钟。距离目标选经A，时间目标则选经B。这不是两道计算互相矛盾，而是优化的成本不同。[S14](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/cost-attributes.html) \n\n## 想一想\n\n> 把图中的成本由千米换成分钟后，是否可以照抄原来的最短里程路线，不再比较？\n\n**引导解析：** 不可以。可行性条件满足后，应按新的时间成本重新比较；原先距离最短的结论不保证时间也最少。\n\n## 自测\n\n### 1. 单段换算\n\n一段路长2千米，固定平均速率为30千米/小时，不计延误，需要几分钟？\n\n### 2. 逐段累加\n\n两段连续道路分别长0.6、1.4千米，平均速率分别为18、42千米/小时；整条路线另有且仅有一次0.8分钟等待，不计其他延误。总时间是多少？\n\n### 3. 资料和模型的边界\n\n只有道路限速，没有平均行驶速率和等待资料，能否保证一个精确到分钟的实际耗时？如果题目给的平均速率为零，能否直接继续使用长度÷速率？\n\n## 自测答案与解析\n\n1. 2÷30小时=1/15小时，乘60得到4分钟。\n2. 第一段0.6÷18×60=2分钟，第二段1.4÷42×60=2分钟，再加一次0.8分钟，总计4.8分钟。单位已统一，等待只计一次。\n3. 不能保证。需要适当的运行时间模型和相关条件；限速不是测得的平均运行速率。速率为零时不能除以零，应重新确认是否等待、封闭或需要其他时间模型，而不是硬算有限行驶时间。",
+      "reviewed": "2026-11-05"
+    },
+    {
+      "id": "T09",
+      "title": "Dijkstra：怎样一步步确定最小累计成本",
+      "level": "重点详讲",
+      "readingTime": "8–12分钟",
+      "knowledgePointIds": [
+        "M4-001",
+        "M4-006"
+      ],
+      "sourceIds": [
+        "S19",
+        "S27"
+      ],
+      "embeddedSources": false,
+      "markdown": "# Dijkstra：怎样一步步确定最小累计成本\n\n## 先说明适用的题目\n\nDijkstra是一种从单个起点求最短路径的方法。这里的“最短”是选定成本最小，可以是长度，也可以是时间。本课采用固定、全部非负的边权；零权可以存在，负权不属于本课标准方法的适用前提。随时变化的成本也不能未经说明直接当成这张固定成本图。[S19](https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.shortest_paths.weighted.single_source_dijkstra.html) [S27](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/d819e7f4568aced8d5b59e03db6c7b67_MIT6_006S20_lec13.pdf) \n\n算法的目的不是每到一个路口就选眼前最短的出边，而是在尚未确定的节点中，选择从起点出发的**累计暂定成本**最小者。“暂定”表示目前已经发现的最好结果，还可能被后续路线改进；“确定”则表示在本课前提下，其最优成本已经成立。\n\n## 用一张小路网走完整个过程\n\n图中只有四条有向边：S→A为3，A→T为3，S→B为2，B→T为5，单位均为千米。各边固定、合法且无额外延误。任务是从S到T求距离最小的路线。\n\n![四条固定非负距离边：经A累计6千米，经B累计7千米](/assets/teaching/intro/distance-network.svg)\n\n开始时，S的成本记为0，其他节点记为∞。这里∞表示还没有发现可达路线，不是某条路段真的有无穷大的测得长度。处理S后，发现到A为3、到B为2；先确定B，因为2是当前候选中最小的累计暂定成本。\n\n经B到T得到2+5=7，于是T暂定为7。但还没有结束：A的暂定成本3小于T的7，所以接下来先确定A。再由A到T得到3+3=6，小于原来的7，把T改为6。最后T作为最小候选被取出并确定，才得到本题最优成本6千米，路线为S→A→T。\n\n| 已处理的节点 | A暂定成本 | B暂定成本 | T暂定成本 | 本步含义 |\n|---|---|---|---|---|\n| 尚未处理 | ∞ | ∞ | ∞ | 只知道起点S为0 |\n| S | 3 | 2 | ∞ | 发现A和B |\n| B | 3 | 已确定2 | 7 | 首次发现T，还不是最终答案 |\n| A | 已确定3 | 已确定2 | 6 | 经A改进T |\n| T | 已确定3 | 已确定2 | 已确定6 | 本题可停止 |\n\n## 怎样理解“更新”？\n\n用当前节点去尝试改进相邻节点，通常叫**松弛**。算式是：新暂定值=min(旧暂定值，当前累计成本＋这条边的成本)。记住这里有一次比较；新算出的数如果更大，就保留旧值。记录得到较好结果时的前一个节点，可以在终点确定后向前追溯路线。[S19](https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.shortest_paths.weighted.single_source_dijkstra.html) [S27](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/d819e7f4568aced8d5b59e03db6c7b67_MIT6_006S20_lec13.pdf) \n\n为何非负边权重要？在这个前提下，从尚未处理部分继续走不会靠一段负成本把累计值向下拉，所以当前最小候选可以逐个确定。这里理解选择规则即可，不要求证明或编程；遇到负权应重新检查建模和算法条件，不能继续宣称本课流程保证正确。\n\n## 什么时候结束，答案是否唯一？\n\n如果只问一个终点，当终点按最小暂定成本被取出并确定时可以停止；首次看见终点或首次给它一个暂定值时，不能提前结束。若任务要求全部可达节点的成本，就应继续处理，直到不再有可达候选。无法从起点到达的节点没有有限的最短成本。[S19](https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.shortest_paths.weighted.single_source_dijkstra.html) \n\n不同路线可能有同样的最小成本。题目若要求列出所有并列最优路线，不能仅因某次计算先记录了一条，就否定另一条同成本可行路线。算法实现如何保存多个前驱属于扩展内容，本关先能识别并列情况。\n\n## 想一想\n\n> 在本例中，先选累计成本2的B，却最后采用经A的路线，这是不是算法选错了？\n\n**引导解析：** 不是。确定B是在确认到B的最优成本，不是在承诺终点路线必须经过B。后续仍会处理其他候选并改进T。\n\n## 自测\n\n### 1. 更新时要不要保留旧值？\n\nX的旧暂定值为8，当前已确定Y的累计成本为4，Y→X成本为2。新的X暂定值是多少？若该边改为7，又是多少？\n\n### 2. 别只看第一段\n\n本题仅有S→A(2)、A→T(3)、S→B(1)、B→T(6)，单位分钟，均固定、合法、非负。最终应选哪条路线？为什么不能仅因S→B为1就直接选经B？\n\n### 3. 并列与停止条件\n\n另一个教学图中只有S→A(2)、A→T(3)、S→B(3)、B→T(2)，单位分钟，均可用。最优成本是多少，是否只有一条最优路线？首次发现T时能否仅据“已经发现终点”就停止？\n\n## 自测答案与解析\n\n1. 分别为min(8,4+2)=6和min(8,4+7)=8。新路线更贵时，旧的较好暂定值应保留。\n2. 经A为2+3=5分钟，经B为1+6=7分钟，应选S→A→T。第一段最便宜不能保证整条路线最便宜，比较的是累计成本。\n3. 最优成本5分钟，两条给定路线都达到该值。仅“发现终点”不是充分停止条件；本课单终点求解应等到T按最小暂定成本被取出并确定。",
+      "reviewed": "2026-11-05"
+    },
+    {
+      "id": "T10",
+      "title": "道路拥堵或封闭以后，路线为什么要重新判断？",
+      "level": "重点详讲",
+      "readingTime": "6–10分钟",
+      "knowledgePointIds": [
+        "M4-019",
+        "M4-020",
+        "M4-021",
+        "M5-005"
+      ],
+      "sourceIds": [
+        "S15",
+        "S16",
+        "S17"
+      ],
+      "embeddedSources": false,
+      "markdown": "# 道路拥堵或封闭以后，路线为什么要重新判断？\n\n## 成本变大和禁止通行，不是一回事\n\n先区分两个问题：这段路能不能用，以及用了要付出多少成本。教学条件若明确某边完全封闭、禁止本题车辆通行，就应把它从本次可行路线中排除。不能只给它一个很大的有限时间，因为其他路线更贵时，求最小成本的方法仍可能选择它。[S15](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/restriction-attributes.html) [S16](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/barriers.html) \n\n如果只是拥堵但仍允许通行，常见处理则是使用适当的较高时间成本，再与其他合法路线比较。实际软件中的限制还可能表示禁止、避免或偏好；本关涉及“完全封闭”时，特指禁止使用，不把软性的“尽量避免”当作绝对禁行。[S15](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/restriction-attributes.html) \n\n## 同一条路，对不同车辆可能不同\n\n自拟规则：某通道只允许车高不大于2.6米的车辆使用，其他条件都满足。车高2.5米通过了这一项检查，2.6米也符合“不大于”，2.7米则不符合。通过高度检查不等于已经满足所有其他规定；若题目没有说明其他条件，还应继续核对。\n\n这里的数字不是现实道路限高标准。做题时要根据给定规则比较；做真实路线分析时，要使用经过核实、适用于该道路与车辆的资料，不能拿教学阈值替代实际规定。[S15](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/restriction-attributes.html) \n\n## 时段改变，最优路线也可能改变\n\n动态路网会把与时间相关的信息纳入分析，例如不同出发时段的行驶时间、临时封闭或适用规则。下面先采用两张静态情景表：每次行程全程使用选定的一列固定成本，均允许通行，不考虑途中跨时段变化。\n\n| 合法候选路线 | 平峰固定耗时 | 高峰固定耗时 |\n|---|---|---|\n| 甲 | 4分钟 | 9分钟 |\n| 乙 | 6分钟 | 7分钟 |\n\n平峰选甲，高峰选乙，因为比较的列已经改变。不能沿用平峰结论，也不能同时取甲的平峰成本和乙的高峰成本，拼出没有共同情景依据的比较。这张表是帮助理解条件变化的教学模型，不是实时导航的完整算法。\n\n## 真正的时间依赖还要多考虑一步\n\n实际使用时变边成本时，走到某条边的时间，可能影响走这条边需要多久。前面已花掉的时间会影响后续到达时刻，因此不能在没有说明的情况下，把“整程统一选一个时段列”的简化方法套用到所有跨时段行程。[S17](https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/historical-traffic.html) \n\n历史交通描述某些日期或时段的典型变化，可用于估计；它不是今天每次出行的保证。实时信息、数据更新时间、出发时刻、车辆和成本模型，都影响预测。即使路线选择在给定模型内正确，实际到达时间仍可能与估计不同。\n\n本关只要求能按明确给定的静态情景与限制重新比较。完整的时间依赖最短路径算法需要进一步说明时间函数、时间推进和算法前提；后续高阶讲解再展开，不在本关把静态Dijkstra说成适用于一切动态情况。\n\n## 条件变化后的检查顺序\n\n先核对本次任务的车辆、出发情景与目标，再排除明确不适用的边或转向，之后统一成本单位并比较剩余路线。若没有可行路线，应如实说明在当前数据和规则下没有解；不能为得到一个结果而擅自开放封路或补出未给定的边。\n\n如果资料未说明封闭是否还有效，或未给出需要的时段成本，应该列出缺失条件，避免把未知当作已经允许。更新路线时，最重要的是说明“哪些条件变了，所以哪一步需要重算”。\n\n## 想一想\n\n> 明确禁止通行的路段，给它设成1000分钟，就一定能保证算法不会选它吗？\n\n**引导解析：** 不能保证。1000仍是有限成本；若模型里其他路线更贵或没有其他路线，就可能被选中。绝对禁止应通过相应的不可用条件表达。\n\n## 自测\n\n### 1. 只改变情景列\n\n候选甲平峰3分钟、高峰10分钟；乙平峰5分钟、高峰6分钟。每次出行全程使用同一列固定成本，两路均合法。高峰应该选哪条？若改为平峰呢？\n\n### 2. 把限制和成本分开\n\n局部有向图只有S→A(1)、A→T(1)、S→B(4)、B→T(2)，单位分钟，本题完全封闭A→T，其余边及相关转向均允许。剩余可行路线和时间是什么？如果B→T也封闭，应该怎样报告？\n\n### 3. 预测还是保证？\n\n历史资料给出某时段典型耗时为8分钟，是否就能保证今天每辆车都在8分钟内到达？如果行程跨越两个时段，是否可以未经说明仍把出发时段成本用于全部后续道路？\n\n## 自测答案与解析\n\n1. 高峰比较10和6，选乙；平峰比较3和5，选甲。每次必须使用同一教学情景列。\n2. 排除A→T后，可行路线为S→B→T，时间4+2=6分钟。若B→T也封闭，该明确限定的局部图中没有从S到T的可行路线；应报告无解，不能擅自开放封路。\n3. 历史典型耗时是估计，不是本次到达保证。真实跨时段计算可能要按到达各边的时刻更新成本；只有题目明确采用全程固定列模型时，才按该简化条件求解。",
+      "reviewed": "2026-11-05"
+    }
+  ],
+  "chapterLessons": {
+    "L01": [
+      "T01"
+    ],
+    "L02": [
+      "T02"
+    ],
+    "L03": [
+      "T03",
+      "T04",
+      "T05",
+      "T06"
+    ],
+    "L04": [
+      "T07",
+      "T08"
+    ],
+    "L05": [
+      "T09"
+    ],
+    "L06": [
+      "T10"
+    ]
+  },
+  "knowledgePointLessons": {
+    "M1-001": [
+      "T01"
+    ],
+    "M1-002": [
+      "T01"
+    ],
+    "M1-004": [
+      "T01"
+    ],
+    "M1-009": [
+      "T03",
+      "T01"
+    ],
+    "M7-010": [
+      "T02",
+      "T01"
+    ],
+    "M3-017": [
+      "T02"
+    ],
+    "M3-018": [
+      "T02"
+    ],
+    "M1-007": [
+      "T03"
+    ],
+    "M1-008": [
+      "T03"
+    ],
+    "M1-013": [
+      "T04"
+    ],
+    "M1-015": [
+      "T04"
+    ],
+    "M1-011": [
+      "T05"
+    ],
+    "M1-016": [
+      "T05"
+    ],
+    "M1-029": [
+      "T05"
+    ],
+    "M1-014": [
+      "T06"
+    ],
+    "M1-012": [
+      "T07"
+    ],
+    "M4-001": [
+      "T07",
+      "T09"
+    ],
+    "M4-002": [
+      "T07"
+    ],
+    "M4-003": [
+      "T08"
+    ],
+    "M4-006": [
+      "T09"
+    ],
+    "M4-019": [
+      "T10"
+    ],
+    "M4-020": [
+      "T10"
+    ],
+    "M4-021": [
+      "T10"
+    ],
+    "M5-005": [
+      "T10"
+    ]
+  },
+  "knowledgePointNames": {
+    "M1-001": "GIS交通路网的专业定义与核心研究范畴",
+    "M1-002": "道路几何展示与交通网络分析的区别",
+    "M1-004": "路网空间数据的两大核心载体：矢量模型、栅格模型",
+    "M1-009": "路网边的定义、分类与核心作用",
+    "M7-010": "QGIS路网数据加载与坐标系配置",
+    "M3-017": "路网坐标属性与空间定位规则",
+    "M3-018": "路网长度、曲率、坡度几何属性定义",
+    "M1-007": "交通路网Node-Edge节点边基础模型定义",
+    "M1-008": "路网节点的定义、分类与核心作用",
+    "M1-013": "交通路网拓扑关系的核心定义",
+    "M1-015": "路网几何相邻与拓扑连通的区别",
+    "M1-011": "有向路网图模型的结构与适用场景",
+    "M1-016": "路网方向性拓扑约束规则",
+    "M1-029": "单向通行路网拓扑构建要点",
+    "M1-014": "路网连通性拓扑规则",
+    "M1-012": "加权路网图模型的权重定义逻辑",
+    "M4-001": "路网网络分析的核心逻辑：阻抗成本模型",
+    "M4-002": "距离阻抗模型的构建与计算规则",
+    "M4-003": "时间阻抗模型的构建与计算规则",
+    "M4-006": "Dijkstra最短路径算法原理与路网适配",
+    "M4-019": "路网禁行约束的路径筛选算法",
+    "M4-020": "时间依赖型动态路网算法原理",
+    "M4-021": "早晚高峰路网阻抗动态更新机制",
+    "M5-005": "动态GIS交通路网的定义与核心特征"
+  },
+  "sources": [
+    {
+      "id": "CN01",
+      "title": "交通运输部：《公路限速标志设计规范》解读",
+      "url": "https://xxgk.mot.gov.cn/jigou/glj/202007/t20200722_3436356.html",
+      "version_or_date": "2020-07-22；JTG/T 3381-02—2020的官方解读",
+      "section": "三、主要内容（一）及（二）至（四）",
+      "accessed": "2026-11-02",
+      "supports": "国内官方资料明确区分并协调设计速度、运行速度、标志限速和法定限速；此处仅作概念依据，不据旧公告断言所有标准目前状态或给出真实道路限速。"
+    },
+    {
+      "id": "S01",
+      "title": "QGIS：Introducing GIS",
+      "url": "https://docs.qgis.org/3.44/en/docs/gentle_gis_introduction/introducing_gis.html",
+      "version_or_date": "QGIS 3.44",
+      "section": "2.1–2.2",
+      "supports": "GIS组织、分析和呈现空间信息；软件是GIS的工具。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S02",
+      "title": "QGIS：Vector Data",
+      "url": "https://docs.qgis.org/3.44/en/docs/gentle_gis_introduction/vector_data.html",
+      "version_or_date": "QGIS 3.44",
+      "section": "3.1、3.2、3.5",
+      "supports": "点线面是矢量几何类型；表示随尺度、目的而变；要素还具有属性。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S03",
+      "title": "QGIS：Raster Data",
+      "url": "https://docs.qgis.org/3.44/en/docs/gentle_gis_introduction/raster_data.html",
+      "version_or_date": "QGIS 3.44",
+      "section": "6.1–6.2",
+      "supports": "栅格按行列组织像元，可表示影像和连续表面。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S04",
+      "title": "QGIS：Working with the Attribute Table",
+      "url": "https://docs.qgis.org/3.44/en/docs/user_manual/working_with_vector/attribute_table.html",
+      "version_or_date": "QGIS 3.44",
+      "section": "12.2 开头与属性表说明",
+      "supports": "对矢量要素图层，行对应要素，列对应字段；属性不等于符号样式。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S05",
+      "title": "QGIS：Working with Projections",
+      "url": "https://docs.qgis.org/3.44/en/docs/user_manual/working_with_projections/working_with_projections.html",
+      "version_or_date": "QGIS 3.44",
+      "section": "6.2 Layer CRS、6.3 Project CRS",
+      "supports": "指定CRS用于解释坐标；项目动态投影用于显示；两者不等同于重投影源几何。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S06",
+      "title": "Esri：Coordinate systems and projections",
+      "url": "https://doc.esri.com/en/arcgis-pro/latest/help/mapping/properties/coordinate-systems-and-projections.html",
+      "version_or_date": "ArcGIS Pro 在线文档，访问日版本",
+      "section": "Coordinate systems",
+      "supports": "地理坐标采用角度，投影坐标采用线性单位；识别CRS后才有空间解释。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S07",
+      "title": "PROJ：Cartographic projection / Units",
+      "url": "https://proj.org/en/stable/usage/projections.html",
+      "version_or_date": "PROJ 9.9.0 在线 stable",
+      "section": "Units",
+      "supports": "投影的线性单位并非一律为米，可有英尺等单位。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S08",
+      "title": "QGIS：2D Map View / Measuring",
+      "url": "https://docs.qgis.org/3.44/en/docs/user_manual/map_views/map_view.html#measuring",
+      "version_or_date": "QGIS 3.44",
+      "section": "7.1.8.1–7.1.8.2",
+      "supports": "椭球测量与平面测量应区分；不能单靠项目CRS推断距离计算方法。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S09",
+      "title": "QGIS：General Tools / Layers Panel",
+      "url": "https://docs.qgis.org/3.44/en/docs/user_manual/introduction/general_tools.html",
+      "version_or_date": "QGIS 3.44",
+      "section": "8.2.1 Layers Panel",
+      "supports": "图层面板组织图层，勾选控制显示；显示开关不是删除数据或网络禁行。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S10",
+      "title": "Esri：Network elements",
+      "url": "https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/network-elements.html",
+      "version_or_date": "ArcGIS Pro 在线文档，访问日版本",
+      "section": "Edges、Junctions、Turns",
+      "supports": "边、交汇节点和转向构成网络；连接和通行约束不同。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S11",
+      "title": "Esri：Understanding connectivity",
+      "url": "https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/understanding-connectivity.html",
+      "version_or_date": "ArcGIS Pro 在线文档，访问日版本",
+      "section": "Connectivity policies；Using elevation fields",
+      "supports": "几何交叉不自动意味着可转入；端点、顶点和高程规则决定建网连通。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S12",
+      "title": "Esri：Add Rule To Topology",
+      "url": "https://pro.arcgis.com/en/pro-app/3.4/tool-reference/data-management/add-rule-to-topology.htm",
+      "version_or_date": "ArcGIS Pro 3.4",
+      "section": "Must Not Have Dangles (Line)",
+      "supports": "禁止悬挂规则可对真实尽端路等作例外；不能机械删除所有悬挂端点。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S13",
+      "title": "QGIS：Network analysis",
+      "url": "https://docs.qgis.org/3.44/en/docs/user_manual/processing_algs/qgis/networkanalysis.html",
+      "version_or_date": "QGIS 3.44",
+      "section": "Shortest path (point to point) / Strategy、Direction、Speed",
+      "supports": "可选最短或最快策略；道路方向与速度由字段及设置解释；存在原生处理算法。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S14",
+      "title": "Esri：Cost attributes",
+      "url": "https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/cost-attributes.html",
+      "version_or_date": "ArcGIS Pro 在线文档，访问日版本",
+      "section": "Cost attributes",
+      "supports": "距离、时间等成本用于最优路线；累加前须统一量纲和含义。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S15",
+      "title": "Esri：Restriction attributes",
+      "url": "https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/restriction-attributes.html",
+      "version_or_date": "ArcGIS Pro 在线文档，访问日版本",
+      "section": "Restriction usage、Parameters",
+      "supports": "禁止通行不同于避免或偏好；约束可随车辆与出行方式而变。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S16",
+      "title": "Esri：Barriers",
+      "url": "https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/barriers.html",
+      "version_or_date": "ArcGIS Pro 在线文档，访问日版本",
+      "section": "Restriction、Added cost、Scaled cost",
+      "supports": "临时封路可用禁止障碍；额外成本或倍率成本有不同作用。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S17",
+      "title": "Esri：Historical traffic",
+      "url": "https://doc.esri.com/en/arcgis-pro/latest/help/analysis/networks/historical-traffic.html",
+      "version_or_date": "ArcGIS Pro 在线文档，访问日版本",
+      "section": "Historical traffic profiles",
+      "supports": "历史交通按时段估计旅行速度/成本，不保证等于实时状态。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S19",
+      "title": "NetworkX：single_source_dijkstra",
+      "url": "https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.shortest_paths.weighted.single_source_dijkstra.html",
+      "version_or_date": "NetworkX 3.7 在线 stable",
+      "section": "Parameters / Returns / Notes",
+      "supports": "target为空求全部可达节点，指定target求该目标；成本为边权之和。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S20",
+      "title": "NetworkX：DiGraph",
+      "url": "https://networkx.org/documentation/stable/reference/classes/digraph.html",
+      "version_or_date": "NetworkX 3.7 在线 stable",
+      "section": "Overview / Edges",
+      "supports": "有向边按方向连接节点；反向边不是自动存在。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S22",
+      "title": "OpenStax Physics：Speed and Velocity",
+      "url": "https://openstax.org/books/physics/pages/2-2-speed-and-velocity",
+      "version_or_date": "Physics 在线教材，访问日版本",
+      "section": "2.2 Speed，平均速度与距离/时间关系",
+      "supports": "给定平均速率时，时间=路程/速率；须统一单位。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S24",
+      "title": "QGIS：Vector general / Reproject layer",
+      "url": "https://docs.qgis.org/3.44/en/docs/user_manual/processing_algs/qgis/vectorgeneral.html#reproject-layer",
+      "version_or_date": "QGIS 3.44",
+      "section": "24.1.25.1 Assign projection；24.1.25.16 Find projection；24.1.25.25 Reproject layer",
+      "supports": "指定投影保留原几何坐标；重投影执行坐标转换；查找投影仅给出候选。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S25",
+      "title": "OpenStax College Algebra 2e：Rectangular Coordinate Systems and Graphs",
+      "url": "https://openstax.org/books/college-algebra-2e/pages/2-1-the-rectangular-coordinate-systems-and-graphs",
+      "version_or_date": "College Algebra 2e 在线教材，访问日版本",
+      "section": "2.1 Using the Distance Formula",
+      "supports": "平面两点欧氏距离由坐标差的平方和开方得到。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S26",
+      "title": "Esri：Define Projection",
+      "url": "https://pro.arcgis.com/en/pro-app/3.3/tool-reference/data-management/define-projection.htm",
+      "version_or_date": "ArcGIS Pro 3.3",
+      "section": "Usage",
+      "supports": "只定义参考信息不修改几何；转换几何用Project。用于独立交叉核查，不作为QGIS菜单说明。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S27",
+      "title": "MIT 6.006：Lecture 13, Dijkstra’s Algorithm",
+      "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/d819e7f4568aced8d5b59e03db6c7b67_MIT6_006S20_lec13.pdf",
+      "version_or_date": "2020 春季课程",
+      "section": "第1页 Non-negative Edge Weights；第2–4页算法与正确性",
+      "supports": "非负边权含零；累计最小暂定值出队及松弛的原理。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "S28",
+      "title": "QGIS：Topology Checker Plugin",
+      "url": "https://docs.qgis.org/3.44/en/docs/user_manual/plugins/core_plugins/plugins_topology_checker.html",
+      "version_or_date": "QGIS 3.44",
+      "section": "25.2.5 开头规则适用性说明；Line rules",
+      "supports": "规则依用途选择；真实尽端路不能仅因规则标记就删除。",
+      "accessed": "2026-11-02",
+      "verification": "已直接阅读官方正文；非仅搜索摘要"
+    },
+    {
+      "id": "TEACH-TOPOLOGY",
+      "title": "QGIS：7. Topology",
+      "url": "https://docs.qgis.org/3.44/en/docs/gentle_gis_introduction/topology.html",
+      "version_or_date": "QGIS 3.44",
+      "section": "§7.1–7.3",
+      "accessed": "2026-11-05"
+    },
+    {
+      "id": "TEACH-TURNS",
+      "title": "Esri：Turns",
+      "url": "https://pro.arcgis.com/en/pro-app/3.6/help/analysis/networks/turns-in-the-network-dataset.htm",
+      "version_or_date": "ArcGIS Pro 3.6",
+      "section": "开头转向与限制说明；Understanding turns",
+      "accessed": "2026-11-05"
+    }
+  ]
+}

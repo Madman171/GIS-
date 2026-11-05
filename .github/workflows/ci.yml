@@ -29,6 +29,11 @@ jobs:
         working-directory: backend
         run: python -m pytest
 
+      - name: Check teaching registry and independent worked examples
+        run: |
+          python scripts/build_intro_teaching.py --check
+          python scripts/audit_intro_teaching.py
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -43,6 +48,10 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         run: npm run build
+
+      - name: Check teaching coverage and safe Markdown rendering
+        working-directory: frontend
+        run: node --test tests/teaching-content.test.mjs
 
       - name: Install Playwright browser
         working-directory: frontend

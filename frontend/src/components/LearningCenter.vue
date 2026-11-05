@@ -34,11 +34,15 @@
           </nav>
           <div v-if="chapterLoading" class="learning-state"><p>正在加载本关讲解和题目…</p></div>
           <template v-else-if="current">
-            <div v-if="phase === 'lesson'" class="lesson-grid">
-              <section class="lesson-main learning-surface"><h2>从概念开始</h2><p v-for="(paragraph, index) in lessonParagraphs" :key="index">{{ paragraph }}</p><div class="lesson-start"><button type="button" class="learning-primary" @click="startPractice">{{ record.learned ? '继续练习' : '学完了，开始练习' }}</button><span>每题提交后，立即查看解析。</span></div></section>
+            <template v-if="phase === 'lesson'">
+            <div class="lesson-grid">
+              <section class="lesson-main learning-surface"><h2>从概念开始</h2><p v-for="(paragraph, index) in lessonParagraphs" :key="index">{{ paragraph }}</p></section>
               <aside class="lesson-context"><section><h2>本关目标</h2><ul class="lesson-objectives"><li v-for="goal in current.objectives" :key="goal">{{ goal }}</li></ul></section><section class="knowledge-return"><h2>对应知识点</h2><button v-for="point in visibleKnowledge" :key="point.id" type="button" class="knowledge-study-link" @click="$emit('open-knowledge', point.id)"><span>{{ point.name }}</span><span aria-hidden="true">↗</span></button><button v-if="current.knowledge_points.length > 4" type="button" class="learning-text-button" @click="allKnowledge = !allKnowledge">{{ allKnowledge ? '收起' : `查看全部${current.knowledge_points.length}个知识点` }}</button></section></aside>
               <p class="learning-origin">本课程习题为原创教学题。道路、时间、速度和阈值等自拟数据均为教学假设。</p>
             </div>
+            <TeachingSection :chapter-id="activeId" context="chapter" />
+            <div class="lesson-start"><button type="button" class="learning-primary" @click="startPractice">{{ record.learned ? '继续练习' : '学完了，开始练习' }}</button><span>每题提交后，立即查看解析。</span></div>
+            </template>
 
             <section v-else-if="phase === 'practice'" class="practice-area">
               <div class="practice-navigation"><h2>理解后，再向前一步</h2><div role="group" aria-label="选择练习题"><button v-for="(question, index) in practiceQuestions" :key="question.id" type="button" :class="{ active: practiceIndex === index, checked: validPracticeResult(question) }" :aria-label="`第${index + 1}题${validPracticeResult(question) ? '，已核对' : ''}`" :aria-pressed="practiceIndex === index" :disabled="busy" @click="practiceIndex = index">{{ index + 1 }}<span v-if="validPracticeResult(question)" aria-hidden="true"></span></button></div></div>
@@ -76,6 +80,7 @@ import { emptyChapter, formatAnswer, isAnswered, loadProgress, PROGRESS_KEY } fr
 import LearningQuestion from './LearningQuestion.vue'
 import LearningFeedback from './LearningFeedback.vue'
 import LearningDiagram from './LearningDiagram.vue'
+import TeachingSection from './TeachingSection.vue'
 import '../learning/learning.css'
 
 defineEmits(['open-knowledge'])

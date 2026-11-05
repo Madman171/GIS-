@@ -8,7 +8,7 @@ import assert from 'node:assert/strict'
 const root = fileURLToPath(new URL('../../', import.meta.url))
 const bank = JSON.parse(await readFile(resolve(root, 'backend/content/learning-bank.json'), 'utf8'))
 const base = process.env.LEARNING_BASE_URL || 'http://127.0.0.1:5182'
-const out = resolve(root, 'artifacts/learning-release/2026-11-04')
+const out = resolve(root, process.env.LEARNING_QA_OUT || 'artifacts/learning-release/2026-11-04')
 await mkdir(out, { recursive: true })
 const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || 'msedge', headless: true })
 const results = []
@@ -101,6 +101,8 @@ try {
   await page.getByRole('img', { name: '知识图谱可视化', exact: true }).waitFor()
   await page.getByRole('button', { name: '学习闯关', exact: true }).click()
   await page.getByText('6 / 6 关已通过', { exact: true }).waitFor()
+  await page.getByRole('heading', { name: bank.chapters.at(-1).title, exact: true }).waitFor()
+  await page.locator('.exam-review-question').first().waitFor()
   // Read stored results on phone and keyboard interaction on a fresh phone context.
   await page.setViewportSize({ width: 390, height: 844 })
   await page.screenshot({ path: resolve(out, 'exam-result-mobile.png') })

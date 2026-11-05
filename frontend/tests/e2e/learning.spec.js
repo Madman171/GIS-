@@ -79,6 +79,42 @@ test('practice network failure preserves the selection and allows resubmission',
   await expect(page.getByText('回答正确', { exact: true })).toBeVisible()
 })
 
+test('teaching can be read without video and self-check answers remain hidden until requested', async ({ page }) => {
+  await page.goto('/#learn')
+  const teaching = page.getByRole('region', { name: '教学讲解', exact: true })
+  await expect(teaching).toContainText('从看地图到分析道路')
+  const image = teaching.locator('figure img').first()
+  await image.scrollIntoViewIfNeeded()
+  await expect(image).toHaveJSProperty('complete', true)
+  expect(await image.evaluate(img => img.naturalWidth)).toBeGreaterThan(0)
+  const answers = teaching.locator('.teaching-self-check')
+  await expect(answers).not.toHaveAttribute('open')
+  await answers.locator('summary').click()
+  await expect(answers).toHaveAttribute('open', '')
+  await expect(answers).toContainText('研究站房占地可以使用面')
+  await page.getByRole('button', { name: '学完了，开始练习' }).click()
+  await expect(page.locator('#question-L01-P01')).toBeVisible()
+})
+
+test('chapter three presents shared units and readable mobile teaching tables', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.addInitScript(() => localStorage.setItem('gis-learning-progress-v1', JSON.stringify({
+    version: '1.0.1', lastChapter: 'L03', chapters: { L01: { bestScore: 100 }, L02: { bestScore: 100 } },
+  })))
+  await page.goto('/#learn')
+  const teaching = page.locator('.teaching-section')
+  await expect(teaching.locator('.teaching-unit')).toHaveCount(4)
+  const sample = teaching.locator('.teaching-unit').nth(1)
+  await sample.locator(':scope > summary').click()
+  await expect(sample).toContainText('地图上相交的道路，真的能转过去吗')
+  await sample.locator('.teaching-self-check > summary').click()
+  await expect(sample.locator('.teaching-self-check')).toHaveAttribute('open', '')
+  for (const table of await teaching.locator('.teaching-table-wrap:visible').all()) {
+    expect(await table.evaluate(el => el.getBoundingClientRect().right <= innerWidth)).toBe(true)
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+})
+
 test('a partial retake stays active after lesson review and reload', async ({ page }) => {
   const qs = bank.questions.filter(q => q.chapter_id === 'L01')
   const result = q => ({ question_id: q.id, correct: true,
