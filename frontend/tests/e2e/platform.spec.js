@@ -223,6 +223,8 @@ test('directory, graph, detail and chat flow', async ({ page }) => {
     '暂无已配置的前置知识',
   )
   await expect(page.getByRole('dialog', { name: '知识点详情' })).toBeVisible()
+  await expect(page.locator('.detail-panel .teaching-section')).toContainText('从看地图到分析道路')
+  await expect(page.locator('.detail-panel .teaching-self-check')).not.toHaveAttribute('open')
   await page.keyboard.press('Escape')
   await expect(page.getByRole('dialog', { name: '知识点详情' })).toHaveCount(0)
 
